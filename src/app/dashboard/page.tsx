@@ -2,6 +2,8 @@ import { revalidatePath } from 'next/cache'
 
 import { getPlatforms, savePlatform } from '@/models/Platform'
 
+export const dynamic = 'force-dynamic'
+
 export default async function Page() {
   const platforms = await getPlatforms()
 

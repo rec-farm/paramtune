@@ -1,10 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 
-type Context = {
-  params: {
-    slug: string[]
-  }
-}
+type SlugParams = { slug: string[] }
 
 type Db = Record<string, Record<string, unknown>>
 
@@ -28,8 +24,11 @@ const db: Db = {
 
 
 
-export async function GET(_request: NextRequest, context: Context) {
-  const [platform, version] = context.params.slug
+export async function GET(
+  _request: Request,
+  { params }: any
+) {
+  const [platform, version] = (params as SlugParams).slug
 
   if (!db[platform] || platform === 'platforms') {
     return NextResponse.json([

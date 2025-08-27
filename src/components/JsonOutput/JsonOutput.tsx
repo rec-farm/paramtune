@@ -11,7 +11,7 @@ type JsonEntry = [
 
 function getValueComponent(value: unknown) {
   if (typeof value === 'string') {
-    return <span>"{value}"</span>
+    return <span>&quot;{value}&quot;</span>
   }
 
 
@@ -30,8 +30,8 @@ function syntaxHighlight(json: string, indent = 0) {
   const parsed = JSON.parse(json)
 
   const renderer = Object.entries(parsed).map(([key, value]: JsonEntry) => (
-    <div className="" style={{ marginLeft: `${indent + 1 * 20}px` }}>
-      <span className="text-yellow-400 font-bold">"{key}": </span>
+    <div key={key} className="" style={{ marginLeft: `${indent + 1 * 20}px` }}>
+      <span className="text-yellow-400 font-bold">&quot;{key}&quot;: </span>
       {getValueComponent(value)}
     </div>
   ))

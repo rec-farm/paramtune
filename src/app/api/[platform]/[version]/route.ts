@@ -1,18 +1,14 @@
-import { NextResponse, type NextRequest } from 'next/server'
+import { NextResponse } from 'next/server'
 
 import { getVersions, getVersion } from '@/models/Version'
 
 export const dynamic = 'force-dynamic'
 
-type Context = {
-  params: {
-    platform: string
-    version: string
-  }
-}
-
-export async function GET(_request: NextRequest, context: Context) {
-  const { platform, version} = context.params
+export async function GET(
+  _request: Request,
+  { params }: any
+) {
+  const { platform, version } = params as { platform: string; version: string }
 
   if (version === 'versions') {
     return NextResponse.json(await getVersions(platform), {

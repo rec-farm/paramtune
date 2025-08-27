@@ -63,7 +63,7 @@ async function resolveDependencies(dependencies: string[]) {
 export async function getSchema(
   platform: string,
   version: string,
-): Promise<Schema> {
+): Promise<Schema | Record<string, never>> {
   'use server'
 
   const [schema] = await redis.zrevrangebyscore(
@@ -74,7 +74,7 @@ export async function getSchema(
     0,
     1,
   )
-  return schema ? JSON.parse(schema) : {}
+  return schema ? (JSON.parse(schema) as Schema) : {}
 }
 
 export async function saveSchema(

@@ -18,14 +18,15 @@ export async function getPlatforms(): Promise<Platform[]> {
     platforms.push(...keys.map(key => key.split(':')[1]))
   } while (cursor !== '0')
 
-  return Promise.all(platforms.map(getPlatform))
+  const results = await Promise.all(platforms.map(getPlatform))
+  return results.filter((p): p is Platform => Boolean(p))
 }
 
-export async function getPlatform(id: string): Promise<Platform> {
+export async function getPlatform(id: string): Promise<Platform | null> {
   'use server'
 
   const [platform] = await redis.zrevrangebyscore(`platforms:${id}`, '+inf', '-inf', 'LIMIT', 0, 1)
-  return platform ? JSON.parse(platform) : null
+  return platform ? (JSON.parse(platform) as Platform) : null
 }
 
 export async function savePlatform(id: string, data: Record<string, unknown>) {

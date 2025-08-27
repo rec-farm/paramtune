@@ -24,26 +24,37 @@ const db: Db = {
 
 
 
-export async function GET(
-  _request: Request,
-  { params }: any
-) {
-  const [platform, version] = (params as SlugParams).slug
+export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
 
-  if (!db[platform] || platform === 'platforms') {
-    return NextResponse.json([
-      {
-        id: 'mobile',
-        name: 'mobile',
-        versions: [
-          '1.1.0',
-          '1.1.1',
-        ]
-      }
-    ])
+export async function GET(_request: Request, { params }: any) {
+  try {
+    const [platform, version] = (params as SlugParams).slug
+
+    if (!db[platform] || platform === 'platforms') {
+      return NextResponse.json(
+        [
+          {
+            id: 'mobile',
+            name: 'mobile',
+            versions: ['1.1.0', '1.1.1'],
+          },
+        ],
+        { status: 200, headers: { 'Cache-Control': 'no-store' } },
+      )
+    }
+
+    const record = db[platform][version]
+    if (!record) {
+      return NextResponse.json({ error: 'Schema not found' }, { status: 404 })
+    }
+
+    return NextResponse.json(record, {
+      status: 200,
+      headers: { 'Cache-Control': 'no-store' },
+    })
+  } catch (error: any) {
+    console.error('GET /api/schemas error', error)
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
   }
-
-  return NextResponse.json(db[platform][version], { status: 200, headers: {
-    cache: 'no-store'
-  }})
 }

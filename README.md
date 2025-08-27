@@ -1,52 +1,82 @@
-This is a [Next.js](https://nextjs.org/) project.
+Paramtune is a Next.js app for managing platform schemas and versioned feature configuration with dependency resolution and Redis persistence.
 
-## TODO
+## Overview
 
-- [ ] Validate schemas.
-- [ ] Cascade updates.
-- [ ] Get versions from the API using semver.
-- [ ] Extend deep (inside objects).
-- [ ] Fancy JSON editor.
+- Next.js 15 (App Router), React 19, TypeScript 5.9
+- Tailwind CSS 4 for styling
+- Redis (via ioredis) for persistence
+- JSON schema composition with "@extends" and semver-aware dependency resolution
 
 ## Requirements
 
-- Node.js 22+
+- Node.js 20–22 (LTS recommended)
 - Yarn Classic 1.x
-- Optional: Redis running locally on `127.0.0.1:6379` (used by the app)
+- Redis accessible locally or through a cloud provider
 
-## Getting Started
+## Setup
 
-First, run the development server:
+1) Copy env example and adjust values
+
+```bash
+cp .env.local.example .env.local
+```
+
+2) Install dependencies
 
 ```bash
 yarn install
+```
+
+3) Run the dev server
+
+```bash
 yarn dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Scripts
 
-This project uses the App Router and Tailwind CSS v4.
+- `yarn dev` – start dev server
+- `yarn build` – production build
+- `yarn start` – run production server locally
+- `yarn lint` – lint with ESLint
+- `yarn typecheck` – TypeScript type check
 
-## Notes on Upgrades
+## Environment Variables
 
-- Next.js 15, React 19, TypeScript 5.9
-- Tailwind CSS 4 with `@tailwindcss/postcss`
-- Dynamic routes and API handlers updated to the latest signatures
-- Redis-backed pages are marked `dynamic = 'force-dynamic'` to avoid build-time fetches
+- `CORS_ORIGIN` – Allowed origin (e.g., http://localhost:3000)
+- `REDIS_URL` – Full connection URL (preferred)
+- `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD`, `REDIS_DB` – Individual Redis settings when URL is not provided
 
-## Learn More
+## Deployment (Vercel)
 
-To learn more about Next.js, take a look at the following resources:
+1) Push to a GitHub/GitLab repo
+2) Import the project in Vercel, framework: Next.js
+3) Build command: `next build` (default)
+4) Output dir: `.next` (default)
+5) Set environment variables in Vercel Project Settings → Environment Variables
+6) Optionally set `CORS_ORIGIN` to your production domain
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+`vercel.json` adds basic security headers and routing. Middleware handles CORS.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js/) - your feedback and contributions are welcome!
+## API
 
-## Deploy on Vercel
+- `GET /api/[platform]` → latest platform metadata or 404
+- `POST /api/[platform]` → create/update platform metadata `{ name, versions }`
+- `GET /api/[platform]/versions` → list of versions
+- `POST /api/[platform]/versions` → append a version `{ version }`
+- `GET /api/[platform]/[version]` → latest schema for version or 404
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Architecture
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/deployment) for more details.
+- `src/models/*` – server-side Redis access and business logic
+- `src/app/*` – App Router pages and API routes
+- Dependency resolution: `Schema.saveSchema` scans `@extends` references, resolves semver ranges against platform versions, produces a merged output, and cascades updates to dependents.
+
+## Troubleshooting
+
+- Redis connection fails: verify `REDIS_URL` or host/port and firewall
+- 404s on APIs: ensure platform and versions exist (create via dashboard or POST APIs)
+- CORS errors: set `CORS_ORIGIN` to the correct origin (including protocol)
+- Type errors: run `yarn typecheck`

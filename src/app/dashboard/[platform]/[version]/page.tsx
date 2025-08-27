@@ -40,7 +40,7 @@ export default async function Page({ params }: { params: any }) {
           </button>
 
           <div className="py-6">
-            <JsonOutput title="Json Output" content={schema?.output || ''} />
+            <JsonOutput title="Json Output" content={(schema?.output as any) || {}} />
           </div>
         </form>
       </Suspense>

@@ -6,28 +6,24 @@ import JsonOutput from '@/components/JsonOutput'
 import PageTitle from '@/components/PageTitle'
 import { getSchema, saveSchema } from '@/models/Schema'
 
-type PageProps = {
-  params: {
-    platform: string
-    version: string
-  }
-}
+export const dynamic = 'force-dynamic'
 
-export default async function Page({ params }: PageProps) {
-  const schema = await getSchema(params.platform, params.version)
+export default async function Page({ params }: { params: any }) {
+  const { platform, version } = params as { platform: string; version: string }
+  const schema = await getSchema(platform, version)
 
   async function updateSchema(formData: FormData) {
     'use server'
 
     const content = JSON.parse(formData.get('content') as string)
-    await saveSchema(params.platform, params.version, content)
+    await saveSchema(platform, version, content)
 
     revalidatePath('/dashboard/[platform]/[version]', 'page')
   }
 
   return (
     <>
-      <PageTitle platform={params.platform} version={params.version} />
+      <PageTitle platform={platform} version={version} />
 
       <Suspense fallback={<div>Loading...</div>}>
         <form action={updateSchema}>

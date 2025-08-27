@@ -3,11 +3,8 @@ import { revalidatePath } from 'next/cache'
 import PageTitle from '@/components/PageTitle'
 import { getPlatform, savePlatform } from '@/models/Platform'
 
-type PageProps = {
-  params: {
-    platform: string
-  }
-}
+export const dynamic = 'force-dynamic'
+
 
 type VersionTagProps = {
   latest: boolean
@@ -23,13 +20,16 @@ const VersionTag = ({ version, latest }: VersionTagProps) => (
   </li>
 )
 
-export default async function Page({ params }: PageProps) {
-  const platform = await getPlatform(params.platform)
+export default async function Page({ params }: { params: any }) {
+  const platform = await getPlatform((params as { platform: string }).platform)
 
   async function createVersion(formData: FormData) {
     'use server'
 
-    const platform = await getPlatform(params.platform)
+    const platform = await getPlatform((params as { platform: string }).platform)
+    if (!platform) {
+      throw new Error('Platform not found')
+    }
 
     const versionName = formData.get('versionName') as string
     await savePlatform(platform.name, {
@@ -42,7 +42,7 @@ export default async function Page({ params }: PageProps) {
 
   return (
     <>
-      <PageTitle platform={params.platform} />
+      <PageTitle platform={(params as { platform: string }).platform} />
 
       <div>
         <Suspense fallback={<div>Loading...</div>}>

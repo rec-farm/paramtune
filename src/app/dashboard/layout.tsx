@@ -54,7 +54,7 @@ async function NewDashboard({ children }: PageProps) {
                 <span className="text-sm">Archive</span>
               </button>
             </div>
-            <div className="text-lg font-bold">Today's Plan</div>
+            <div className="text-lg font-bold">Today&apos;s Plan</div>
             <div>
               <button
                 type="button"

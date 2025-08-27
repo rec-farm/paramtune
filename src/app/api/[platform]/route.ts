@@ -1,17 +1,14 @@
-import { NextResponse, type NextRequest } from 'next/server'
+import { NextResponse } from 'next/server'
 
 import { getPlatform, savePlatform } from '@/models/Platform'
 
 export const dynamic = 'force-dynamic'
 
-type Context = {
-  params: {
-    platform: string
-  }
-}
-
-export async function GET(_request: NextRequest, context: Context) {
-  const { platform } = context.params
+export async function GET(
+  _request: Request,
+  { params }: any
+) {
+  const { platform } = params as { platform: string }
 
   return NextResponse.json(await getPlatform(platform), {
     status: 200,
@@ -21,7 +18,7 @@ export async function GET(_request: NextRequest, context: Context) {
   })
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
 
   // request.body
 

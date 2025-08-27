@@ -1,4 +1,4 @@
-This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
+This is a [Next.js](https://nextjs.org/) project.
 
 ## TODO
 
@@ -8,11 +8,18 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 - [ ] Extend deep (inside objects).
 - [ ] Fancy JSON editor.
 
+## Requirements
+
+- Node.js 22+
+- Yarn Classic 1.x
+- Optional: Redis running locally on `127.0.0.1:6379` (used by the app)
+
 ## Getting Started
 
 First, run the development server:
 
 ```bash
+yarn install
 yarn dev
 ```
 
@@ -20,7 +27,14 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 
 You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
 
-This project uses [`next/font`](https://nextjs.org/docs/basic-features/font-optimization) to automatically optimize and load Inter, a custom Google Font.
+This project uses the App Router and Tailwind CSS v4.
+
+## Notes on Upgrades
+
+- Next.js 15, React 19, TypeScript 5.9
+- Tailwind CSS 4 with `@tailwindcss/postcss`
+- Dynamic routes and API handlers updated to the latest signatures
+- Redis-backed pages are marked `dynamic = 'force-dynamic'` to avoid build-time fetches
 
 ## Learn More
 

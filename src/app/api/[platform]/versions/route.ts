@@ -1,17 +1,14 @@
-import { NextResponse, type NextRequest } from 'next/server'
+import { NextResponse } from 'next/server'
 
 import { getVersions } from '@/models/Version'
 
 export const dynamic = 'force-dynamic'
 
-type Context = {
-  params: {
-    platform: string
-  }
-}
-
-export async function GET(_request: NextRequest, context: Context) {
-  const versions = await getVersions(context.params.platform)
+export async function GET(
+  _request: Request,
+  { params }: any
+) {
+  const versions = await getVersions((params as { platform: string }).platform)
 
 
   return NextResponse.json(versions, {
@@ -20,7 +17,7 @@ export async function GET(_request: NextRequest, context: Context) {
   })
 }
 
-export async function POST(request: NextRequest) {
+export async function POST(request: Request) {
 
   // request.body
 

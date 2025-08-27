@@ -5,6 +5,8 @@ import JsonEditable from '@/components/JsonEditable'
 import JsonOutput from '@/components/JsonOutput'
 import PageTitle from '@/components/PageTitle'
 import { getSchema, saveSchema } from '@/models/Schema'
+import Card from '@/components/ui/Card'
+import Button from '@/components/ui/Button'
 
 export const dynamic = 'force-dynamic'
 
@@ -22,28 +24,26 @@ export default async function Page({ params }: { params: any }) {
   }
 
   return (
-    <>
+    <div className="space-y-6">
       <PageTitle platform={platform} version={version} />
 
       <Suspense fallback={<div>Loading...</div>}>
-        <form action={updateSchema}>
-          <div className="py-6">
+        <form action={updateSchema} className="space-y-4">
+          <Card title="Schema">
             <JsonEditable
-              title="Schema"
+              title=""
               name="content"
               defaultValue={JSON.stringify(schema?.content, null, 2)}
             />
-          </div>
+          </Card>
 
-          <button className="p-2 border-white border-2 rounded w-auto">
-            Submit
-          </button>
+          <Button type="submit" variant="primary">Save changes</Button>
 
-          <div className="py-6">
-            <JsonOutput title="Json Output" content={(schema?.output as any) || {}} />
-          </div>
+          <Card title="JSON Output">
+            <JsonOutput title="" content={(schema?.output as any) || {}} />
+          </Card>
         </form>
       </Suspense>
-    </>
+    </div>
   )
 }

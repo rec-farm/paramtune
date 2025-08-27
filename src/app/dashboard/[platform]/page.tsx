@@ -2,6 +2,10 @@ import { Suspense } from 'react'
 import { revalidatePath } from 'next/cache'
 import PageTitle from '@/components/PageTitle'
 import { getPlatform, savePlatform } from '@/models/Platform'
+import Card from '@/components/ui/Card'
+import Badge from '@/components/ui/Badge'
+import Input from '@/components/ui/Input'
+import Button from '@/components/ui/Button'
 
 export const dynamic = 'force-dynamic'
 
@@ -12,11 +16,13 @@ type VersionTagProps = {
 }
 
 const VersionTag = ({ version, latest }: VersionTagProps) => (
-  <li className="text-sm bg-blue-900 text-white px-2 p-1 rounded relative font-mono">
-    {latest && (
-      <div className="w-2 h-2 animate-pulse bg-blue-400 absolute top-0 left-0 rounded-full" />
-    )}
-    v{version}
+  <li>
+    <Badge className="relative">
+      {latest && (
+        <span className="absolute -left-1 -top-1 h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+      )}
+      v{version}
+    </Badge>
   </li>
 )
 
@@ -41,40 +47,25 @@ export default async function Page({ params }: { params: any }) {
   }
 
   return (
-    <>
+    <div className="space-y-6">
       <PageTitle platform={(params as { platform: string }).platform} />
 
-      <div>
+      <Card title="Versions">
         <Suspense fallback={<div>Loading...</div>}>
-          <h2 className="my-2 text-xl font-mono">Versions</h2>
-
-          <ul className="flex gap-1">
-            {platform?.versions?.reverse().map((version: string, index) => (
-              <VersionTag
-                latest={index === 0}
-                key={version}
-                version={version}
-              />
+          <ul className="flex flex-wrap gap-2">
+            {platform?.versions?.slice().reverse().map((version: string, index) => (
+              <VersionTag latest={index === 0} key={version} version={version} />
             ))}
           </ul>
         </Suspense>
-      </div>
+      </Card>
 
-      <section className="py-4 font-mono">
-        <h2 className="text-2xl ">Add Version</h2>
-
-        <form action={createVersion} className="py-2 flex gap-2">
-          <input
-            className="border-white border-2 bg-transparent p-2 rounded flex-1"
-            type="text"
-            name="versionName"
-            placeholder="Version name"
-          />
-          <button className="p-2 border-white border-2 rounded w-auto">
-            Submit
-          </button>
+      <Card title="Add Version">
+        <form action={createVersion} className="flex gap-2">
+          <Input type="text" name="versionName" placeholder="Version name" />
+          <Button type="submit" variant="primary">Create</Button>
         </form>
-      </section>
-    </>
+      </Card>
+    </div>
   )
 }

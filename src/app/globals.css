@@ -2,26 +2,46 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Vercel-inspired neutral dark theme */
 :root {
-  --foreground-rgb: 0, 0, 0;
-  --background-start-rgb: 214, 219, 220;
-  --background-end-rgb: 255, 255, 255;
+  --ring: 255 255 255 / 0.08;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --foreground-rgb: 255, 255, 255;
-    --background-start-rgb: 0, 0, 0;
-    --background-end-rgb: 0, 0, 0;
-  }
+html, body {
+  height: 100%;
 }
 
 body {
-  color: rgb(var(--foreground-rgb));
-  background: linear-gradient(
-      to bottom,
-      transparent,
-      rgb(var(--background-end-rgb))
-    )
-    rgb(var(--background-start-rgb));
+  background-color: rgb(10 10 11);
+  color: rgb(229 229 231);
+}
+
+/* Subtle grid background */
+.bg-grid {
+  background-image: linear-gradient(to right, rgb(255 255 255 / 0.04) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(255 255 255 / 0.04) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Components */
+.card {
+  @apply rounded-xl border border-white/10 bg-neutral-900/60 backdrop-blur;
+}
+
+.btn {
+  @apply inline-flex items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors;
+}
+.btn-primary {
+  @apply bg-white text-black hover:bg-neutral-200;
+}
+.btn-ghost {
+  @apply bg-transparent text-neutral-200 hover:bg-white/5 border border-white/10;
+}
+
+.input {
+  @apply w-full rounded-md bg-neutral-900/60 border border-white/10 px-3 py-2 text-sm placeholder:text-neutral-500 focus:outline-none focus:ring-2 focus:ring-white/10;
+}
+
+.badge {
+  @apply inline-flex items-center rounded-full border border-white/10 bg-neutral-900/60 px-2 py-0.5 text-xs text-neutral-300;
 }

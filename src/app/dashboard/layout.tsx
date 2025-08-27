@@ -1,4 +1,4 @@
-import NavigationPlatforms from '@/components/NavigationPlatforms'
+import Sidebar from '@/components/Sidebar'
 
 type PageProps = {
   children: React.ReactNode
@@ -6,21 +6,14 @@ type PageProps = {
 
 export default async function DashboardLayout({ children }: PageProps) {
   return (
-    <div className="flex flex-col">
-      <div className="p-6 border-b-2 border-slate-400">
-        <h1 className="text-4xl font-mono">Dashboard</h1>
+    <div className="mx-auto max-w-7xl px-4">
+      <div className="grid grid-cols-1 md:grid-cols-[16rem_1fr] gap-6 py-6">
+        <Sidebar />
+        <main className="min-h-[60vh]">
+          <h1 className="text-2xl font-semibold tracking-tight mb-4">Dashboard</h1>
+          {children}
+        </main>
       </div>
-
-      <section className="flex pr-6 flex-1">
-        <aside className="p-6 border-r-2 border-slate-400">
-          <h2 className="text-2xl font-mono">Versions</h2>
-          <NavigationPlatforms />
-        </aside>
-
-        <main className="p-6 w-full">{children}</main>
-      </section>
-
-      {/* <footer className="border-t-2 border-slate-400">yo</footer> */}
     </div>
   )
 }

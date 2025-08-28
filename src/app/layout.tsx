@@ -4,11 +4,16 @@ import './globals.css'
 
 import TopNav from '@/components/TopNav'
 
-const inter = Inter({ subsets: ['latin'] })
+const inter = Inter({
+  subsets: ['latin'],
+  variable: '--font-inter',
+  display: 'swap',
+})
 
 export const metadata: Metadata = {
-  title: 'Remote Config',
-  description: 'Manage platform schemas and versions with a clean, modern UI.',
+  title: 'ParamTune - Configuration Management',
+  description:
+    'Manage platform schemas and versions with a fast, elegant interface. Built for modern teams.',
 }
 
 export default function RootLayout({
@@ -17,10 +22,8 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <body
-        className={`${inter.className} antialiased min-h-dvh text-neutral-200 bg-neutral-950`}
-      >
+    <html lang="en" className={inter.variable}>
+      <body className="font-sans antialiased min-h-screen bg-background text-foreground">
         <TopNav />
         <div className="relative">{children}</div>
       </body>

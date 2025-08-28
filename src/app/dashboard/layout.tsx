@@ -6,14 +6,21 @@ type PageProps = {
 
 export default async function DashboardLayout({ children }: PageProps) {
   return (
-    <div className="mx-auto max-w-7xl px-4">
-      <div className="grid grid-cols-1 md:grid-cols-[16rem_1fr] gap-6 py-6">
-        <Sidebar />
-        <main className="min-h-[60vh]">
-          <h1 className="text-2xl font-semibold tracking-tight mb-4">Dashboard</h1>
-          {children}
-        </main>
-      </div>
+    <div className="flex h-[calc(100vh-4rem)] overflow-hidden">
+      <Sidebar />
+      <main className="flex-1 overflow-auto">
+        <div className="p-8 max-w-6xl mx-auto">
+          <div className="mb-8">
+            <h1 className="text-3xl font-bold tracking-tight gradient-text mb-2">
+              Dashboard
+            </h1>
+            <p className="text-muted-foreground">
+              Manage your platform configurations and schemas
+            </p>
+          </div>
+          <div className="animate-in">{children}</div>
+        </div>
+      </main>
     </div>
   )
 }

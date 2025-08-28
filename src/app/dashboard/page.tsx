@@ -1,6 +1,10 @@
 import { revalidatePath } from 'next/cache'
 
 import { getPlatforms, savePlatform } from '@/models/Platform'
+import Card from '@/components/ui/Card'
+import Input from '@/components/ui/Input'
+import Button from '@/components/ui/Button'
+import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
 
@@ -20,33 +24,28 @@ export default async function Page() {
   }
 
   return (
-    <>
-      <h2 className="text-4xl font-mono">Platforms</h2>
-      <div>
-        <ul>
+    <div className="space-y-6">
+      <Card title="Platforms">
+        <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {platforms.map((platform: any) => (
-            <li className="text-white" key={platform.id}>
-              {platform.name}
+            <li key={platform.id} className="card p-3">
+              <div className="flex items-center justify-between">
+                <div className="text-sm font-medium">{platform.name}</div>
+                <Link className="btn btn-ghost h-8 px-3" href={`/dashboard/${platform.name}`}>
+                  Open
+                </Link>
+              </div>
             </li>
           ))}
         </ul>
-      </div>
+      </Card>
 
-      <section className="py-4 font-mono">
-        <h2 className="text-2xl ">Add Platform</h2>
-
-        <form action={createPlatform} className="py-2 flex gap-2">
-          <input
-            className="border-white border-2 bg-transparent p-2 rounded flex-1"
-            type="text"
-            name="platformName"
-            placeholder="Platform name"
-          />
-          <button className="p-2 border-white border-2 rounded w-auto">
-            Submit
-          </button>
+      <Card title="Add Platform">
+        <form action={createPlatform} className="flex gap-2">
+          <Input type="text" name="platformName" placeholder="Platform name" />
+          <Button type="submit" variant="primary">Create</Button>
         </form>
-      </section>
-    </>
+      </Card>
+    </div>
   )
 }

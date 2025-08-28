@@ -1,14 +1,13 @@
-import { Suspense } from 'react'
-import { revalidatePath } from 'next/cache'
 import PageTitle from '@/components/PageTitle'
-import { getPlatform, savePlatform } from '@/models/Platform'
-import Card from '@/components/ui/Card'
 import Badge from '@/components/ui/Badge'
-import Input from '@/components/ui/Input'
 import Button from '@/components/ui/Button'
+import Card from '@/components/ui/Card'
+import Input from '@/components/ui/Input'
+import { getPlatform, savePlatform } from '@/models/Platform'
+import { revalidatePath } from 'next/cache'
+import { Suspense } from 'react'
 
 export const dynamic = 'force-dynamic'
-
 
 type VersionTagProps = {
   latest: boolean
@@ -26,15 +25,41 @@ const VersionTag = ({ version, latest }: VersionTagProps) => (
   </li>
 )
 
-export default async function Page({ params }: { params: any }) {
-  const platform = await getPlatform((params as { platform: string }).platform)
+export default async function Page({
+  params,
+}: {
+  params: Promise<{ platform: string }>
+}) {
+  const resolvedParams = await params
+  const platformName = decodeURIComponent(resolvedParams.platform)
+  const platform = await getPlatform(platformName)
+
+  if (!platform) {
+    return (
+      <div className="space-y-6">
+        <PageTitle platform={platformName} />
+        <Card
+          title="Platform Not Found"
+          subtitle="The platform you're looking for doesn't exist"
+        >
+          <p className="text-muted-foreground">
+            Platform &quot;{platformName}&quot; could not be found. It may have
+            been deleted or never existed.
+          </p>
+        </Card>
+      </div>
+    )
+  }
 
   async function createVersion(formData: FormData) {
     'use server'
 
-    const platform = await getPlatform((params as { platform: string }).platform)
+    const resolvedParams = await params
+    const platformName = decodeURIComponent(resolvedParams.platform)
+    const platform = await getPlatform(platformName)
+
     if (!platform) {
-      throw new Error('Platform not found')
+      throw new Error(`Platform not found: "${platformName}"`)
     }
 
     const versionName = formData.get('versionName') as string
@@ -43,19 +68,26 @@ export default async function Page({ params }: { params: any }) {
       versions: [...(platform.versions || []), versionName],
     })
 
-    revalidatePath('/dashboard/[platform]')
+    revalidatePath(`/dashboard/${encodeURIComponent(platform.name)}`)
   }
 
   return (
     <div className="space-y-6">
-      <PageTitle platform={(params as { platform: string }).platform} />
+      <PageTitle platform={platformName} />
 
       <Card title="Versions">
         <Suspense fallback={<div>Loading...</div>}>
           <ul className="flex flex-wrap gap-2">
-            {platform?.versions?.slice().reverse().map((version: string, index) => (
-              <VersionTag latest={index === 0} key={version} version={version} />
-            ))}
+            {platform?.versions
+              ?.slice()
+              .reverse()
+              .map((version: string, index) => (
+                <VersionTag
+                  latest={index === 0}
+                  key={version}
+                  version={version}
+                />
+              ))}
           </ul>
         </Suspense>
       </Card>
@@ -63,7 +95,9 @@ export default async function Page({ params }: { params: any }) {
       <Card title="Add Version">
         <form action={createVersion} className="flex gap-2">
           <Input type="text" name="versionName" placeholder="Version name" />
-          <Button type="submit" variant="primary">Create</Button>
+          <Button type="submit" variant="primary">
+            Create
+          </Button>
         </form>
       </Card>
     </div>

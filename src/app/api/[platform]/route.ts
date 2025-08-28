@@ -5,10 +5,15 @@ import { getPlatform, savePlatform } from '@/models/Platform'
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
-export async function GET(_request: Request, { params }: any) {
+export async function GET(
+  _request: Request,
+  { params }: { params: Promise<{ platform: string }> }
+) {
   try {
-    const { platform } = params as { platform: string }
-    const data = await getPlatform(platform)
+    const resolvedParams = await params
+    const { platform } = resolvedParams
+    const platformName = decodeURIComponent(platform)
+    const data = await getPlatform(platformName)
 
     if (!data) {
       return NextResponse.json({ error: 'Platform not found' }, { status: 404 })
@@ -20,22 +25,33 @@ export async function GET(_request: Request, { params }: any) {
     })
   } catch (error: any) {
     console.error('GET /api/[platform] error', error)
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+    return NextResponse.json(
+      { error: 'Internal Server Error' },
+      { status: 500 }
+    )
   }
 }
 
-export async function POST(request: Request, { params }: any) {
+export async function POST(
+  request: Request,
+  { params }: { params: Promise<{ platform: string }> }
+) {
   try {
-    const { platform } = params as { platform: string }
+    const resolvedParams = await params
+    const { platform } = resolvedParams
+    const platformName = decodeURIComponent(platform)
     const body = await request.json().catch(() => null)
     if (!body || typeof body !== 'object') {
       return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
     }
 
-    await savePlatform(platform, body as Record<string, unknown>)
+    await savePlatform(platformName, body as Record<string, unknown>)
     return NextResponse.json({ ok: true }, { status: 201 })
   } catch (error: any) {
     console.error('POST /api/[platform] error', error)
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+    return NextResponse.json(
+      { error: 'Internal Server Error' },
+      { status: 500 }
+    )
   }
 }

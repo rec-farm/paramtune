@@ -1,26 +1,41 @@
 import { NextResponse } from 'next/server'
 
-import { getVersions, getVersion } from '@/models/Version'
+import { getVersion, getVersions } from '@/models/Version'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
-export async function GET(_request: Request, { params }: any) {
+export async function GET(
+  _request: Request,
+  { params }: { params: Promise<{ platform: string; version: string }> }
+) {
   try {
-    const { platform, version } = params as { platform: string; version: string }
+    const resolvedParams = await params
+    const { platform, version } = resolvedParams
+    const platformName = decodeURIComponent(platform)
+    const versionName = decodeURIComponent(version)
 
     if (version === 'versions') {
-      const list = await getVersions(platform)
-      return NextResponse.json(list, { status: 200, headers: { 'Cache-Control': 'no-store' } })
+      const list = await getVersions(platformName)
+      return NextResponse.json(list, {
+        status: 200,
+        headers: { 'Cache-Control': 'no-store' },
+      })
     }
 
-    const data = await getVersion(platform, version)
+    const data = await getVersion(platformName, versionName)
     if (!data) {
       return NextResponse.json({ error: 'Version not found' }, { status: 404 })
     }
-    return NextResponse.json(data, { status: 200, headers: { 'Cache-Control': 'no-store' } })
+    return NextResponse.json(data, {
+      status: 200,
+      headers: { 'Cache-Control': 'no-store' },
+    })
   } catch (error: any) {
     console.error('GET /api/[platform]/[version] error', error)
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+    return NextResponse.json(
+      { error: 'Internal Server Error' },
+      { status: 500 }
+    )
   }
 }

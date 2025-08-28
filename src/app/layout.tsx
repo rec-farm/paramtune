@@ -1,6 +1,7 @@
-import './globals.css'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
+import './globals.css'
+
 import TopNav from '@/components/TopNav'
 
 const inter = Inter({ subsets: ['latin'] })
@@ -17,11 +18,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body className={`${inter.className} antialiased min-h-dvh text-neutral-200 bg-neutral-950`}>
+      <body
+        className={`${inter.className} antialiased min-h-dvh text-neutral-200 bg-neutral-950`}
+      >
         <TopNav />
-        <div className="relative">
-          {children}
-        </div>
+        <div className="relative">{children}</div>
       </body>
     </html>
   )

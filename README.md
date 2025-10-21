@@ -10,7 +10,7 @@ Paramtune is a Next.js app for managing platform schemas and versioned feature c
 ## Requirements
 
 - Node.js 20–22 (LTS recommended)
-- Yarn Classic 1.x
+- pnpm 9.x
 - Redis accessible locally or through a cloud provider
 
 ## Setup
@@ -24,24 +24,24 @@ cp .env.local.example .env.local
 2) Install dependencies
 
 ```bash
-yarn install
+pnpm install
 ```
 
 3) Run the dev server
 
 ```bash
-yarn dev
+pnpm dev
 ```
 
 Open http://localhost:3000
 
 ## Scripts
 
-- `yarn dev` – start dev server
-- `yarn build` – production build
-- `yarn start` – run production server locally
-- `yarn lint` – lint with ESLint
-- `yarn typecheck` – TypeScript type check
+- `pnpm dev` – start dev server
+- `pnpm build` – production build
+- `pnpm start` – run production server locally
+- `pnpm lint` – lint with ESLint
+- `pnpm typecheck` – TypeScript type check
 
 ## Environment Variables
 
@@ -79,4 +79,4 @@ Open http://localhost:3000
 - Redis connection fails: verify `REDIS_URL` or host/port and firewall
 - 404s on APIs: ensure platform and versions exist (create via dashboard or POST APIs)
 - CORS errors: set `CORS_ORIGIN` to the correct origin (including protocol)
-- Type errors: run `yarn typecheck`
+- Type errors: run `pnpm typecheck`

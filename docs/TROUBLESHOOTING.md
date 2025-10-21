@@ -15,4 +15,4 @@
 - Create the platform and add versions first via dashboard or POST endpoints.
 
 ## Type errors
-- Run `yarn typecheck` locally to see details.
+- Run `pnpm typecheck` locally to see details.

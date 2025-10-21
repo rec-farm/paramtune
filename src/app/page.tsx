@@ -2,6 +2,7 @@ import Badge from '@/components/ui/Badge'
 import Button from '@/components/ui/Button'
 import Card from '@/components/ui/Card'
 import Link from 'next/link'
+import { Rocket, Edit, Eye, Link2, Moon, Keyboard, Wrench } from 'lucide-react'
 
 export default function Home() {
   return (
@@ -12,8 +13,9 @@ export default function Home() {
       <section className="relative mx-auto max-w-6xl px-6 py-24 text-center">
         <div className="mx-auto max-w-4xl space-y-8">
           <div className="space-y-6 animate-in">
-            <Badge variant="secondary" className="mb-4">
-              🚀 Powerful Configuration Management
+            <Badge variant="secondary" className="mb-4 gap-2">
+              <Rocket className="w-4 h-4" />
+              Powerful Configuration Management
             </Badge>
             <h1 className="text-6xl md:text-7xl font-bold tracking-tighter">
               <span className="gradient-text">ParamTune</span>
@@ -178,32 +180,32 @@ export default function Home() {
               title: 'Schema Editing',
               description:
                 'Edit JSON schemas with live preview and safe updates.',
-              icon: '📝',
+              icon: <Edit className="w-5 h-5" />,
             },
             {
               title: 'Live Preview',
               description: 'Track and manage platform versions with badges.',
-              icon: '👁️',
+              icon: <Eye className="w-5 h-5" />,
             },
             {
               title: 'API Routes',
               description: 'Access schemas via streamlined API routes.',
-              icon: '🔗',
+              icon: <Link2 className="w-5 h-5" />,
             },
             {
               title: 'Dark UI',
               description: 'Minimal, accessible, Vercel-inspired interface.',
-              icon: '🌙',
+              icon: <Moon className="w-5 h-5" />,
             },
             {
               title: 'Keyboard First',
               description: 'Fast flows, clear focus states and shortcuts.',
-              icon: '⌨️',
+              icon: <Keyboard className="w-5 h-5" />,
             },
             {
               title: 'Extensible',
               description: 'Composable components for rapid customization.',
-              icon: '🔧',
+              icon: <Wrench className="w-5 h-5" />,
             },
           ].map((feature, index) => (
             <Card
@@ -212,7 +214,7 @@ export default function Home() {
             >
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
-                  <span className="text-2xl">{feature.icon}</span>
+                  <div className="text-primary">{feature.icon}</div>
                   <h3 className="font-semibold group-hover:text-primary transition-colors">
                     {feature.title}
                   </h3>

@@ -15,14 +15,12 @@ type VersionTagProps = {
 }
 
 const VersionTag = ({ version, latest }: VersionTagProps) => (
-  <li>
-    <Badge className="relative">
-      {latest && (
-        <span className="absolute -left-1 -top-1 h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-      )}
-      v{version}
-    </Badge>
-  </li>
+  <Badge className="relative">
+    {latest && (
+      <span className="absolute -left-1 -top-1 h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+    )}
+    v{version}
+  </Badge>
 )
 
 export default async function Page({
@@ -82,11 +80,12 @@ export default async function Page({
               ?.slice()
               .reverse()
               .map((version: string, index) => (
-                <VersionTag
-                  latest={index === 0}
-                  key={version}
-                  version={version}
-                />
+                <li key={version}>
+                  <VersionTag
+                    latest={index === 0}
+                    version={version}
+                  />
+                </li>
               ))}
           </ul>
         </Suspense>

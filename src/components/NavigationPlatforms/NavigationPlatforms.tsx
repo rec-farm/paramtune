@@ -14,20 +14,18 @@ type VersionProps = {
 }
 
 const Version = ({ platform, version }: VersionProps) => (
-  <li>
-    <Link
-      className="block px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-all duration-200 group"
-      href="/dashboard/[platform]/[version]"
-      as={`/dashboard/${encodeURIComponent(platform)}/${encodeURIComponent(
-        version
-      )}`}
-    >
-      <div className="flex items-center justify-between">
-        <span className="font-mono">v{version}</span>
-        <div className="w-2 h-2 rounded-full bg-green-500 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-      </div>
-    </Link>
-  </li>
+  <Link
+    className="block px-3 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-accent rounded-md transition-all duration-200 group"
+    href="/dashboard/[platform]/[version]"
+    as={`/dashboard/${encodeURIComponent(platform)}/${encodeURIComponent(
+      version
+    )}`}
+  >
+    <div className="flex items-center justify-between">
+      <span className="font-mono">v{version}</span>
+      <div className="w-2 h-2 rounded-full bg-green-500 opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+    </div>
+  </Link>
 )
 
 const LoadingSkeleton = () => (
@@ -76,11 +74,12 @@ const NavigationPlatforms = async () => {
               {platform.versions && platform.versions.length > 0 && (
                 <ul className="ml-4 space-y-1 border-l border-border/50">
                   {platform.versions.map((version) => (
-                    <Version
-                      key={`${platform.name}-${version}`}
-                      platform={platform.name}
-                      version={version}
-                    />
+                    <li key={`${platform.name}-${version}`}>
+                      <Version
+                        platform={platform.name}
+                        version={version}
+                      />
+                    </li>
                   ))}
                 </ul>
               )}

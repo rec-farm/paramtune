@@ -11,30 +11,30 @@
     "analyze": "ANALYZE=true next build"
   },
   "dependencies": {
-    "@uiw/react-json-view": "^2.0.0-alpha.37",
+    "@uiw/react-json-view": "2.0.0-alpha.39",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
-    "ioredis": "^5.7.0",
-    "lucide-react": "^0.542.0",
-    "next": "15.5.2",
-    "react": "^19.1.1",
-    "react-dom": "^19.1.1",
-    "semver": "^7.7.2",
+    "ioredis": "^5.8.2",
+    "lucide-react": "^0.546.0",
+    "next": "15.5.6",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "semver": "^7.7.3",
     "tailwind-merge": "^3.3.1",
     "tailwindcss-animate": "^1.0.7",
-    "vanilla-jsoneditor": "^3.8.0"
+    "vanilla-jsoneditor": "^3.10.0"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4.1.12",
-    "@types/node": "^24.3.0",
-    "@types/react": "^19.1.11",
-    "@types/react-dom": "^19.1.8",
-    "@types/semver": "^7.7.0",
+    "@tailwindcss/postcss": "^4.1.15",
+    "@types/node": "^24.9.1",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
+    "@types/semver": "^7.7.1",
     "autoprefixer": "^10.4.21",
-    "eslint": "^9.34.0",
-    "eslint-config-next": "15.5.2",
+    "eslint": "^9.38.0",
+    "eslint-config-next": "15.5.6",
     "postcss": "^8.5.6",
-    "tailwindcss": "^4.1.12",
-    "typescript": "^5.9.2"
+    "tailwindcss": "^4.1.15",
+    "typescript": "^5.9.3"
   }
 }

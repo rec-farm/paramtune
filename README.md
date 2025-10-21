@@ -1,11 +1,13 @@
-Paramtune is a Next.js app for managing platform schemas and versioned feature configuration with dependency resolution and Redis persistence.
+Paramtune is a Next.js application for managing platform schemas and versioned feature configuration with dependency resolution and Redis persistence.
 
 ## Overview
 
-- Next.js 15 (App Router), React 19, TypeScript 5.9
-- Tailwind CSS 4 for styling
-- Redis (via ioredis) for persistence
-- JSON schema composition with "@extends" and semver-aware dependency resolution
+- **Next.js 15** (App Router), **React 19**, **TypeScript 5.9**
+- **Tailwind CSS 4** for styling with shadcn/ui components
+- **Redis** (via ioredis) for persistence and caching
+- **JSON schema composition** with `@extends` and semver-aware dependency resolution
+- **Real-time JSON editing** with live preview and validation
+- **Dashboard UI** for managing platforms, versions, and schemas
 
 ## Requirements
 
@@ -13,9 +15,9 @@ Paramtune is a Next.js app for managing platform schemas and versioned feature c
 - pnpm 9.x
 - Redis accessible locally or through a cloud provider
 
-## Setup
+## Quick Start
 
-1) Copy env example and adjust values
+1) Copy environment example and configure
 
 ```bash
 cp .env.local.example .env.local
@@ -27,7 +29,7 @@ cp .env.local.example .env.local
 pnpm install
 ```
 
-3) Run the dev server
+3) Start development server
 
 ```bash
 pnpm dev
@@ -35,48 +37,88 @@ pnpm dev
 
 Open http://localhost:3000
 
-## Scripts
+## Development Commands
 
-- `pnpm dev` – start dev server
+- `pnpm dev` – start development server with hot reload
 - `pnpm build` – production build
 - `pnpm start` – run production server locally
 - `pnpm lint` – lint with ESLint
-- `pnpm typecheck` – TypeScript type check
+- `pnpm typecheck` – TypeScript type checking
+- `pnpm analyze` – bundle analysis with webpack-bundle-analyzer
 
 ## Environment Variables
 
 - `CORS_ORIGIN` – Allowed origin (e.g., http://localhost:3000)
-- `REDIS_URL` – Full connection URL (preferred)
+- `REDIS_URL` – Full Redis connection URL (preferred)
 - `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD`, `REDIS_DB` – Individual Redis settings when URL is not provided
 
-## Deployment (Vercel)
+## Features
 
-1) Push to a GitHub/GitLab repo
-2) Import the project in Vercel, framework: Next.js
-3) Build command: `next build` (default)
-4) Output dir: `.next` (default)
-5) Set environment variables in Vercel Project Settings → Environment Variables
-6) Optionally set `CORS_ORIGIN` to your production domain
+### Schema Management
+- Create and manage platform schemas with JSON editor
+- Support for `@extends` directive for schema composition
+- Semver-aware dependency resolution
+- Real-time preview of resolved schemas
+- Circular dependency detection
 
-`vercel.json` adds basic security headers and routing. Middleware handles CORS.
+### Dashboard
+- Platform overview with version management
+- Interactive JSON editor with syntax highlighting
+- Live schema validation and preview
+- Navigation between platforms and versions
 
-## API
+### API Endpoints
+- RESTful API for platform and schema management
+- CORS support via middleware
+- JSON responses with proper error handling
 
-- `GET /api/[platform]` → latest platform metadata or 404
-- `POST /api/[platform]` → create/update platform metadata `{ name, versions }`
-- `GET /api/[platform]/versions` → list of versions
-- `POST /api/[platform]/versions` → append a version `{ version }`
-- `GET /api/[platform]/[version]` → latest schema for version or 404
+## Deployment
+
+### Vercel (Recommended)
+
+1) Push to GitHub/GitLab repository
+2) Import project in Vercel (Next.js framework)
+3) Configure environment variables in Vercel dashboard
+4) Deploy – automatic on pushes to main branch
+
+### Docker
+
+```bash
+# Development
+docker-compose -f docker-compose.dev.yml up --build
+
+# Production
+docker-compose up --build -d
+```
 
 ## Architecture
 
-- `src/models/*` – server-side Redis access and business logic
-- `src/app/*` – App Router pages and API routes
-- Dependency resolution: `Schema.saveSchema` scans `@extends` references, resolves semver ranges against platform versions, produces a merged output, and cascades updates to dependents.
+- `src/models/` – Server-side Redis access and business logic
+- `src/app/` – App Router pages and API routes
+- `src/components/` – Reusable React components
+- `connections/redis.ts` – Redis client configuration
+- `middleware.ts` – CORS and security headers
+
+### Key Components
+- **Platform Model** – Platform metadata and version management
+- **Schema Model** – Schema storage, dependency resolution, and cascade updates
+- **JSON Editor** – Interactive schema editing with live preview
+- **Navigation** – Platform and version navigation components
+
+## API Documentation
+
+See [docs/API.md](docs/API.md) for detailed API endpoint documentation.
 
 ## Troubleshooting
 
-- Redis connection fails: verify `REDIS_URL` or host/port and firewall
-- 404s on APIs: ensure platform and versions exist (create via dashboard or POST APIs)
-- CORS errors: set `CORS_ORIGIN` to the correct origin (including protocol)
-- Type errors: run `pnpm typecheck`
+- **Redis connection**: Verify `REDIS_URL` or host/port configuration
+- **404 errors**: Ensure platforms and versions exist (create via dashboard)
+- **CORS issues**: Set `CORS_ORIGIN` to exact origin including protocol
+- **Type errors**: Run `pnpm typecheck` for detailed diagnostics
+
+## Contributing
+
+1. Follow existing code style and conventions
+2. Run `pnpm lint` and `pnpm typecheck` before committing
+3. Use `@/*` path aliases for imports from `src/`
+4. Mark client components with `'use client'` directive

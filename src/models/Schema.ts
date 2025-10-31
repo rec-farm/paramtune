@@ -34,7 +34,7 @@ function findDependenciesInContent(content: Record<string, unknown>) {
 type ResolvedDependency = { platform: string; version: string }
 
 async function resolveDependencies(
-  dependencies: string[],
+  dependencies: string[]
 ): Promise<ResolvedDependency[]> {
   const platforms = await getPlatforms()
 
@@ -44,7 +44,7 @@ async function resolveDependencies(
 
   function resolveVersion(
     platform: Platform,
-    requested: string,
+    requested: string
   ): string | null {
     if (requested === 'latest') {
       const sorted = [...(platform.versions || [])].sort(semver.rcompare)
@@ -65,7 +65,7 @@ async function resolveDependencies(
   for (const dependency of dependencies) {
     const [rawPlatform, rawVersion = 'latest'] = dependency.split('/') as [
       string,
-      string | undefined,
+      string | undefined
     ]
 
     const platform = findPlatform(rawPlatform)
@@ -76,7 +76,7 @@ async function resolveDependencies(
     const chosenVersion = resolveVersion(platform, rawVersion || 'latest')
     if (!chosenVersion) {
       throw new Error(
-        `No version found for ${rawPlatform} satisfying "${rawVersion}"`,
+        `No version found for ${rawPlatform} satisfying "${rawVersion}"`
       )
     }
 
@@ -92,7 +92,7 @@ function isPlainObject(value: unknown): value is Record<string, unknown> {
 
 function deepMerge(
   base: Record<string, unknown>,
-  override: Record<string, unknown>,
+  override: Record<string, unknown>
 ): Record<string, unknown> {
   const result: Record<string, unknown> = { ...base }
   for (const [key, value] of Object.entries(override)) {
@@ -109,7 +109,7 @@ function deepMerge(
 
 async function getLatestSchemaContent(
   platform: string,
-  version: string,
+  version: string
 ): Promise<Record<string, unknown>> {
   const base = await getSchema(platform, version)
   return (base as Schema)?.content ?? {}
@@ -117,10 +117,12 @@ async function getLatestSchemaContent(
 
 async function processNodeWithExtends(
   node: unknown,
-  visited: Set<string>,
+  visited: Set<string>
 ): Promise<unknown> {
   if (Array.isArray(node)) {
-    return Promise.all(node.map((item) => processNodeWithExtends(item, visited)))
+    return Promise.all(
+      node.map((item) => processNodeWithExtends(item, visited))
+    )
   }
   if (!isPlainObject(node)) {
     return node
@@ -132,7 +134,7 @@ async function processNodeWithExtends(
     const ref = node['@extends'] as string
     const [platform, versionRange = 'latest'] = ref.split('/') as [
       string,
-      string | undefined,
+      string | undefined
     ]
 
     const key = `${platform}/${versionRange}`
@@ -145,18 +147,18 @@ async function processNodeWithExtends(
     const concrete = deps[0]
     const baseContent = await getLatestSchemaContent(
       concrete.platform,
-      concrete.version,
+      concrete.version
     )
     const processedBase = (await processNodeWithExtends(
       baseContent,
-      visited,
+      visited
     )) as Record<string, unknown>
 
     const override = { ...node }
     delete override['@extends']
     const processedOverride = (await processNodeWithExtends(
       override,
-      visited,
+      visited
     )) as Record<string, unknown>
 
     result = deepMerge(processedBase, processedOverride)
@@ -165,7 +167,7 @@ async function processNodeWithExtends(
       Object.entries(node).map(async ([k, v]) => [
         k,
         await processNodeWithExtends(v, visited),
-      ]),
+      ])
     )
     result = Object.fromEntries(entries)
   }
@@ -175,7 +177,7 @@ async function processNodeWithExtends(
 
 export async function getSchema(
   platform: string,
-  version: string,
+  version: string
 ): Promise<Schema | Record<string, never>> {
   'use server'
 
@@ -185,7 +187,7 @@ export async function getSchema(
     '-inf',
     'LIMIT',
     0,
-    1,
+    1
   )
   return schema ? (JSON.parse(schema) as Schema) : {}
 }
@@ -193,7 +195,7 @@ export async function getSchema(
 export async function saveSchema(
   platform: string,
   version: string,
-  content: Record<string, unknown>,
+  content: Record<string, unknown>
 ) {
   'use server'
 
@@ -212,7 +214,7 @@ export async function saveSchema(
   await redis.zadd(
     getKey(platform, version),
     Date.now(),
-    JSON.stringify({ dependencies, content, output }),
+    JSON.stringify({ dependencies, content, output })
   )
 
   const resolved = await resolveDependencies(dependencies)
@@ -220,7 +222,7 @@ export async function saveSchema(
   for (const dep of resolved) {
     await redis.sadd(
       `schemas:dependents:${dep.platform}:${dep.version}`,
-      selfId,
+      selfId
     )
   }
 
@@ -237,10 +239,52 @@ export async function previewJsonOutput(content: Record<string, unknown>) {
   return JSON.stringify(output)
 }
 
+export type SchemaHistoryEntry = {
+  timestamp: number
+  content: Record<string, unknown>
+  dependencies: string[]
+  output: Record<string, unknown>
+}
+
+export async function getSchemaHistoryWithTimestamps(
+  platform: string,
+  version: string,
+  limit: number = 50
+): Promise<Array<SchemaHistoryEntry & { timestamp: number }>> {
+  'use server'
+
+  const schemasWithScores = await redis.zrevrangebyscore(
+    getKey(platform, version),
+    '+inf',
+    '-inf',
+    'WITHSCORES',
+    'LIMIT',
+    0,
+    limit
+  )
+
+  const result: Array<SchemaHistoryEntry & { timestamp: number }> = []
+
+  for (let i = 0; i < schemasWithScores.length; i += 2) {
+    const schema = schemasWithScores[i]
+    const timestamp = parseInt(schemasWithScores[i + 1])
+    const parsed = JSON.parse(schema) as Schema
+
+    result.push({
+      timestamp,
+      content: parsed.content,
+      dependencies: parsed.dependencies,
+      output: parsed.output,
+    })
+  }
+
+  return result
+}
+
 async function cascadeDependents(
   platform: string,
   version: string,
-  visited: Set<string>,
+  visited: Set<string>
 ) {
   const dependentsKey = `schemas:dependents:${platform}:${version}`
   const dependents = await redis.smembers(dependentsKey)

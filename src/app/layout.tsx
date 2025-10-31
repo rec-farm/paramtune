@@ -2,8 +2,6 @@ import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
 
-import TopNav from '@/components/TopNav'
-
 const inter = Inter({
   subsets: ['latin'],
   variable: '--font-inter',
@@ -24,7 +22,6 @@ export default function RootLayout({
   return (
     <html lang="en" className={inter.variable}>
       <body className="font-sans antialiased min-h-screen bg-background text-foreground">
-        <TopNav />
         <div className="relative">{children}</div>
       </body>
     </html>

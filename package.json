@@ -11,9 +11,9 @@
     "analyze": "ANALYZE=true next build"
   },
   "dependencies": {
-    "@uiw/react-json-view": "2.0.0-alpha.39",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
     "ioredis": "^5.8.2",
     "lucide-react": "^0.546.0",
     "next": "15.5.6",
@@ -21,8 +21,7 @@
     "react-dom": "^19.2.0",
     "semver": "^7.7.3",
     "tailwind-merge": "^3.3.1",
-    "tailwindcss-animate": "^1.0.7",
-    "vanilla-jsoneditor": "^3.10.0"
+    "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.1.15",

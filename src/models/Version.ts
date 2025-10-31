@@ -16,8 +16,8 @@ export async function getVersions(platformId: string) {
 export async function getVersion(platform: string, id: string) {
   'use server'
 
-  const [version] = await redis.zrevrangebyscore(`platforms:${platform}:schemas:${id}`, '+inf', '-inf', 'LIMIT', 0, 1)
-  return version ? (JSON.parse(version) as Version) : null
+  const [version] = await redis.zrevrangebyscore(`schemas:${platform}:${id}`, '+inf', '-inf', 'LIMIT', 0, 1)
+  return version ? (JSON.parse(version) as Version) : { content: '' }
 }
 
 export async function saveVersion(platform: string, id: string, data: Record<string, unknown>) {

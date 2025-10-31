@@ -81,10 +81,7 @@ export default async function Page({
               .reverse()
               .map((version: string, index) => (
                 <li key={version}>
-                  <VersionTag
-                    latest={index === 0}
-                    version={version}
-                  />
+                  <VersionTag latest={index === 0} version={version} />
                 </li>
               ))}
           </ul>

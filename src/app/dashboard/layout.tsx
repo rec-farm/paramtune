@@ -1,14 +1,14 @@
 import Sidebar from '@/components/Sidebar'
 import { SidebarProvider } from '@/contexts/SidebarContext'
 import Card from '@/components/ui/Card'
-import { getPlatforms } from '@/models/Platform'
+import { getPlatforms, type Platform } from '@/models/Platform'
 
 type PageProps = {
   children: React.ReactNode
 }
 
 export default async function DashboardLayout({ children }: PageProps) {
-  let platforms = []
+  let platforms: Platform[] = []
   let redisAvailable = true
 
   try {

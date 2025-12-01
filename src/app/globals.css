@@ -43,33 +43,33 @@
 
 :root {
   --radius: 0.5rem;
-  /* Vercel-inspired dark theme colors */
+  /* ParamTune yellow-on-black branding */
   --background: #000000;
-  --foreground: #fafafa;
-  --card: #0a0a0a;
-  --card-foreground: #fafafa;
-  --popover: #0a0a0a;
-  --popover-foreground: #fafafa;
-  --primary: #ffffff;
-  --primary-foreground: #0a0a0a;
-  --secondary: #171717;
-  --secondary-foreground: #fafafa;
-  --muted: #171717;
-  --muted-foreground: #a1a1aa;
-  --accent: #171717;
-  --accent-foreground: #fafafa;
+  --foreground: #f9fafb;
+  --card: #050505;
+  --card-foreground: #f9fafb;
+  --popover: #050505;
+  --popover-foreground: #f9fafb;
+  --primary: #ffff55;
+  --primary-foreground: #020617;
+  --secondary: #111827;
+  --secondary-foreground: #e5e7eb;
+  --muted: #111827;
+  --muted-foreground: #9ca3af;
+  --accent: #111827;
+  --accent-foreground: #f9fafb;
   --destructive: #dc2626;
-  --destructive-foreground: #fafafa;
-  --border: #27272a;
-  --input: #18181b;
-  --ring: #d4d4d8;
-  --sidebar: #0a0a0a;
-  --sidebar-foreground: #fafafa;
-  --sidebar-primary: #ffffff;
-  --sidebar-primary-foreground: #0a0a0a;
-  --sidebar-accent: #171717;
-  --sidebar-accent-foreground: #fafafa;
-  --sidebar-border: #27272a;
+  --destructive-foreground: #f9fafb;
+  --border: #1f2937;
+  --input: #020617;
+  --ring: #fbbf24;
+  --sidebar: #020617;
+  --sidebar-foreground: #f9fafb;
+  --sidebar-primary: #ffff55;
+  --sidebar-primary-foreground: #020617;
+  --sidebar-accent: #111827;
+  --sidebar-accent-foreground: #f9fafb;
+  --sidebar-border: #1f2937;
 }
 
 @layer base {
@@ -112,8 +112,8 @@
     @apply rounded-lg border border-border bg-card text-card-foreground shadow-sm;
     background: linear-gradient(
       145deg,
-      rgba(255, 255, 255, 0.02) 0%,
-      rgba(255, 255, 255, 0.01) 100%
+      rgba(255, 255, 85, 0.06) 0%,
+      rgba(15, 23, 42, 0.9) 100%
     );
   }
 
@@ -132,7 +132,7 @@
   .bg-grid {
     background-image: radial-gradient(
       circle at 2px 2px,
-      rgba(255, 255, 255, 0.15) 1px,
+      rgba(255, 255, 255, 0.12) 1px,
       transparent 0
     );
     background-size: 32px 32px;
@@ -145,10 +145,19 @@
 
   /* Gradient text */
   .gradient-text {
-    background: linear-gradient(135deg, #ffffff 0%, #a1a1aa 100%);
+    background: linear-gradient(135deg, #ffff55 0%, #fefce8 45%, #e5e7eb 100%);
     background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
+  }
+
+  /* Brand wordmark styling */
+  .brand-wordmark {
+    letter-spacing: 0.12em;
+    text-shadow:
+      0 0 14px rgba(250, 204, 21, 0.32),
+      0 0 32px rgba(249, 115, 22, 0.22);
+    transform-origin: center;
   }
 
   /* Shimmer effect for loading states */

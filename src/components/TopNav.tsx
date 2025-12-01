@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import Button from './ui/Button'
+import Logo from './Logo'
 import { useSidebarSafe } from '@/contexts/SidebarContext'
 
 export default function TopNav() {
@@ -35,14 +36,7 @@ export default function TopNav() {
               </button>
             )}
 
-            <Link href="/" className="group flex items-center space-x-2">
-              <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center">
-                <div className="h-4 w-4 rounded bg-primary-foreground/90" />
-              </div>
-              <span className="font-bold text-xl tracking-tight gradient-text group-hover:scale-105 transition-transform duration-200">
-                ParamTune
-              </span>
-            </Link>
+            <Logo asLink className="group" />
           </div>
 
           <nav className="flex items-center gap-2">
@@ -64,3 +58,4 @@ export default function TopNav() {
     </header>
   )
 }
+

@@ -16,7 +16,7 @@
     "date-fns": "^4.1.0",
     "ioredis": "^5.8.2",
     "lucide-react": "^0.555.0",
-    "next": "16.0.6",
+    "next": "16.0.10",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "semver": "^7.7.3",

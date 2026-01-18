@@ -18,10 +18,11 @@ export async function GET(
       status: 200,
       headers: { 'Cache-Control': 'no-store' },
     })
-  } catch (error: any) {
-    console.error('GET /api/[platform]/versions error', error)
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error'
+    console.error('GET /api/[platform]/versions error:', error)
     return NextResponse.json(
-      { error: 'Internal Server Error' },
+      { error: process.env.NODE_ENV === 'development' ? message : 'Internal Server Error' },
       { status: 500 }
     )
   }
@@ -54,10 +55,11 @@ export async function POST(
     })
 
     return NextResponse.json({ ok: true }, { status: 201 })
-  } catch (error: any) {
-    console.error('POST /api/[platform]/versions error', error)
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error'
+    console.error('POST /api/[platform]/versions error:', error)
     return NextResponse.json(
-      { error: 'Internal Server Error' },
+      { error: process.env.NODE_ENV === 'development' ? message : 'Internal Server Error' },
       { status: 500 }
     )
   }

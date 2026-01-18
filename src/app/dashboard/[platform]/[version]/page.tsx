@@ -30,7 +30,16 @@ export default async function Page({
   async function updateSchema(formData: FormData) {
     'use server'
 
-    const content = JSON.parse(formData.get('content') as string)
+    let content: Record<string, unknown>
+    try {
+      content = JSON.parse(formData.get('content') as string) as Record<
+        string,
+        unknown
+      >
+    } catch {
+      throw new Error('Invalid JSON content')
+    }
+
     await saveSchema(platformName, versionName, content)
 
     revalidatePath('/dashboard/[platform]/[version]', 'page')

@@ -1,4 +1,5 @@
 import Sidebar from '@/components/Sidebar'
+import MobileHeader from '@/components/MobileHeader'
 import { SidebarProvider } from '@/contexts/SidebarContext'
 import Card from '@/components/ui/Card'
 import { getPlatforms, type Platform } from '@/models/Platform'
@@ -48,6 +49,7 @@ export default async function DashboardLayout({ children }: PageProps) {
 
   return (
     <SidebarProvider>
+      <MobileHeader />
       <div className="flex min-h-screen">
         <Sidebar platforms={platforms} />
         <main className="flex-1 min-h-screen">

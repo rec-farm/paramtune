@@ -106,6 +106,7 @@ const JsonEditable = memo(function JsonEditable({
     (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
       const autocompleteHandlers = {
         visible: autocomplete.visible,
+        userHasNavigated: autocomplete.userHasNavigated,
         selectNext: autocomplete.selectNext,
         selectPrev: autocomplete.selectPrev,
         acceptSuggestion: autocomplete.acceptSuggestion,

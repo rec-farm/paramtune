@@ -194,6 +194,7 @@ export interface UseAutocompleteReturn {
   selectedIndex: number
   visible: boolean
   position: { top: number; left: number }
+  userHasNavigated: boolean
   selectNext: () => void
   selectPrev: () => void
   acceptSuggestion: () => AutocompleteSuggestion | null

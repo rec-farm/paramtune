@@ -2,6 +2,7 @@ import type { AutocompleteSuggestion } from '../types'
 
 export interface AutocompleteHandlers {
   visible: boolean
+  userHasNavigated: boolean
   selectNext: () => void
   selectPrev: () => void
   acceptSuggestion: () => AutocompleteSuggestion | null
@@ -301,13 +302,18 @@ export function createAutocompleteKeyDownHandler(
           autocomplete.selectPrev()
           return
         case 'Enter':
-          // Accept suggestion instead of normal Enter behavior
-          e.preventDefault()
-          const suggestion = autocomplete.acceptSuggestion()
-          if (suggestion) {
-            onAcceptSuggestion(suggestion)
+          // Only accept suggestion if user has explicitly navigated with arrow keys
+          if (autocomplete.userHasNavigated) {
+            e.preventDefault()
+            const suggestion = autocomplete.acceptSuggestion()
+            if (suggestion) {
+              onAcceptSuggestion(suggestion)
+            }
+            return
           }
-          return
+          // Otherwise, dismiss autocomplete and fall through to normal Enter (new line)
+          autocomplete.dismiss()
+          break
         case 'Escape':
           e.preventDefault()
           autocomplete.dismiss()

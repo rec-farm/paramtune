@@ -5,16 +5,17 @@
 See: .planning/PROJECT.md (updated 2026-01-18)
 
 **Core value:** Editing schemas should be a joy, not a pain.
-**Current focus:** Planning next milestone
+**Current focus:** v1.1 Schema Diff & Polish
 
 ## Current Position
 
-Milestone: v1.0 MVP shipped
-Phase: None active
-Status: Ready for next milestone
-Last activity: 2026-01-18 — v1.0 milestone archived
+Milestone: v1.1 Schema Diff & Polish
+Phase: 5 of 8 (Autocomplete Fixes & Editor Polish)
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-01-18 — Milestone v1.1 created
 
-Progress: v1.0 ██████████ 100%
+Progress: ░░░░░░░░░░ 0%
 
 ## Performance Metrics (v1.0)
 
@@ -46,8 +47,12 @@ None.
 
 None.
 
+### Roadmap Evolution
+
+- Milestone v1.1 created: Schema diff & editor polish, 4 phases (Phase 5-8)
+
 ## Session Continuity
 
 Last session: 2026-01-18
-Stopped at: v1.0 milestone archived
+Stopped at: Milestone v1.1 initialization
 Resume file: None

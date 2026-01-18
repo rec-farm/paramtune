@@ -53,8 +53,12 @@ export async function GET(_request: Request, { params }: any) {
       status: 200,
       headers: { 'Cache-Control': 'no-store' },
     })
-  } catch (error: any) {
-    console.error('GET /api/schemas error', error)
-    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 })
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error'
+    console.error('GET /api/schemas error:', error)
+    return NextResponse.json(
+      { error: process.env.NODE_ENV === 'development' ? message : 'Internal Server Error' },
+      { status: 500 }
+    )
   }
 }

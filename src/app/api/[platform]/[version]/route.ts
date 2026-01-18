@@ -31,10 +31,11 @@ export async function GET(
       status: 200,
       headers: { 'Cache-Control': 'no-store' },
     })
-  } catch (error: any) {
-    console.error('GET /api/[platform]/[version] error', error)
+  } catch (error: unknown) {
+    const message = error instanceof Error ? error.message : 'Unknown error'
+    console.error('GET /api/[platform]/[version] error:', error)
     return NextResponse.json(
-      { error: 'Internal Server Error' },
+      { error: process.env.NODE_ENV === 'development' ? message : 'Internal Server Error' },
       { status: 500 }
     )
   }

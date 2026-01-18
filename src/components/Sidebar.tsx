@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
+import { usePathname } from 'next/navigation'
+import { GitCompare } from 'lucide-react'
 import PlatformsList from '@/components/NavigationPlatforms/PlatformsList'
 import { cn } from '@/lib/utils'
 import { useSidebar } from '@/contexts/SidebarContext'
@@ -17,6 +19,7 @@ type SidebarProps = {
 
 export default function Sidebar({ platforms }: SidebarProps) {
   const { isOpen, close } = useSidebar()
+  const pathname = usePathname()
   const [isScrolled, setIsScrolled] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [isSearchFocused, setIsSearchFocused] = useState(false)
@@ -154,6 +157,25 @@ export default function Sidebar({ platforms }: SidebarProps) {
         <div className="pointer-events-none absolute inset-x-0 top-0 h-6 bg-gradient-to-b from-sidebar to-transparent z-10" />
         <div className="pointer-events-none absolute inset-x-0 bottom-0 h-8 bg-gradient-to-t from-sidebar to-transparent z-10" />
         <div className="px-5 py-5 space-y-4 relative z-0">
+          {/* Tools section */}
+          <div className="space-y-2">
+            <div className="text-[11px] uppercase tracking-wide text-sidebar-foreground/50 px-1">
+              Tools
+            </div>
+            <Link
+              href="/dashboard/compare"
+              className={cn(
+                'flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors',
+                pathname === '/dashboard/compare'
+                  ? 'bg-primary/10 text-primary font-medium'
+                  : 'text-sidebar-foreground/70 hover:bg-sidebar-foreground/5 hover:text-sidebar-foreground'
+              )}
+            >
+              <GitCompare className="h-4 w-4" />
+              Compare Schemas
+            </Link>
+          </div>
+
           <div className="flex items-center justify-between px-1">
             <div className="text-[11px] uppercase tracking-wide text-sidebar-foreground/50">
               Platforms

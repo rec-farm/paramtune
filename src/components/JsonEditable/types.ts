@@ -154,3 +154,48 @@ export interface JsonEditorEventHandlers {
   onDownload?: () => void
   onError?: (error: string) => void
 }
+
+// Autocomplete types
+export type AutocompleteSuggestionKind = 'key' | 'value' | 'keyword'
+
+export interface AutocompleteSuggestion {
+  label: string
+  insertText: string
+  kind: AutocompleteSuggestionKind
+}
+
+export interface AutocompleteContext {
+  line: string
+  column: number
+  prefix: string
+  inString: boolean
+  afterColon: boolean
+}
+
+export interface AutocompletePopupProps {
+  suggestions: AutocompleteSuggestion[]
+  selectedIndex: number
+  onSelect: (suggestion: AutocompleteSuggestion) => void
+  position: { top: number; left: number }
+  visible: boolean
+}
+
+export interface UseAutocompleteOptions {
+  text: string
+  cursorPosition: number
+  existingKeys?: string[]
+  enabled?: boolean
+}
+
+export interface UseAutocompleteReturn {
+  suggestions: AutocompleteSuggestion[]
+  selectedIndex: number
+  visible: boolean
+  position: { top: number; left: number }
+  selectNext: () => void
+  selectPrev: () => void
+  acceptSuggestion: () => AutocompleteSuggestion | null
+  dismiss: () => void
+  updateSuggestions: (text: string, cursorPos: number) => void
+  setPosition: (position: { top: number; left: number }) => void
+}

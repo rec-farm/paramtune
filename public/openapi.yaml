@@ -1,0 +1,273 @@
+openapi: 3.0.3
+info:
+  title: ParamTune API
+  description: API for managing platform schemas and versions
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:3000
+    description: Development server
+
+paths:
+  /api/schemas:
+    get:
+      summary: List all platforms
+      description: Returns a list of all platforms with their versions
+      operationId: listPlatforms
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Platform'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/{platform}:
+    get:
+      summary: Get platform details
+      description: Returns details for a specific platform
+      operationId: getPlatform
+      parameters:
+        - name: platform
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Platform name
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Platform'
+        '404':
+          description: Platform not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      summary: Create or update platform
+      description: Creates a new platform or updates an existing one
+      operationId: savePlatform
+      parameters:
+        - name: platform
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Platform name
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: true
+      responses:
+        '201':
+          description: Platform created/updated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    example: true
+        '400':
+          description: Invalid request body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/{platform}/versions:
+    get:
+      summary: List versions for platform
+      description: Returns all versions for a specific platform
+      operationId: listVersions
+      parameters:
+        - name: platform
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Platform name
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: string
+                example: ["1.0.0", "1.1.0", "2.0.0"]
+        '404':
+          description: Platform not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+    post:
+      summary: Add version to platform
+      description: Adds a new version to an existing platform
+      operationId: addVersion
+      parameters:
+        - name: platform
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Platform name
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                version:
+                  type: string
+                  description: Version string (semver format)
+                  example: "1.2.0"
+              required:
+                - version
+      responses:
+        '201':
+          description: Version added
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                    example: true
+        '400':
+          description: Invalid request
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /api/{platform}/{version}:
+    get:
+      summary: Get schema for version
+      description: Returns the schema content for a specific platform version
+      operationId: getSchema
+      parameters:
+        - name: platform
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Platform name
+        - name: version
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Version string
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Schema'
+        '404':
+          description: Schema not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Server error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    Platform:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Platform name
+          example: mobile
+        versions:
+          type: array
+          items:
+            type: string
+          description: List of available versions
+          example: ["1.0.0", "1.1.0"]
+      required:
+        - name
+        - versions
+
+    Schema:
+      type: object
+      properties:
+        content:
+          type: object
+          additionalProperties: true
+          description: Raw schema content
+        dependencies:
+          type: array
+          items:
+            type: string
+          description: List of schema dependencies
+          example: ["base/1.0.0"]
+        output:
+          type: object
+          additionalProperties: true
+          description: Resolved schema with dependencies merged
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: Error message
+          example: Platform not found
+      required:
+        - error

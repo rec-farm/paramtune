@@ -1,5 +1,29 @@
 # Project Milestones: ParamTune
 
+## v1.1 Schema Diff & Polish (Shipped: 2026-01-18)
+
+**Delivered:** Schema comparison with visual diff and polished editor experience with smarter autocomplete and validation feedback.
+
+**Phases completed:** 5-8 (4 plans total)
+
+**Key accomplishments:**
+- Fixed autocomplete Enter key to respect user navigation intent
+- Extracted reusable schema diff engine with type change detection
+- Created side-by-side schema comparison page at /dashboard/compare
+- Added hover-only error tooltip and validation loading indicator
+
+**Stats:**
+- 25 files modified
+- 8,014 lines of TypeScript (total)
+- 4 phases, 4 plans, ~11 tasks
+- Same day as v1.0
+
+**Git range:** `feat(05-01)` → `docs(08-01)`
+
+**What's next:** TBD - v1.1 complete
+
+---
+
 ## v1.0 MVP (Shipped: 2026-01-18)
 
 **Delivered:** Schema editing experience transformed with autocomplete, validation, theming, error handling, and API documentation.

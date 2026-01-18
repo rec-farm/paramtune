@@ -1,11 +1,27 @@
 'use client'
 
 import { useMemo, useState } from 'react'
+import dynamic from 'next/dynamic'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
-import SchemaEditorForm from '@/components/SchemaEditorForm'
-import SchemaHistory from '@/components/SchemaHistory'
-import JsonOutput from '@/components/JsonOutput'
+
+const SchemaEditorForm = dynamic(
+  () => import('@/components/SchemaEditorForm'),
+  {
+    ssr: false,
+    loading: () => <div className="p-4 text-muted-foreground">Loading...</div>,
+  }
+)
+
+const SchemaHistory = dynamic(() => import('@/components/SchemaHistory'), {
+  ssr: false,
+  loading: () => <div className="p-4 text-muted-foreground">Loading...</div>,
+})
+
+const JsonOutput = dynamic(() => import('@/components/JsonOutput'), {
+  ssr: false,
+  loading: () => <div className="p-4 text-muted-foreground">Loading...</div>,
+})
 
 type SchemaTabsProps = {
   defaultValue: string

@@ -270,6 +270,7 @@ const JsonEditable = memo(function JsonEditable({
               isValid={state.isValid}
               errorMessage={state.errorMessage}
               issues={state.issues}
+              isValidating={state.isValidating}
             />
             {state.isDirty && (
               <div className="text-xs text-yellow-500">• Unsaved changes</div>

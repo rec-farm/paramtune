@@ -11,6 +11,7 @@ export interface OptimizedJsonEditorState {
   errorMessage: string
   isDirty: boolean
   issues: ValidationIssue[]
+  isValidating: boolean
 }
 
 export interface OptimizedJsonEditorActions {
@@ -51,6 +52,7 @@ export function useOptimizedJsonEditor({
     errorMessage: '',
     isDirty: false,
     issues: [],
+    isValidating: false,
   })
 
   // Use refs to avoid unnecessary re-renders
@@ -64,6 +66,7 @@ export function useOptimizedJsonEditor({
         ...prevState,
         jsonText: value,
         isDirty: value !== lastValidJsonRef.current,
+        isValidating: true,
       }))
 
       // Clear previous validation timeout
@@ -85,6 +88,7 @@ export function useOptimizedJsonEditor({
             errorMessage: '',
             isDirty: false,
             issues: result.issues,
+            isValidating: false,
           }))
           lastValidJsonRef.current = value
           onValidationChange?.(true)
@@ -96,6 +100,7 @@ export function useOptimizedJsonEditor({
             isValid: false,
             errorMessage: firstError?.message ?? 'Invalid JSON syntax',
             issues: result.issues,
+            isValidating: false,
           }))
           onValidationChange?.(false)
         }
@@ -128,6 +133,7 @@ export function useOptimizedJsonEditor({
       errorMessage: '',
       isDirty: false,
       issues: [],
+      isValidating: false,
     })
 
     lastValidJsonRef.current = newJsonText
@@ -146,6 +152,7 @@ export function useOptimizedJsonEditor({
       errorMessage: '',
       isDirty: false,
       issues: [],
+      isValidating: false,
     })
 
     lastValidJsonRef.current = newJsonText

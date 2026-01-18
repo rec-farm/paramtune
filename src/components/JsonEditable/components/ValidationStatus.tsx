@@ -7,14 +7,28 @@ interface ValidationStatusProps {
   isValid: boolean
   errorMessage?: string
   issues?: ValidationIssue[]
+  isValidating?: boolean
 }
 
 export const ValidationStatus = memo(function ValidationStatus({
   isValid,
   errorMessage,
   issues = [],
+  isValidating = false,
 }: ValidationStatusProps) {
   const warningCount = issues.filter((i) => i.type === 'warning').length
+
+  // Validating state - show subtle indicator
+  if (isValidating && isValid) {
+    return (
+      <div className="flex items-center gap-1.5 text-gray-400 text-sm">
+        <div className="w-4 h-4 flex items-center justify-center">
+          <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse" />
+        </div>
+        <span className="text-gray-500">Validating...</span>
+      </div>
+    )
+  }
 
   // Invalid JSON - show error
   if (!isValid) {

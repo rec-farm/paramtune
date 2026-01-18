@@ -32,6 +32,11 @@ export function getTheme(themeName: 'light' | 'dark'): SyntaxHighlightTheme {
   return themeName === 'light' ? LIGHT_THEME : DARK_THEME
 }
 
+// Determine theme name from theme object for cache key optimization
+function getThemeName(theme: SyntaxHighlightTheme): 'light' | 'dark' {
+  return theme === LIGHT_THEME ? 'light' : 'dark'
+}
+
 // Pre-compiled regex patterns for better performance
 const REGEX_PATTERNS = {
   extends: /("(?:@extends)")(\s*:)/g,
@@ -61,7 +66,10 @@ export function highlightJsonLine(
   options: SyntaxHighlightOptions = {},
   theme: SyntaxHighlightTheme = DARK_THEME
 ): string {
-  const cacheKey = `${line}-${Object.values(options).join('')}-${Object.values(theme).join('')}`
+  // Simplified cache key: line content + theme name
+  // Options are rarely changed (defaults used), so skip them in the key
+  const themeName = getThemeName(theme)
+  const cacheKey = `${line}-${themeName}`
 
   if (highlightCache.has(cacheKey)) {
     return highlightCache.get(cacheKey)!

@@ -1,6 +1,6 @@
 'use client'
 
-import { memo, useMemo } from 'react'
+import { memo, useMemo, useState, useEffect } from 'react'
 import { highlightJsonVisibleLines, getTheme } from '../utils/optimizedSyntaxHighlighter'
 
 interface SyntaxHighlightOverlayProps {
@@ -13,6 +13,9 @@ interface SyntaxHighlightOverlayProps {
   theme?: 'light' | 'dark'
 }
 
+// Debounce delay for syntax highlighting (ms)
+const HIGHLIGHT_DEBOUNCE_MS = 50
+
 export const SyntaxHighlightOverlay = memo(function SyntaxHighlightOverlay({
   jsonText,
   visibleStart,
@@ -22,10 +25,22 @@ export const SyntaxHighlightOverlay = memo(function SyntaxHighlightOverlay({
   showLineNumbers,
   theme = 'dark',
 }: SyntaxHighlightOverlayProps) {
+  // Debounced text trails behind jsonText for smoother typing
+  const [debouncedJsonText, setDebouncedJsonText] = useState(jsonText)
+
+  // Debounce jsonText updates to avoid highlighting on every keystroke
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      setDebouncedJsonText(jsonText)
+    }, HIGHLIGHT_DEBOUNCE_MS)
+
+    return () => clearTimeout(timeoutId)
+  }, [jsonText])
+
   const highlightedContent = useMemo(() => {
     const themeConfig = getTheme(theme)
-    return highlightJsonVisibleLines(jsonText, visibleStart, visibleEnd, {}, themeConfig)
-  }, [jsonText, visibleStart, visibleEnd, theme])
+    return highlightJsonVisibleLines(debouncedJsonText, visibleStart, visibleEnd, {}, themeConfig)
+  }, [debouncedJsonText, visibleStart, visibleEnd, theme])
 
   const overlayStyle = useMemo(
     () => ({

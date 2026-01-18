@@ -97,6 +97,7 @@ export interface BraceMatchingResult {
 export interface ValidationStatusProps {
   isValid: boolean
   errorMessage?: string
+  issues?: ValidationIssue[]
 }
 
 export interface ActionButtonsProps {
@@ -107,7 +108,8 @@ export interface ActionButtonsProps {
 }
 
 export interface ErrorDisplayProps {
-  errorMessage: string
+  errorMessage?: string
+  issues?: ValidationIssue[]
 }
 
 export interface LineNumbersProps {

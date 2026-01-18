@@ -16,6 +16,7 @@ import { AutocompletePopup } from './components/AutocompletePopup'
 import { JsonTextarea } from './components/HighPerformanceTextarea'
 import { SyntaxHighlightOverlay } from './components/VirtualizedSyntaxOverlay'
 import { copyToClipboard, downloadAsJson } from '@/lib/fileUtils'
+import { EDITOR_CONSTANTS } from './utils/editorConstants'
 import type { JsonEditableProps, AutocompleteSuggestion } from './types'
 
 const JsonEditable = memo(function JsonEditable({
@@ -82,10 +83,7 @@ const JsonEditable = memo(function JsonEditable({
       const context = getAutocompleteContext(text, cursorPos)
       const prefixLength = context.prefix.length
 
-      // If we're in a string, we also need to account for the opening quote
-      const replaceStart = context.inString
-        ? cursorPos - prefixLength
-        : cursorPos - prefixLength
+      const replaceStart = cursorPos - prefixLength
 
       // Build the replacement text
       const beforePrefix = text.slice(0, replaceStart)
@@ -146,10 +144,10 @@ const JsonEditable = memo(function JsonEditable({
     const columnIndex = linesBeforeCursor[lineIndex]?.length || 0
 
     // Calculate position
-    const lineHeight = 24
-    const charWidth = 9.6 // Approximate monospace character width
-    const gutterWidth = showLineNumbers ? 48 : 16
-    const paddingTop = 16
+    const lineHeight = EDITOR_CONSTANTS.LINE_HEIGHT
+    const charWidth = EDITOR_CONSTANTS.CHAR_WIDTH
+    const gutterWidth = showLineNumbers ? EDITOR_CONSTANTS.PADDING_LEFT : EDITOR_CONSTANTS.PADDING_LEFT_COMPACT
+    const paddingTop = EDITOR_CONSTANTS.PADDING_TOP
 
     // Account for scroll
     const top = paddingTop + lineIndex * lineHeight - scrollTop + lineHeight + 4
@@ -224,8 +222,8 @@ const JsonEditable = memo(function JsonEditable({
   // Calculate visible lines for virtualization
   const lines = useMemo(() => state.jsonText.split('\n'), [state.jsonText])
   const lineCount = lines.length
-  const lineHeight = 24
-  const bufferLines = 5
+  const lineHeight = EDITOR_CONSTANTS.LINE_HEIGHT
+  const bufferLines = EDITOR_CONSTANTS.BUFFER_LINES
 
   const visibleStart = Math.max(
     0,
@@ -270,6 +268,7 @@ const JsonEditable = memo(function JsonEditable({
             <ValidationStatus
               isValid={state.isValid}
               errorMessage={state.errorMessage}
+              issues={state.issues}
             />
             {state.isDirty && (
               <div className="text-xs text-yellow-500">• Unsaved changes</div>
@@ -424,7 +423,7 @@ const JsonEditable = memo(function JsonEditable({
           )}
         </div>
 
-        <ErrorDisplay errorMessage={state.errorMessage} />
+        <ErrorDisplay errorMessage={state.errorMessage} issues={state.issues} />
       </div>
     </div>
   )

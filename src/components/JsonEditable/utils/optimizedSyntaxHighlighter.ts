@@ -101,24 +101,13 @@ export function highlightJsonLine(
 
   let highlighted = line
 
-  // Debug: Log the line being highlighted
-  console.log('highlightJsonLine: Input line:', line)
-
   // Apply highlighting in order of specificity - VALUES FIRST, then KEYS
   // 1. Highlight string values FIRST (most specific pattern)
   if (highlightStrings) {
-    const beforeStringHighlight = highlighted
     highlighted = highlighted.replace(
       REGEX_PATTERNS.strings,
       `: <span class="${theme.strings}">$1</span>`
     )
-    if (beforeStringHighlight !== highlighted) {
-      console.log(
-        'highlightJsonLine: Applied string highlighting to line:',
-        line
-      )
-      console.log('highlightJsonLine: After string highlight:', highlighted)
-    }
   }
 
   // 2. Highlight boolean values
@@ -176,9 +165,6 @@ export function highlightJsonLine(
       `<span class="${theme.commas}">$1</span>`
     )
   }
-
-  // Debug: Log the final result
-  console.log('highlightJsonLine: Final highlighted line:', highlighted)
 
   // Cache the result
   clearCacheIfNeeded()

@@ -51,13 +51,13 @@ export default async function Page({
   return (
     <div className="space-y-4 mx-auto max-w-5xl px-2 md:px-0">
       <header className="space-y-1">
-        <div className="flex items-center justify-between gap-3">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <PageTitle platform={platformName} version={versionName} />
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <Link
               href={`/dashboard/compare?platformA=${encodeURIComponent(platformName)}&versionA=${encodeURIComponent(versionName)}`}
             >
-              <Button variant="outline" size="sm" className="gap-1.5">
+              <Button variant="outline" size="sm" className="gap-1.5 h-10 sm:h-8">
                 <GitCompare className="h-3.5 w-3.5" />
                 Compare
               </Button>

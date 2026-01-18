@@ -1,12 +1,10 @@
 'use client'
 
-import { memo, useMemo, useState, useEffect } from 'react'
-import { highlightJsonVisibleLines, getTheme } from '../utils/optimizedSyntaxHighlighter'
+import { memo, useMemo, useState, useEffect, useRef } from 'react'
+import { highlightVisibleLines, getTheme } from '../utils/optimizedSyntaxHighlighter'
 
 interface SyntaxHighlightOverlayProps {
-  jsonText: string
-  visibleStart: number
-  visibleEnd: number
+  visibleLines: string[]
   lineHeight: number
   scrollTop: number
   showLineNumbers: boolean
@@ -17,30 +15,35 @@ interface SyntaxHighlightOverlayProps {
 const HIGHLIGHT_DEBOUNCE_MS = 50
 
 export const SyntaxHighlightOverlay = memo(function SyntaxHighlightOverlay({
-  jsonText,
-  visibleStart,
-  visibleEnd,
+  visibleLines,
   lineHeight,
   scrollTop,
   showLineNumbers,
   theme = 'dark',
 }: SyntaxHighlightOverlayProps) {
-  // Debounced text trails behind jsonText for smoother typing
-  const [debouncedJsonText, setDebouncedJsonText] = useState(jsonText)
+  // Debounced lines trail behind visibleLines for smoother typing
+  const [debouncedLines, setDebouncedLines] = useState(visibleLines)
 
-  // Debounce jsonText updates to avoid highlighting on every keystroke
+  // Track previous visibleLines to detect changes
+  const prevLinesRef = useRef(visibleLines)
+
+  // Debounce visibleLines updates to avoid highlighting on every keystroke
   useEffect(() => {
+    // Only debounce if lines actually changed
+    if (prevLinesRef.current === visibleLines) return
+    prevLinesRef.current = visibleLines
+
     const timeoutId = setTimeout(() => {
-      setDebouncedJsonText(jsonText)
+      setDebouncedLines(visibleLines)
     }, HIGHLIGHT_DEBOUNCE_MS)
 
     return () => clearTimeout(timeoutId)
-  }, [jsonText])
+  }, [visibleLines])
 
   const highlightedContent = useMemo(() => {
     const themeConfig = getTheme(theme)
-    return highlightJsonVisibleLines(debouncedJsonText, visibleStart, visibleEnd, {}, themeConfig)
-  }, [debouncedJsonText, visibleStart, visibleEnd, theme])
+    return highlightVisibleLines(debouncedLines, {}, themeConfig)
+  }, [debouncedLines, theme])
 
   const overlayStyle = useMemo(
     () => ({

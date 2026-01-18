@@ -24,7 +24,7 @@ export interface SyntaxHighlightTheme {
   colons: string
 }
 
-const DEFAULT_THEME: SyntaxHighlightTheme = {
+const DARK_THEME: SyntaxHighlightTheme = {
   extends: 'text-cyan-400 font-bold bg-cyan-400/10 px-1 rounded',
   keys: 'text-purple-400 font-medium',
   strings: 'text-green-400 font-medium',
@@ -34,6 +34,22 @@ const DEFAULT_THEME: SyntaxHighlightTheme = {
   brackets: 'text-gray-200 font-bold',
   commas: 'text-gray-500',
   colons: 'text-gray-400',
+}
+
+const LIGHT_THEME: SyntaxHighlightTheme = {
+  extends: 'text-cyan-600 font-bold bg-cyan-100 px-1 rounded',
+  keys: 'text-purple-600 font-medium',
+  strings: 'text-green-600 font-medium',
+  booleans: 'text-orange-600 font-bold',
+  null: 'text-gray-400 italic',
+  numbers: 'text-blue-600 font-medium',
+  brackets: 'text-gray-700 font-bold',
+  commas: 'text-gray-400',
+  colons: 'text-gray-500',
+}
+
+export function getTheme(themeName: 'light' | 'dark'): SyntaxHighlightTheme {
+  return themeName === 'light' ? LIGHT_THEME : DARK_THEME
 }
 
 // Pre-compiled regex patterns for better performance
@@ -64,7 +80,7 @@ function clearCacheIfNeeded() {
 export function highlightJsonLine(
   line: string,
   options: SyntaxHighlightOptions = {},
-  theme: SyntaxHighlightTheme = DEFAULT_THEME
+  theme: SyntaxHighlightTheme = DARK_THEME
 ): string {
   const cacheKey = `${line}-${JSON.stringify(options)}-${JSON.stringify(theme)}`
 
@@ -176,7 +192,7 @@ export function highlightJsonVisibleLines(
   startLine: number = 0,
   endLine: number = 50,
   options: SyntaxHighlightOptions = {},
-  theme: SyntaxHighlightTheme = DEFAULT_THEME
+  theme: SyntaxHighlightTheme = DARK_THEME
 ): string {
   const lines = json.split('\n')
   const visibleLines = lines.slice(startLine, endLine + 1)
@@ -190,7 +206,7 @@ export function highlightJsonVisibleLines(
 export function highlightJson(
   json: string,
   options: SyntaxHighlightOptions = {},
-  theme: SyntaxHighlightTheme = DEFAULT_THEME
+  theme: SyntaxHighlightTheme = DARK_THEME
 ): string {
   if (json.split('\n').length <= 100) {
     return json
@@ -206,7 +222,7 @@ export function highlightJson(
 export function createCustomTheme(
   overrides: Partial<SyntaxHighlightTheme>
 ): SyntaxHighlightTheme {
-  return { ...DEFAULT_THEME, ...overrides }
+  return { ...DARK_THEME, ...overrides }
 }
 
 export function validateJsonSyntax(json: string): {

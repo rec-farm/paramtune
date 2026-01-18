@@ -31,6 +31,7 @@ const JsonEditable = memo(function JsonEditable({
   syntaxHighlighting = true,
   renderToolbar,
   showHeader = true,
+  theme = 'dark',
 }: JsonEditableProps) {
   const { state, actions } = useOptimizedJsonEditor({
     defaultValue,
@@ -300,7 +301,7 @@ const JsonEditable = memo(function JsonEditable({
 
       {/* JSON Editor */}
       <div className="space-y-2">
-        <div className="relative bg-gray-900/20 rounded-lg overflow-hidden">
+        <div className={`relative rounded-lg overflow-hidden ${theme === 'light' ? 'bg-gray-100' : 'bg-gray-900/20'}`}>
           <JsonTextarea
             ref={textareaRef}
             value={state.jsonText}
@@ -418,6 +419,7 @@ const JsonEditable = memo(function JsonEditable({
               lineHeight={lineHeight}
               scrollTop={scrollTop}
               showLineNumbers={showLineNumbers}
+              theme={theme}
             />
           )}
         </div>

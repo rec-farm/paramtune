@@ -4,6 +4,7 @@
 
 - ✅ **[v1.0 MVP](milestones/v1.0-ROADMAP.md)** — Phases 1-4 (shipped 2026-01-18)
 - ✅ **[v1.1 Schema Diff & Polish](milestones/v1.1-ROADMAP.md)** — Phases 5-8 (shipped 2026-01-18)
+- 🚧 **v1.2 Performance & Polish** — Phases 9-12 (in progress)
 
 ## Completed Milestones
 
@@ -27,6 +28,50 @@
 
 </details>
 
+### 🚧 v1.2 Performance & Polish (In Progress)
+
+**Milestone Goal:** Make the editor feel fast and look modern
+
+#### Phase 9: Editor Performance
+
+**Goal**: Fix typing lag and optimize re-renders in syntax highlighting
+**Depends on**: Previous milestone complete
+**Research**: Unlikely (internal optimization)
+**Plans**: TBD
+
+Plans:
+- [ ] 09-01: TBD (run /gsd:plan-phase 9 to break down)
+
+#### Phase 10: Page Load Optimization
+
+**Goal**: Improve initial load times with bundle optimization and lazy loading
+**Depends on**: Phase 9
+**Research**: Unlikely (standard patterns)
+**Plans**: TBD
+
+Plans:
+- [ ] 10-01: TBD
+
+#### Phase 11: Dashboard Visual Refresh
+
+**Goal**: Modern styling with updated colors, shadows, typography
+**Depends on**: Phase 10
+**Research**: Unlikely (internal UI work)
+**Plans**: TBD
+
+Plans:
+- [ ] 11-01: TBD
+
+#### Phase 12: Responsive Design
+
+**Goal**: Dashboard/editor works well across different screen sizes
+**Depends on**: Phase 11
+**Research**: Unlikely (CSS patterns)
+**Plans**: TBD
+
+Plans:
+- [ ] 12-01: TBD
+
 ## Progress
 
 | Phase | Milestone | Plans Complete | Status | Completed |
@@ -39,8 +84,12 @@
 | 6. Schema Diff Engine | v1.1 | 1/1 | Complete | 2026-01-18 |
 | 7. Visual Diff UI | v1.1 | 1/1 | Complete | 2026-01-18 |
 | 8. Editor Improvements | v1.1 | 1/1 | Complete | 2026-01-18 |
+| 9. Editor Performance | v1.2 | 0/? | Not started | - |
+| 10. Page Load Optimization | v1.2 | 0/? | Not started | - |
+| 11. Dashboard Visual Refresh | v1.2 | 0/? | Not started | - |
+| 12. Responsive Design | v1.2 | 0/? | Not started | - |
 
-**Overall:** v1.0 complete, v1.1 complete
+**Overall:** v1.0 complete, v1.1 complete, v1.2 in progress
 
 ## Domain Expertise
 

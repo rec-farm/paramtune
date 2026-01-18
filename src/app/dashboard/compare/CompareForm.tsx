@@ -5,8 +5,10 @@ import { useSearchParams } from 'next/navigation'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
+import SideBySideDiff from '@/components/SchemaDiff/SideBySideDiff'
 import { type Platform } from '@/models/Platform'
 import { type DiffResult } from '@/lib/schemaDiff'
+import { type CompareResult } from './page'
 
 interface CompareFormProps {
   platforms: Platform[]
@@ -16,7 +18,7 @@ interface CompareFormProps {
     versionA: string,
     platformB: string,
     versionB: string
-  ) => Promise<DiffResult>
+  ) => Promise<CompareResult>
 }
 
 type SchemaSelection = {
@@ -43,7 +45,7 @@ export default function CompareForm({
 
   const [versionsA, setVersionsA] = useState<string[]>([])
   const [versionsB, setVersionsB] = useState<string[]>([])
-  const [diffResult, setDiffResult] = useState<DiffResult | null>(null)
+  const [compareResult, setCompareResult] = useState<CompareResult | null>(null)
   const [isPending, startTransition] = useTransition()
   const [error, setError] = useState<string | null>(null)
 
@@ -60,7 +62,7 @@ export default function CompareForm({
   // Load versions when platform changes
   const handlePlatformChangeA = async (platformName: string) => {
     setSchemaA({ platform: platformName, version: '' })
-    setDiffResult(null)
+    setCompareResult(null)
     setError(null)
     if (platformName) {
       const versions = await getVersions(platformName)
@@ -72,7 +74,7 @@ export default function CompareForm({
 
   const handlePlatformChangeB = async (platformName: string) => {
     setSchemaB({ platform: platformName, version: '' })
-    setDiffResult(null)
+    setCompareResult(null)
     setError(null)
     if (platformName) {
       const versions = await getVersions(platformName)
@@ -100,7 +102,7 @@ export default function CompareForm({
           schemaB.platform,
           schemaB.version
         )
-        setDiffResult(result)
+        setCompareResult(result)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Comparison failed')
       }
@@ -249,16 +251,18 @@ export default function CompareForm({
       )}
 
       {/* Diff result display */}
-      {diffResult && (
-        <DiffDisplay
-          diffResult={diffResult}
-          schemaA={schemaA}
-          schemaB={schemaB}
+      {compareResult && (
+        <SideBySideDiff
+          schemaA={compareResult.schemaAContent}
+          schemaB={compareResult.schemaBContent}
+          diffResult={compareResult.diffResult}
+          labelA={`${schemaA.platform}/${schemaA.version}`}
+          labelB={`${schemaB.platform}/${schemaB.version}`}
         />
       )}
 
       {/* Empty state */}
-      {!diffResult && !error && (
+      {!compareResult && !error && (
         <Card className="p-8">
           <div className="text-center text-muted-foreground">
             <p>Select two schemas to compare</p>
@@ -266,125 +270,5 @@ export default function CompareForm({
         </Card>
       )}
     </div>
-  )
-}
-
-// Inline diff display component (will be extracted to SideBySideDiff in Task 2)
-function DiffDisplay({
-  diffResult,
-  schemaA,
-  schemaB,
-}: {
-  diffResult: DiffResult
-  schemaA: SchemaSelection
-  schemaB: SchemaSelection
-}) {
-  const { summary, byType } = diffResult
-  const hasChanges =
-    summary.added > 0 || summary.removed > 0 || summary.modified > 0
-
-  if (!hasChanges) {
-    return (
-      <Card className="p-8">
-        <div className="text-center text-muted-foreground">
-          <p className="font-medium">Schemas are identical</p>
-          <p className="text-sm mt-1">
-            No differences found between {schemaA.platform}/{schemaA.version} and{' '}
-            {schemaB.platform}/{schemaB.version}
-          </p>
-        </div>
-      </Card>
-    )
-  }
-
-  return (
-    <Card className="p-5">
-      <div className="space-y-4">
-        {/* Summary badges */}
-        <div className="flex items-center gap-4 flex-wrap">
-          <h3 className="font-medium">Changes Summary</h3>
-          <div className="flex items-center gap-2">
-            {summary.added > 0 && (
-              <Badge variant="success" className="text-xs">
-                +{summary.added} added
-              </Badge>
-            )}
-            {summary.removed > 0 && (
-              <Badge variant="destructive" className="text-xs">
-                -{summary.removed} removed
-              </Badge>
-            )}
-            {summary.modified > 0 && (
-              <Badge variant="secondary" className="text-xs">
-                ~{summary.modified} modified
-              </Badge>
-            )}
-          </div>
-        </div>
-
-        {/* Changes list - simple view for Task 1 */}
-        <div className="space-y-3">
-          {byType.added.length > 0 && (
-            <div>
-              <h5 className="text-sm font-medium mb-2 text-green-600">
-                Added Properties
-              </h5>
-              <div className="space-y-1">
-                {byType.added.map((change) => (
-                  <div
-                    key={change.path}
-                    className="p-2 bg-green-50 dark:bg-green-950/30 rounded border-l-2 border-green-500"
-                  >
-                    <code className="text-xs font-medium text-green-800 dark:text-green-300">
-                      {change.path}
-                    </code>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {byType.removed.length > 0 && (
-            <div>
-              <h5 className="text-sm font-medium mb-2 text-red-600">
-                Removed Properties
-              </h5>
-              <div className="space-y-1">
-                {byType.removed.map((change) => (
-                  <div
-                    key={change.path}
-                    className="p-2 bg-red-50 dark:bg-red-950/30 rounded border-l-2 border-red-500"
-                  >
-                    <code className="text-xs font-medium text-red-800 dark:text-red-300">
-                      {change.path}
-                    </code>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {byType.modified.length > 0 && (
-            <div>
-              <h5 className="text-sm font-medium mb-2 text-blue-600">
-                Modified Properties
-              </h5>
-              <div className="space-y-1">
-                {byType.modified.map((change) => (
-                  <div
-                    key={change.path}
-                    className="p-2 bg-blue-50 dark:bg-blue-950/30 rounded border-l-2 border-blue-500"
-                  >
-                    <code className="text-xs font-medium text-blue-800 dark:text-blue-300">
-                      {change.path}
-                    </code>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-    </Card>
   )
 }

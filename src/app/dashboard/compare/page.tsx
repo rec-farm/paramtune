@@ -1,9 +1,16 @@
 import { getPlatforms } from '@/models/Platform'
 import { getPlatform } from '@/models/Platform'
-import { compareSchemas } from '@/models/Schema'
+import { compareSchemas, getSchema, type Schema } from '@/models/Schema'
+import { type DiffResult } from '@/lib/schemaDiff'
 import CompareForm from './CompareForm'
 
 export const dynamic = 'force-dynamic'
+
+export type CompareResult = {
+  diffResult: DiffResult
+  schemaAContent: Record<string, unknown>
+  schemaBContent: Record<string, unknown>
+}
 
 export default async function ComparePage() {
   const platforms = await getPlatforms()
@@ -15,15 +22,25 @@ export default async function ComparePage() {
     return platform?.versions || []
   }
 
-  // Server action to compare schemas
+  // Server action to compare schemas and return content
   async function compareSchemasAction(
     platformA: string,
     versionA: string,
     platformB: string,
     versionB: string
-  ) {
+  ): Promise<CompareResult> {
     'use server'
-    return compareSchemas(platformA, versionA, platformB, versionB)
+    const [diffResult, schemaA, schemaB] = await Promise.all([
+      compareSchemas(platformA, versionA, platformB, versionB),
+      getSchema(platformA, versionA),
+      getSchema(platformB, versionB),
+    ])
+
+    return {
+      diffResult,
+      schemaAContent: (schemaA as Schema)?.content ?? {},
+      schemaBContent: (schemaB as Schema)?.content ?? {},
+    }
   }
 
   return (

@@ -199,3 +199,18 @@ export interface UseAutocompleteReturn {
   updateSuggestions: (text: string, cursorPos: number) => void
   setPosition: (position: { top: number; left: number }) => void
 }
+
+// Validation types
+export type ValidationIssueType = 'error' | 'warning'
+
+export interface ValidationIssue {
+  type: ValidationIssueType
+  message: string
+  line?: number
+  column?: number
+}
+
+export interface ValidationResult {
+  isValid: boolean
+  issues: ValidationIssue[]
+}

@@ -1,6 +1,8 @@
 'use client'
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { validateJson } from '../utils/validation'
+import type { ValidationIssue } from '../types'
 
 export interface OptimizedJsonEditorState {
   data: Record<string, unknown>
@@ -8,6 +10,7 @@ export interface OptimizedJsonEditorState {
   isValid: boolean
   errorMessage: string
   isDirty: boolean
+  issues: ValidationIssue[]
 }
 
 export interface OptimizedJsonEditorActions {
@@ -28,6 +31,8 @@ function safeParseJson(value?: string): Record<string, unknown> {
     const parsed = JSON.parse(value)
     return typeof parsed === 'object' && parsed !== null ? parsed : {}
   } catch {
+    // Intentionally silent - invalid JSON returns empty object
+    // This is expected during typing/editing
     return {}
   }
 }
@@ -45,6 +50,7 @@ export function useOptimizedJsonEditor({
     isValid: true,
     errorMessage: '',
     isDirty: false,
+    issues: [],
   })
 
   // Use refs to avoid unnecessary re-renders
@@ -65,25 +71,31 @@ export function useOptimizedJsonEditor({
         clearTimeout(validationTimeoutRef.current)
       }
 
-      // Debounced validation
+      // Debounced validation using new validation engine
       validationTimeoutRef.current = setTimeout(() => {
-        try {
-          const parsed = JSON.parse(value)
+        const result = validateJson(value)
+
+        if (result.isValid) {
+          // Parse to get data (we know it's valid JSON)
+          const parsed = safeParseJson(value)
           setState((prevState) => ({
             ...prevState,
             data: parsed,
             isValid: true,
             errorMessage: '',
             isDirty: false,
+            issues: result.issues,
           }))
           lastValidJsonRef.current = value
           onValidationChange?.(true)
-        } catch (error) {
+        } else {
+          // Get first error message for backwards compatibility
+          const firstError = result.issues.find((i) => i.type === 'error')
           setState((prevState) => ({
             ...prevState,
             isValid: false,
-            errorMessage:
-              error instanceof Error ? error.message : 'Invalid JSON syntax',
+            errorMessage: firstError?.message ?? 'Invalid JSON syntax',
+            issues: result.issues,
           }))
           onValidationChange?.(false)
         }
@@ -99,6 +111,7 @@ export function useOptimizedJsonEditor({
         ...prevState,
         jsonText: formatted,
         isDirty: false,
+        issues: [], // Clear warnings after formatting (they're cosmetic)
       }))
       lastValidJsonRef.current = formatted
     }
@@ -114,6 +127,7 @@ export function useOptimizedJsonEditor({
       isValid: true,
       errorMessage: '',
       isDirty: false,
+      issues: [],
     })
 
     lastValidJsonRef.current = newJsonText
@@ -131,6 +145,7 @@ export function useOptimizedJsonEditor({
       isValid: true,
       errorMessage: '',
       isDirty: false,
+      issues: [],
     })
 
     lastValidJsonRef.current = newJsonText

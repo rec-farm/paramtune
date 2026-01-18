@@ -337,3 +337,31 @@ async function cascadeDependents(
     }
   }
 }
+
+// Cross-schema comparison (for Phase 7 visual diff UI)
+
+import { diffSchemas, type DiffResult } from '@/lib/schemaDiff'
+
+/**
+ * Compare schemas across different platforms/versions
+ * Returns a diff result showing changes between the two schemas
+ */
+export async function compareSchemas(
+  platformA: string,
+  versionA: string,
+  platformB: string,
+  versionB: string
+): Promise<DiffResult> {
+  'use server'
+
+  const [schemaA, schemaB] = await Promise.all([
+    getSchema(platformA, versionA),
+    getSchema(platformB, versionB),
+  ])
+
+  // Handle empty schemas
+  const contentA = (schemaA as Schema)?.content ?? {}
+  const contentB = (schemaB as Schema)?.content ?? {}
+
+  return diffSchemas({ content: contentA } as Schema, { content: contentB } as Schema)
+}

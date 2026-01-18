@@ -1,28 +1,8 @@
 // Optimized syntax highlighter inspired by Monaco Editor
 // Only highlights visible lines and uses efficient regex patterns
 
-export interface SyntaxHighlightOptions {
-  highlightExtends?: boolean
-  highlightKeys?: boolean
-  highlightStrings?: boolean
-  highlightBooleans?: boolean
-  highlightNull?: boolean
-  highlightNumbers?: boolean
-  highlightBrackets?: boolean
-  highlightCommas?: boolean
-}
-
-export interface SyntaxHighlightTheme {
-  extends: string
-  keys: string
-  strings: string
-  booleans: string
-  null: string
-  numbers: string
-  brackets: string
-  commas: string
-  colons: string
-}
+import type { SyntaxHighlightOptions, SyntaxHighlightTheme } from '../types'
+import { EDITOR_CONSTANTS } from './editorConstants'
 
 const DARK_THEME: SyntaxHighlightTheme = {
   extends: 'text-cyan-400 font-bold bg-cyan-400/10 px-1 rounded',
@@ -66,10 +46,9 @@ const REGEX_PATTERNS = {
 
 // Cache for highlighted lines to avoid re-computation
 const highlightCache = new Map<string, string>()
-const CACHE_SIZE_LIMIT = 1000
 
 function clearCacheIfNeeded() {
-  if (highlightCache.size > CACHE_SIZE_LIMIT) {
+  if (highlightCache.size > EDITOR_CONSTANTS.CACHE_SIZE_LIMIT) {
     // Clear oldest 50% of cache
     const entries = Array.from(highlightCache.entries())
     const toDelete = entries.slice(0, Math.floor(entries.length / 2))
@@ -82,7 +61,7 @@ export function highlightJsonLine(
   options: SyntaxHighlightOptions = {},
   theme: SyntaxHighlightTheme = DARK_THEME
 ): string {
-  const cacheKey = `${line}-${JSON.stringify(options)}-${JSON.stringify(theme)}`
+  const cacheKey = `${line}-${Object.values(options).join('')}-${Object.values(theme).join('')}`
 
   if (highlightCache.has(cacheKey)) {
     return highlightCache.get(cacheKey)!
@@ -185,6 +164,17 @@ export function highlightJsonVisibleLines(
 
   return visibleLines
     .map((line, index) => highlightJsonLine(line, options, theme))
+    .join('\n')
+}
+
+// Optimized version that accepts pre-sliced visible lines array
+export function highlightVisibleLines(
+  visibleLines: string[],
+  options: SyntaxHighlightOptions = {},
+  theme: SyntaxHighlightTheme = DARK_THEME
+): string {
+  return visibleLines
+    .map((line) => highlightJsonLine(line, options, theme))
     .join('\n')
 }
 

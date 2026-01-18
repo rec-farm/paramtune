@@ -235,6 +235,12 @@ const JsonEditable = memo(function JsonEditable({
     Math.ceil((scrollTop + containerHeight) / lineHeight) + bufferLines
   )
 
+  // Memoize visible lines slice to prevent array recreation on every render
+  const visibleLines = useMemo(
+    () => lines.slice(visibleStart, visibleEnd + 1),
+    [lines, visibleStart, visibleEnd]
+  )
+
   // Extract error index from message like: "... at position 123"
   const errorIndex = useMemo(() => {
     if (!state.errorMessage) return null
@@ -414,9 +420,7 @@ const JsonEditable = memo(function JsonEditable({
 
           {syntaxHighlighting && (
             <SyntaxHighlightOverlay
-              jsonText={state.jsonText}
-              visibleStart={visibleStart}
-              visibleEnd={visibleEnd}
+              visibleLines={visibleLines}
               lineHeight={lineHeight}
               scrollTop={scrollTop}
               showLineNumbers={showLineNumbers}

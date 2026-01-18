@@ -4,7 +4,7 @@
 
 - ✅ **[v1.0 MVP](milestones/v1.0-ROADMAP.md)** — Phases 1-4 (shipped 2026-01-18)
 - ✅ **[v1.1 Schema Diff & Polish](milestones/v1.1-ROADMAP.md)** — Phases 5-8 (shipped 2026-01-18)
-- ✅ **v1.2 Performance & Polish** — Phases 9-12 (shipped 2026-01-18)
+- ✅ **[v1.2 Performance & Polish](milestones/v1.2-ROADMAP.md)** — Phases 9-12 (shipped 2026-01-18)
 
 ## Completed Milestones
 
@@ -28,49 +28,15 @@
 
 </details>
 
-### ✅ v1.2 Performance & Polish (SHIPPED 2026-01-18)
+<details>
+<summary>✅ v1.2 Performance & Polish (Phases 9-12) — SHIPPED 2026-01-18</summary>
 
-**Milestone Goal:** Make the editor feel fast and look modern
+- [x] Phase 9: Editor Performance (1/1 plan) — Debounced highlighting, memoized slices
+- [x] Phase 10: Page Load Optimization (1/1 plan) — Lazy loading, code splitting
+- [x] Phase 11: Dashboard Visual Refresh (1/1 plan) — Shadow system, card variants
+- [x] Phase 12: Responsive Design (1/1 plan) — Mobile header, touch targets
 
-#### Phase 9: Editor Performance
-
-**Goal**: Fix typing lag and optimize re-renders in syntax highlighting
-**Depends on**: Previous milestone complete
-**Research**: Unlikely (internal optimization)
-**Plans**: 1
-
-Plans:
-- [x] 09-01: Debounced highlighting, memoized slices, simplified cache
-
-#### Phase 10: Page Load Optimization
-
-**Goal**: Improve initial load times with bundle optimization and lazy loading
-**Depends on**: Phase 9
-**Research**: Unlikely (standard patterns)
-**Plans**: 1
-
-Plans:
-- [x] 10-01: Lazy load heavy client components
-
-#### Phase 11: Dashboard Visual Refresh
-
-**Goal**: Modern styling with updated colors, shadows, typography
-**Depends on**: Phase 10
-**Research**: Unlikely (internal UI work)
-**Plans**: 1
-
-Plans:
-- [x] 11-01: Shadow system, card variants, dashboard polish
-
-#### Phase 12: Responsive Design
-
-**Goal**: Dashboard/editor works well across different screen sizes
-**Depends on**: Phase 11
-**Research**: Unlikely (CSS patterns)
-**Plans**: 1
-
-Plans:
-- [x] 12-01: Mobile header, touch targets, responsive layouts
+</details>
 
 ## Progress
 

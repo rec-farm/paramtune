@@ -6,7 +6,7 @@ export interface CardProps extends HTMLAttributes<HTMLDivElement> {
   title?: string
   subtitle?: string
   actions?: React.ReactNode
-  variant?: 'default' | 'elevated' | 'outlined'
+  variant?: 'default' | 'elevated' | 'outlined' | 'interactive'
 }
 
 const Card = forwardRef<HTMLDivElement, CardProps>(
@@ -28,8 +28,9 @@ const Card = forwardRef<HTMLDivElement, CardProps>(
         className={cn(
           'card p-6 animate-in',
           {
-            'shadow-lg': variant === 'elevated',
+            'card-elevated': variant === 'elevated',
             'border-2': variant === 'outlined',
+            'card-interactive': variant === 'interactive',
           },
           className
         )}

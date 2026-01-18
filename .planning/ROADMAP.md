@@ -21,15 +21,15 @@
 
 **Milestone Goal:** Add schema comparison capabilities with visual diff while polishing the editor experience.
 
-#### Phase 5: Autocomplete Fixes & Editor Polish
+#### Phase 5: Autocomplete Fixes & Editor Polish ✓
 
 **Goal**: Fix autocomplete Enter key bug and improve autocomplete triggering behavior
 **Depends on**: v1.0 complete
 **Research**: Unlikely (internal patterns)
-**Plans**: TBD
+**Plans**: 1/1 complete
 
 Plans:
-- [ ] 05-01: TBD (run /gsd:plan-phase 5 to break down)
+- [x] 05-01: Autocomplete Enter key fix and trigger improvements
 
 #### Phase 6: Schema Diff Engine
 
@@ -69,7 +69,7 @@ Plans:
 | 2. Schema Validation | v1.0 | 1/1 | Complete | 2026-01-18 |
 | 3. Error Handling | v1.0 | 1/1 | Complete | 2026-01-18 |
 | 4. API & Docs | v1.0 | 1/1 | Complete | 2026-01-18 |
-| 5. Autocomplete Fixes | v1.1 | 0/? | Not started | - |
+| 5. Autocomplete Fixes | v1.1 | 1/1 | Complete | 2026-01-18 |
 | 6. Schema Diff Engine | v1.1 | 0/? | Not started | - |
 | 7. Visual Diff UI | v1.1 | 0/? | Not started | - |
 | 8. Editor Improvements | v1.1 | 0/? | Not started | - |

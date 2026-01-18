@@ -1,9 +1,12 @@
 import { revalidatePath } from 'next/cache'
 import { Suspense } from 'react'
+import Link from 'next/link'
+import { GitCompare } from 'lucide-react'
 
 import PageTitle from '@/components/PageTitle'
 import SchemaTabs from '@/components/SchemaTabs'
 import Badge from '@/components/ui/Badge'
+import Button from '@/components/ui/Button'
 import {
   getSchema,
   saveSchema,
@@ -51,14 +54,22 @@ export default async function Page({
         <div className="flex items-center justify-between gap-3">
           <PageTitle platform={platformName} version={versionName} />
           <div className="flex items-center gap-2">
+            <Link
+              href={`/dashboard/compare?platformA=${encodeURIComponent(platformName)}&versionA=${encodeURIComponent(versionName)}`}
+            >
+              <Button variant="outline" size="sm" className="gap-1.5">
+                <GitCompare className="h-3.5 w-3.5" />
+                Compare
+              </Button>
+            </Link>
             <Badge variant="secondary" className="text-xs">
               JSON Schema
             </Badge>
           </div>
         </div>
         <div className="text-xs text-muted-foreground">
-          {history.length} versions •{' '}
-          {(schema as any)?.dependencies?.length ?? 0} deps •{' '}
+          {history.length} {history.length === 1 ? 'version' : 'versions'} •{' '}
+          {(schema as any)?.dependencies?.length ?? 0} {(schema as any)?.dependencies?.length === 1 ? 'dep' : 'deps'} •{' '}
           {history[0]?.timestamp
             ? new Date(history[0].timestamp).toLocaleDateString()
             : '—'}

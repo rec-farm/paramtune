@@ -239,6 +239,44 @@ export async function previewJsonOutput(content: Record<string, unknown>) {
   return JSON.stringify(output)
 }
 
+export type SchemaValidationResult = {
+  valid: boolean
+  errors: string[]
+}
+
+export async function validateSchemaContent(
+  content: Record<string, unknown>
+): Promise<SchemaValidationResult> {
+  'use server'
+
+  const errors: string[] = []
+
+  // Check if content is a valid object
+  if (!isPlainObject(content)) {
+    return { valid: false, errors: ['Schema content must be a JSON object'] }
+  }
+
+  // Extract and validate @extends dependencies
+  const dependencies = findDependenciesInContent(content)
+
+  if (dependencies.length === 0) {
+    return { valid: true, errors: [] }
+  }
+
+  // Try to resolve each dependency and collect errors
+  for (const dependency of dependencies) {
+    try {
+      await resolveDependencies([dependency])
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : `Invalid dependency: ${dependency}`
+      errors.push(errorMessage)
+    }
+  }
+
+  return { valid: errors.length === 0, errors }
+}
+
 export type SchemaHistoryEntry = {
   timestamp: number
   content: Record<string, unknown>

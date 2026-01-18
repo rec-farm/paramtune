@@ -73,8 +73,8 @@ export default function SchemaTabs({
                 size="sm"
                 className={
                   isActive
-                    ? 'rounded-md h-8'
-                    : 'rounded-md text-muted-foreground h-8'
+                    ? 'rounded-md h-10 sm:h-8 text-sm'
+                    : 'rounded-md text-muted-foreground h-10 sm:h-8 text-sm'
                 }
                 onClick={() => setActive(tab)}
               >

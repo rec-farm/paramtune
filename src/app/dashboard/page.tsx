@@ -62,7 +62,7 @@ export default async function Page() {
                 <Link
                   key={platform.name}
                   href={href}
-                  className="group relative card card-interactive p-5 border-border/50 focus:outline-none focus:ring-2 focus:ring-ring"
+                  className="group relative card card-interactive p-4 sm:p-5 border-border/50 focus:outline-none focus:ring-2 focus:ring-ring min-h-[100px]"
                 >
                   <div className="space-y-4">
                     <div className="flex items-start justify-between">

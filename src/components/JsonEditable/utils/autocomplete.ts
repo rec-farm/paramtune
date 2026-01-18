@@ -136,17 +136,45 @@ function extractPrefix(line: string, inString: boolean): string {
 }
 
 /**
+ * Check if we're at a position where key suggestions make sense
+ * Returns true if cursor is immediately after an opening quote for a key
+ */
+function isAtKeyPosition(line: string, inString: boolean): boolean {
+  if (!inString) return false
+
+  const trimmed = line.trimStart()
+
+  // Line should start with opening quote (we're typing a key)
+  // Pattern: optional whitespace, then opening quote, then optional partial key
+  if (!trimmed.startsWith('"')) return false
+
+  // Count quotes - should be exactly 1 (the opening quote)
+  let quoteCount = 0
+  for (let i = 0; i < line.length; i++) {
+    if (line[i] === '"' && (i === 0 || line[i - 1] !== '\\')) {
+      quoteCount++
+    }
+  }
+
+  // We're in a key if we have exactly one quote (opening quote, typing key)
+  return quoteCount === 1
+}
+
+/**
  * Get suggestions based on context
  */
 export function getSuggestions(
   context: AutocompleteContext,
   existingKeys: string[] = []
 ): AutocompleteSuggestion[] {
-  const { prefix, afterColon, inString } = context
+  const { prefix, afterColon, inString, line } = context
 
-  // Don't show suggestions if:
-  // - We're in the middle of a word (prefix should match word boundary)
-  // - The prefix is too short and we're not explicitly typing
+  // Don't show suggestions on empty or whitespace-only lines
+  if (line.trim().length === 0) {
+    return []
+  }
+
+  // Don't show suggestions if we're not in a meaningful context
   if (!inString && context.line.length > 0) {
     const lastChar = context.line[context.line.length - 1]
     // Don't suggest if we're not at a word boundary
@@ -157,6 +185,11 @@ export function getSuggestions(
 
   // If we're after a colon, suggest values
   if (afterColon && !inString) {
+    // Only show value suggestions if user has typed at least one character
+    // or is typing keywords like t(rue), f(alse), n(ull)
+    if (prefix.length === 0) {
+      return []
+    }
     return getValueSuggestions(prefix)
   }
 
@@ -165,7 +198,14 @@ export function getSuggestions(
     return getStringValueSuggestions(prefix)
   }
 
-  // Otherwise, suggest keys
+  // For key suggestions: require being in a key position
+  if (!isAtKeyPosition(line, inString)) {
+    return []
+  }
+
+  // Show key suggestions when:
+  // 1. User just typed opening quote (prefix is empty but we're at key position)
+  // 2. User is typing a partial key (prefix.length >= 1)
   return getKeySuggestions(prefix, existingKeys)
 }
 

@@ -1,7 +1,7 @@
 'use client'
 
 import { memo, useMemo } from 'react'
-import { highlightJsonVisibleLines } from '../utils/optimizedSyntaxHighlighter'
+import { highlightJsonVisibleLines, getTheme } from '../utils/optimizedSyntaxHighlighter'
 
 interface SyntaxHighlightOverlayProps {
   jsonText: string
@@ -10,6 +10,7 @@ interface SyntaxHighlightOverlayProps {
   lineHeight: number
   scrollTop: number
   showLineNumbers: boolean
+  theme?: 'light' | 'dark'
 }
 
 export const SyntaxHighlightOverlay = memo(function SyntaxHighlightOverlay({
@@ -19,10 +20,12 @@ export const SyntaxHighlightOverlay = memo(function SyntaxHighlightOverlay({
   lineHeight,
   scrollTop,
   showLineNumbers,
+  theme = 'dark',
 }: SyntaxHighlightOverlayProps) {
   const highlightedContent = useMemo(() => {
-    return highlightJsonVisibleLines(jsonText, visibleStart, visibleEnd)
-  }, [jsonText, visibleStart, visibleEnd])
+    const themeConfig = getTheme(theme)
+    return highlightJsonVisibleLines(jsonText, visibleStart, visibleEnd, {}, themeConfig)
+  }, [jsonText, visibleStart, visibleEnd, theme])
 
   const overlayStyle = useMemo(
     () => ({

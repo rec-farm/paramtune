@@ -12,7 +12,7 @@ export interface JsonEditableProps {
   showActions?: boolean
   syntaxHighlighting?: boolean
   autoFormat?: boolean
-  theme?: 'default' | 'dark' | 'light'
+  theme?: 'light' | 'dark'
   renderToolbar?: (args: {
     isValid: boolean
     errorMessage?: string
@@ -138,7 +138,7 @@ export interface JsonEditorConfig {
   actions: boolean
 }
 
-export type JsonEditorTheme = 'default' | 'dark' | 'light'
+export type JsonEditorTheme = 'light' | 'dark'
 
 export interface JsonValidationResult {
   isValid: boolean

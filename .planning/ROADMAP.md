@@ -3,7 +3,7 @@
 ## Milestones
 
 - ✅ **[v1.0 MVP](milestones/v1.0-ROADMAP.md)** — Phases 1-4 (shipped 2026-01-18)
-- ✅ **v1.1 Schema Diff & Polish** — Phases 5-8 (shipped 2026-01-18)
+- ✅ **[v1.1 Schema Diff & Polish](milestones/v1.1-ROADMAP.md)** — Phases 5-8 (shipped 2026-01-18)
 
 ## Completed Milestones
 
@@ -17,49 +17,15 @@
 
 </details>
 
-### ✅ v1.1 Schema Diff & Polish (Complete)
+<details>
+<summary>✅ v1.1 Schema Diff & Polish (Phases 5-8) — SHIPPED 2026-01-18</summary>
 
-**Milestone Goal:** Add schema comparison capabilities with visual diff while polishing the editor experience.
+- [x] Phase 5: Autocomplete Fixes (1/1 plan) — Enter key fix, smarter triggers
+- [x] Phase 6: Schema Diff Engine (1/1 plan) — Reusable diff module
+- [x] Phase 7: Visual Diff UI (1/1 plan) — Side-by-side comparison page
+- [x] Phase 8: Editor Improvements (1/1 plan) — Hover tooltip, loading indicator
 
-#### Phase 5: Autocomplete Fixes & Editor Polish ✓
-
-**Goal**: Fix autocomplete Enter key bug and improve autocomplete triggering behavior
-**Depends on**: v1.0 complete
-**Research**: Unlikely (internal patterns)
-**Plans**: 1/1 complete
-
-Plans:
-- [x] 05-01: Autocomplete Enter key fix and trigger improvements
-
-#### Phase 6: Schema Diff Engine ✓
-
-**Goal**: Build change detection engine to enumerate differences between schema versions
-**Depends on**: Phase 5
-**Research**: Unlikely (JSON diff patterns)
-**Plans**: 1/1 complete
-
-Plans:
-- [x] 06-01: Extract diff engine and add cross-schema comparison
-
-#### Phase 7: Visual Diff UI ✓
-
-**Goal**: Create side-by-side comparison view with highlighted changes
-**Depends on**: Phase 6
-**Research**: Unlikely (internal patterns)
-**Plans**: 1/1 complete
-
-Plans:
-- [x] 07-01: Side-by-side schema comparison page with visual diff highlighting
-
-#### Phase 8: Editor Improvements ✓
-
-**Goal**: Performance optimization and clearer validation feedback
-**Depends on**: Phase 7
-**Research**: Unlikely (internal patterns)
-**Plans**: 1/1 complete
-
-Plans:
-- [x] 08-01: Hover-only error tooltip and validation loading indicator
+</details>
 
 ## Progress
 

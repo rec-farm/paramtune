@@ -3,7 +3,7 @@
 ## Milestones
 
 - ✅ **[v1.0 MVP](milestones/v1.0-ROADMAP.md)** — Phases 1-4 (shipped 2026-01-18)
-- 🚧 **v1.1 Schema Diff & Polish** — Phases 5-8 (in progress)
+- ✅ **v1.1 Schema Diff & Polish** — Phases 5-8 (shipped 2026-01-18)
 
 ## Completed Milestones
 
@@ -17,7 +17,7 @@
 
 </details>
 
-### 🚧 v1.1 Schema Diff & Polish (In Progress)
+### ✅ v1.1 Schema Diff & Polish (Complete)
 
 **Milestone Goal:** Add schema comparison capabilities with visual diff while polishing the editor experience.
 
@@ -51,15 +51,15 @@ Plans:
 Plans:
 - [x] 07-01: Side-by-side schema comparison page with visual diff highlighting
 
-#### Phase 8: Editor Improvements
+#### Phase 8: Editor Improvements ✓
 
 **Goal**: Performance optimization and clearer validation feedback
 **Depends on**: Phase 7
 **Research**: Unlikely (internal patterns)
-**Plans**: TBD
+**Plans**: 1/1 complete
 
 Plans:
-- [ ] 08-01: TBD
+- [x] 08-01: Hover-only error tooltip and validation loading indicator
 
 ## Progress
 
@@ -72,9 +72,9 @@ Plans:
 | 5. Autocomplete Fixes | v1.1 | 1/1 | Complete | 2026-01-18 |
 | 6. Schema Diff Engine | v1.1 | 1/1 | Complete | 2026-01-18 |
 | 7. Visual Diff UI | v1.1 | 1/1 | Complete | 2026-01-18 |
-| 8. Editor Improvements | v1.1 | 0/? | Not started | - |
+| 8. Editor Improvements | v1.1 | 1/1 | Complete | 2026-01-18 |
 
-**Overall:** v1.0 complete, v1.1 in progress
+**Overall:** v1.0 complete, v1.1 complete
 
 ## Domain Expertise
 

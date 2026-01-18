@@ -8,6 +8,7 @@ interface JsonTextareaProps {
   onChange: (value: string) => void
   onKeyDown: (e: React.KeyboardEvent<HTMLTextAreaElement>) => void
   onScroll?: (e: React.UIEvent<HTMLTextAreaElement>) => void
+  onSelect?: () => void
   isValid: boolean
   placeholder?: string
   minHeight?: number
@@ -26,6 +27,7 @@ export const JsonTextarea = memo(
       onChange,
       onKeyDown,
       onScroll,
+      onSelect,
       isValid,
       placeholder = 'Enter valid JSON...',
       minHeight = 400,
@@ -99,6 +101,8 @@ export const JsonTextarea = memo(
           onChange={(e) => onChange(e.target.value)}
           onKeyDown={onKeyDown}
           onScroll={handleScroll}
+          onSelect={onSelect}
+          onClick={onSelect}
           placeholder={placeholder}
           spellCheck={false}
         />

@@ -43,8 +43,8 @@ export default async function Page() {
       >
         {platforms.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
-            <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
-              <div className="w-8 h-8 rounded bg-muted-foreground/20" />
+            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/20 to-muted flex items-center justify-center mb-4">
+              <div className="w-8 h-8 rounded bg-primary/30 animate-pulse" />
             </div>
             <h3 className="text-lg font-semibold mb-2">No platforms yet</h3>
             <p className="text-muted-foreground text-sm max-w-sm">
@@ -62,7 +62,7 @@ export default async function Page() {
                 <Link
                   key={platform.name}
                   href={href}
-                  className="group relative card p-5 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-200 border-border/50 hover:border-border focus:outline-none focus:ring-2 focus:ring-ring"
+                  className="group relative card card-interactive p-5 border-border/50 focus:outline-none focus:ring-2 focus:ring-ring"
                 >
                   <div className="space-y-4">
                     <div className="flex items-start justify-between">
@@ -72,7 +72,7 @@ export default async function Page() {
                         </h3>
                         <div className="flex items-center gap-2">
                           <Badge variant="secondary" className="text-xs">
-                            {platform.versions?.length || 0} versions
+                            {platform.versions?.length || 0} {platform.versions?.length === 1 ? 'version' : 'versions'}
                           </Badge>
                           <Badge variant="success" className="text-[10px]">
                             Active

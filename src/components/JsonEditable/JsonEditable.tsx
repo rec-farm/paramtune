@@ -1,19 +1,22 @@
 'use client'
 
-import { memo, useCallback, useMemo, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { useOptimizedJsonEditor } from './hooks/useOptimizedJsonEditor'
 import { useTextareaRef } from './hooks/useTextareaRef'
+import { useAutocomplete } from './hooks/useAutocomplete'
 import {
   createKeyboardHandlers,
-  createKeyDownHandler,
+  createAutocompleteKeyDownHandler,
 } from './utils/keyboardHandlers'
+import { getAutocompleteContext } from './utils/autocomplete'
 import { ValidationStatus } from './components/ValidationStatus'
 import { ActionButtons } from './components/ActionButtons'
 import { ErrorDisplay } from './components/ErrorDisplay'
+import { AutocompletePopup } from './components/AutocompletePopup'
 import { JsonTextarea } from './components/HighPerformanceTextarea'
 import { SyntaxHighlightOverlay } from './components/VirtualizedSyntaxOverlay'
 import { copyToClipboard, downloadAsJson } from '@/lib/fileUtils'
-import type { JsonEditableProps } from './types'
+import type { JsonEditableProps, AutocompleteSuggestion } from './types'
 
 const JsonEditable = memo(function JsonEditable({
   title,
@@ -46,6 +49,9 @@ const JsonEditable = memo(function JsonEditable({
   const [scrollTop, setScrollTop] = useState(0)
   const [containerHeight, setContainerHeight] = useState(minHeight)
 
+  // Autocomplete hook
+  const autocomplete = useAutocomplete()
+
   const keyboardHandlers = useMemo(
     () =>
       createKeyboardHandlers({
@@ -62,14 +68,142 @@ const JsonEditable = memo(function JsonEditable({
     ]
   )
 
-  const handleKeyDown = useMemo(
-    () => createKeyDownHandler(keyboardHandlers),
-    [keyboardHandlers]
+  // Handle accepting an autocomplete suggestion
+  const handleAcceptSuggestion = useCallback(
+    (suggestion: AutocompleteSuggestion) => {
+      if (!textareaRef.current) return
+
+      const textarea = textareaRef.current
+      const cursorPos = textarea.selectionStart
+      const text = textarea.value
+
+      // Get context to know what prefix to replace
+      const context = getAutocompleteContext(text, cursorPos)
+      const prefixLength = context.prefix.length
+
+      // If we're in a string, we also need to account for the opening quote
+      const replaceStart = context.inString
+        ? cursorPos - prefixLength
+        : cursorPos - prefixLength
+
+      // Build the replacement text
+      const beforePrefix = text.slice(0, replaceStart)
+      const afterCursor = text.slice(cursorPos)
+
+      // Insert the suggestion text
+      const newText = beforePrefix + suggestion.insertText + afterCursor
+      actions.setJsonText(newText)
+
+      // Set cursor position after the inserted text
+      const newCursorPos = replaceStart + suggestion.insertText.length
+      requestAnimationFrame(() => {
+        setCursorPosition(newCursorPos)
+      })
+    },
+    [textareaRef, actions, setCursorPosition]
+  )
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+      const autocompleteHandlers = {
+        visible: autocomplete.visible,
+        selectNext: autocomplete.selectNext,
+        selectPrev: autocomplete.selectPrev,
+        acceptSuggestion: autocomplete.acceptSuggestion,
+        dismiss: autocomplete.dismiss,
+      }
+
+      const handler = createAutocompleteKeyDownHandler(
+        keyboardHandlers,
+        autocompleteHandlers,
+        handleAcceptSuggestion
+      )
+
+      handler(e)
+    },
+    [keyboardHandlers, autocomplete, handleAcceptSuggestion]
   )
 
   const handleScroll = useCallback((e: React.UIEvent<HTMLTextAreaElement>) => {
     setScrollTop(e.currentTarget.scrollTop)
-  }, [])
+    // Dismiss autocomplete on scroll
+    autocomplete.dismiss()
+  }, [autocomplete])
+
+  // Calculate autocomplete popup position from cursor
+  const updateAutocompletePosition = useCallback(() => {
+    if (!textareaRef.current) return
+
+    const textarea = textareaRef.current
+    const cursorPos = textarea.selectionStart
+    const text = textarea.value
+
+    // Count lines before cursor
+    const textBeforeCursor = text.slice(0, cursorPos)
+    const linesBeforeCursor = textBeforeCursor.split('\n')
+    const lineIndex = linesBeforeCursor.length - 1
+    const columnIndex = linesBeforeCursor[lineIndex]?.length || 0
+
+    // Calculate position
+    const lineHeight = 24
+    const charWidth = 9.6 // Approximate monospace character width
+    const gutterWidth = showLineNumbers ? 48 : 16
+    const paddingTop = 16
+
+    // Account for scroll
+    const top = paddingTop + lineIndex * lineHeight - scrollTop + lineHeight + 4
+    const left = gutterWidth + columnIndex * charWidth
+
+    autocomplete.setPosition({ top, left })
+  }, [textareaRef, showLineNumbers, scrollTop, autocomplete])
+
+  // Handle text changes and update autocomplete
+  const handleTextChange = useCallback(
+    (value: string) => {
+      actions.setJsonText(value)
+
+      // Update autocomplete suggestions
+      if (textareaRef.current) {
+        const cursorPos = textareaRef.current.selectionStart
+        autocomplete.updateSuggestions(value, cursorPos)
+        updateAutocompletePosition()
+      }
+    },
+    [actions, textareaRef, autocomplete, updateAutocompletePosition]
+  )
+
+  // Handle cursor position changes (clicks, arrow keys)
+  const handleSelect = useCallback(() => {
+    if (!textareaRef.current) return
+
+    const cursorPos = textareaRef.current.selectionStart
+    const text = textareaRef.current.value
+
+    // Dismiss if there's a selection range
+    if (textareaRef.current.selectionStart !== textareaRef.current.selectionEnd) {
+      autocomplete.dismiss()
+      return
+    }
+
+    // Update suggestions for new cursor position
+    autocomplete.updateSuggestions(text, cursorPos)
+    updateAutocompletePosition()
+  }, [textareaRef, autocomplete, updateAutocompletePosition])
+
+  // Dismiss autocomplete when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (
+        textareaRef.current &&
+        !textareaRef.current.contains(e.target as Node)
+      ) {
+        autocomplete.dismiss()
+      }
+    }
+
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [textareaRef, autocomplete])
 
   // Use ResizeObserver for better resize detection
   const handleResize = useCallback(() => {
@@ -170,14 +304,24 @@ const JsonEditable = memo(function JsonEditable({
           <JsonTextarea
             ref={textareaRef}
             value={state.jsonText}
-            onChange={actions.setJsonText}
+            onChange={handleTextChange}
             onKeyDown={handleKeyDown}
             onScroll={handleScroll}
+            onSelect={handleSelect}
             isValid={state.isValid}
             placeholder={placeholder}
             minHeight={minHeight}
             showLineNumbers={showLineNumbers}
             maskText={syntaxHighlighting}
+          />
+
+          {/* Autocomplete popup */}
+          <AutocompletePopup
+            suggestions={autocomplete.suggestions}
+            selectedIndex={autocomplete.selectedIndex}
+            onSelect={handleAcceptSuggestion}
+            position={autocomplete.position}
+            visible={autocomplete.visible}
           />
 
           {/* Error line highlight */}

@@ -1,4 +1,12 @@
-import { UseTextareaRefReturn } from '../hooks/useTextareaRef'
+import type { AutocompleteSuggestion } from '../types'
+
+export interface AutocompleteHandlers {
+  visible: boolean
+  selectNext: () => void
+  selectPrev: () => void
+  acceptSuggestion: () => AutocompleteSuggestion | null
+  dismiss: () => void
+}
 
 export interface KeyboardHandlerOptions {
   insertTextAtCursor: (text: string) => void
@@ -264,6 +272,87 @@ export function createKeyDownHandler(
         break
       case '"':
         handlers.handleQuote(e)
+        break
+      default:
+        // Let other keys pass through
+        break
+    }
+  }
+}
+
+/**
+ * Create a keyboard handler that integrates autocomplete
+ */
+export function createAutocompleteKeyDownHandler(
+  baseHandlers: ReturnType<typeof createKeyboardHandlers>,
+  autocomplete: AutocompleteHandlers,
+  onAcceptSuggestion: (suggestion: AutocompleteSuggestion) => void
+) {
+  return (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    // Handle autocomplete navigation when popup is visible
+    if (autocomplete.visible) {
+      switch (e.key) {
+        case 'ArrowDown':
+          e.preventDefault()
+          autocomplete.selectNext()
+          return
+        case 'ArrowUp':
+          e.preventDefault()
+          autocomplete.selectPrev()
+          return
+        case 'Enter':
+          // Accept suggestion instead of normal Enter behavior
+          e.preventDefault()
+          const suggestion = autocomplete.acceptSuggestion()
+          if (suggestion) {
+            onAcceptSuggestion(suggestion)
+          }
+          return
+        case 'Escape':
+          e.preventDefault()
+          autocomplete.dismiss()
+          return
+        case 'Tab':
+          // Accept suggestion on Tab as well
+          e.preventDefault()
+          const tabSuggestion = autocomplete.acceptSuggestion()
+          if (tabSuggestion) {
+            onAcceptSuggestion(tabSuggestion)
+          }
+          return
+      }
+    }
+
+    // If Escape is pressed without autocomplete visible, don't prevent default
+    if (e.key === 'Escape') {
+      return
+    }
+
+    // Fall through to normal keyboard handling
+    switch (e.key) {
+      case 'Tab':
+        baseHandlers.handleTab(e)
+        break
+      case 'Enter':
+        baseHandlers.handleEnter(e)
+        break
+      case ':':
+        baseHandlers.handleColon(e)
+        break
+      case '}':
+        baseHandlers.handleClosingBrace(e)
+        break
+      case ']':
+        baseHandlers.handleClosingBracket(e)
+        break
+      case '{':
+        baseHandlers.handleOpeningBrace(e)
+        break
+      case '[':
+        baseHandlers.handleOpeningBracket(e)
+        break
+      case '"':
+        baseHandlers.handleQuote(e)
         break
       default:
         // Let other keys pass through

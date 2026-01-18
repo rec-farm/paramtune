@@ -2,21 +2,21 @@
 
 ## Project Reference
 
-See: .planning/PROJECT.md (updated 2026-01-17)
+See: .planning/PROJECT.md (updated 2026-01-18)
 
 **Core value:** Editing schemas should be a joy, not a pain.
-**Current focus:** Milestone v1.0 COMPLETE
+**Current focus:** Planning next milestone
 
 ## Current Position
 
-Phase: 4 of 4 (API & Docs) - COMPLETE
-Plan: 1 of 1 in current phase
-Status: Milestone complete
-Last activity: 2026-01-18 — Completed 04-01-PLAN.md
+Milestone: v1.0 MVP shipped
+Phase: None active
+Status: Ready for next milestone
+Last activity: 2026-01-18 — v1.0 milestone archived
 
-Progress: ██████████ 100%
+Progress: v1.0 ██████████ 100%
 
-## Performance Metrics
+## Performance Metrics (v1.0)
 
 **Velocity:**
 - Total plans completed: 5
@@ -32,20 +32,11 @@ Progress: ██████████ 100%
 | 3. Error Handling | 1 | ~3 min | ~3 min |
 | 4. API & Docs | 1 | ~4 min | ~4 min |
 
-**Recent Trend:**
-- Last 5 plans: 01-01 (~25 min), 01-02 (~10 min), 02-01 (~5 min), 03-01 (~3 min), 04-01 (~4 min)
-- Trend: Improving
-
 ## Accumulated Context
 
 ### Decisions
 
-| Phase | Decision | Rationale |
-|-------|----------|-----------|
-| 02-01 | Separate actions file for server imports | Next.js client/server component separation |
-| 02-01 | Warnings don't block save | Only syntax errors should prevent saving |
-| 03-01 | Dev/prod error distinction | Show details in dev, generic in production |
-| 04-01 | OpenAPI 3.0.3 format | Broad compatibility with tools |
+Decisions archived in PROJECT.md Key Decisions table.
 
 ### Deferred Issues
 
@@ -58,5 +49,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-18
-Stopped at: Milestone v1.0 complete
+Stopped at: v1.0 milestone archived
 Resume file: None

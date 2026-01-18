@@ -31,15 +31,15 @@
 Plans:
 - [x] 05-01: Autocomplete Enter key fix and trigger improvements
 
-#### Phase 6: Schema Diff Engine
+#### Phase 6: Schema Diff Engine ✓
 
 **Goal**: Build change detection engine to enumerate differences between schema versions
 **Depends on**: Phase 5
 **Research**: Unlikely (JSON diff patterns)
-**Plans**: TBD
+**Plans**: 1/1 complete
 
 Plans:
-- [ ] 06-01: TBD
+- [x] 06-01: Extract diff engine and add cross-schema comparison
 
 #### Phase 7: Visual Diff UI
 
@@ -70,7 +70,7 @@ Plans:
 | 3. Error Handling | v1.0 | 1/1 | Complete | 2026-01-18 |
 | 4. API & Docs | v1.0 | 1/1 | Complete | 2026-01-18 |
 | 5. Autocomplete Fixes | v1.1 | 1/1 | Complete | 2026-01-18 |
-| 6. Schema Diff Engine | v1.1 | 0/? | Not started | - |
+| 6. Schema Diff Engine | v1.1 | 1/1 | Complete | 2026-01-18 |
 | 7. Visual Diff UI | v1.1 | 0/? | Not started | - |
 | 8. Editor Improvements | v1.1 | 0/? | Not started | - |
 

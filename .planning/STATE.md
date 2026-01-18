@@ -10,12 +10,12 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 ## Current Position
 
 Milestone: v1.1 Schema Diff & Polish
-Phase: 5 of 8 (Autocomplete Fixes & Editor Polish)
+Phase: 6 of 8 (Schema Diff Engine)
 Plan: 1 of 1 in current phase
 Status: Phase complete
-Last activity: 2026-01-18 — Completed 05-01-PLAN.md
+Last activity: 2026-01-18 — Completed 06-01-PLAN.md
 
-Progress: █░░░░░░░░░ 12.5%
+Progress: ██░░░░░░░░ 25%
 
 ## Performance Metrics (v1.0)
 

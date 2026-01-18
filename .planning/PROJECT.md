@@ -2,7 +2,7 @@
 
 ## What This Is
 
-A schema/configuration management system for managing versioned JSON schemas across platforms. Features a dashboard for editing schemas with inheritance support (`@extends`), Redis-backed persistence with automatic version history, and an API for external consumers.
+A schema/configuration management system for managing versioned JSON schemas across platforms. Features a dashboard with syntax-highlighted JSON editor, autocomplete, real-time validation, Redis-backed persistence with version history, and documented REST API for external consumers.
 
 ## Core Value
 
@@ -20,28 +20,37 @@ A schema/configuration management system for managing versioned JSON schemas acr
 - ✓ Dashboard with sidebar navigation — existing
 - ✓ API endpoints for platforms/schemas — existing
 - ✓ CORS support for external consumers — existing
+- ✓ Autocomplete with contextual JSON suggestions — v1.0
+- ✓ Light/dark theme support for syntax highlighting — v1.0
+- ✓ Real-time validation with error/warning distinction — v1.0
+- ✓ Pre-save @extends dependency validation — v1.0
+- ✓ React Error Boundaries for graceful error recovery — v1.0
+- ✓ Type-safe API error handling — v1.0
+- ✓ OpenAPI specification and API documentation page — v1.0
 
 ### Active
 
-- [ ] Editor UX improvements — syntax highlighting, autocomplete, better editing experience
-- [ ] Schema validation — type checking, linting, validation rules before save
-- [ ] API consumption — better API docs, possibly SDKs/client libraries
 - [ ] Collaboration features — multi-user support, permissions, change tracking
 - [ ] Performance improvements — faster loading, caching, optimization
-- [ ] Reliability improvements — error handling, testing, stability
+- [ ] Testing — unit tests, integration tests, E2E tests
+- [ ] Structured logging — replace console.log with proper logging
 
 ### Out of Scope
 
-(None specified — all mentioned features are fair game)
+- SDK/client libraries — API is documented, consumers can use fetch
+- Mobile app — web-first approach, responsive design works
 
 ## Context
 
-**Current State:**
+**Current State (v1.0):**
 - Next.js 16 with App Router and React Server Components
-- 19 client components for interactivity
-- Redis sorted sets for versioned data storage
-- No test framework currently installed
-- shadcn/ui component architecture
+- 6,932 lines of TypeScript across 39 files
+- JSON editor with autocomplete, validation, syntax highlighting
+- Light/dark theme support
+- React Error Boundaries on all dashboard routes
+- Type-safe API error handling with dev/prod distinction
+- OpenAPI 3.0 spec at /openapi.yaml
+- API docs page at /api-docs
 
 **Technical Environment:**
 - TypeScript 5.9.3, pnpm 10.19.0
@@ -50,10 +59,8 @@ A schema/configuration management system for managing versioned JSON schemas acr
 - Deployable via Vercel or Docker
 
 **Known Issues:**
-- Server actions throw errors that clients see as generic (needs improvement)
-- JSON.parse for schema content lacks proper try/catch
-- No structured logging framework
-- Console.log used for debugging
+- No test framework currently installed
+- No structured logging framework (console.log still used)
 
 ## Constraints
 
@@ -64,8 +71,14 @@ A schema/configuration management system for managing versioned JSON schemas acr
 
 | Decision | Rationale | Outcome |
 |----------|-----------|---------|
-| Redis-only persistence | Simplicity, existing investment, version history built-in | — Pending |
-| Editor UX as core priority | If editing is painful, adoption fails | — Pending |
+| Redis-only persistence | Simplicity, existing investment, version history built-in | ✓ Good |
+| Editor UX as core priority | If editing is painful, adoption fails | ✓ Good — autocomplete + validation shipped |
+| Pure TypeScript autocomplete | No external libraries, full control | ✓ Good |
+| 100ms debounce for suggestions | Balance responsiveness and performance | ✓ Good |
+| Separate actions file for server imports | Next.js client/server component separation | ✓ Good |
+| Warnings don't block save | Only errors should prevent saving | ✓ Good |
+| Dev/prod error distinction | Helpful for debugging, safe in production | ✓ Good |
+| OpenAPI 3.0.3 format | Broad compatibility with tools | ✓ Good |
 
 ---
-*Last updated: 2026-01-17 after initialization*
+*Last updated: 2026-01-18 after v1.0 milestone*

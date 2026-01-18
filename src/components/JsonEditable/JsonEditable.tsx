@@ -397,10 +397,10 @@ const JsonEditable = memo(function JsonEditable({
                     background: 'rgb(239, 68, 68)',
                   }}
                 />
-                {/* tooltip */}
+                {/* tooltip - hover only */}
                 <div
                   role="tooltip"
-                  className="absolute block text-xs bg-red-600 text-white px-2 py-1 rounded shadow-lg whitespace-pre max-w-sm"
+                  className="absolute text-xs bg-red-600 text-white px-2 py-1 rounded shadow-lg whitespace-pre max-w-sm opacity-0 group-hover:opacity-100 transition-opacity"
                   style={{
                     top: -28,
                     left: 0,

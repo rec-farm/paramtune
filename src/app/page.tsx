@@ -1,10 +1,20 @@
+import dynamic from 'next/dynamic'
 import Badge from '@/components/ui/Badge'
 import Button from '@/components/ui/Button'
 import Card from '@/components/ui/Card'
 import Footer from '@/components/Footer'
+import NavHeader from '@/components/NavHeader'
 import Link from 'next/link'
+
+const MockDashboard = dynamic(() => import('@/components/MockDashboard'), {
+  loading: () => <div className="min-h-[400px]" />,
+})
+
+const QuickStart = dynamic(() => import('@/components/QuickStart'), {
+  loading: () => <div className="min-h-[300px]" />,
+})
 import { Stick } from 'next/font/google'
-import { Rocket, Edit, Eye, Link2, Moon, Keyboard, Wrench } from 'lucide-react'
+import { Github, Smartphone, Server, Users } from 'lucide-react'
 
 const stick = Stick({
   weight: '400',
@@ -14,6 +24,7 @@ const stick = Stick({
 export default function Home() {
   return (
     <>
+      <NavHeader />
       <main className="relative pb-12 md:pb-16">
         <div className="pointer-events-none absolute inset-0 bg-grid" />
 
@@ -22,7 +33,6 @@ export default function Home() {
           <div className="mx-auto max-w-4xl space-y-6 md:space-y-7">
             <div className="space-y-4 md:space-y-5">
               <Badge variant="secondary" className="mb-4 gap-2">
-                <Rocket className="w-4 h-4" />
                 Open source • Self-hosted • API-first
               </Badge>
               <h1 className="text-5xl md:text-7xl font-bold tracking-tighter">
@@ -33,33 +43,84 @@ export default function Home() {
                 </span>
               </h1>
               <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-                ParamTune is a free, open source configuration hub for teams who
-                want full control. Self-host it anywhere and manage platform
-                schemas and versions through a fast UI and a simple, JSON-first
-                API.
+                Stop scattering configs across repos and services. ParamTune
+                gives your team one place to manage, version, and validate JSON
+                schemas for every platform—fully self-hosted, so you own your
+                data.
               </p>
             </div>
 
             <div className="flex items-center justify-center gap-3 md:gap-4 pt-3">
-              <Link href="/dashboard">
-                <Button size="lg" className="gap-2">
-                  <svg
-                    className="w-5 h-5"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"
-                    />
-                  </svg>
-                  Open Dashboard
+              <a href="#quickstart">
+                <Button size="lg">Get Started</Button>
+              </a>
+              <Link
+                href="https://github.com"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                <Button variant="outline" size="lg" className="gap-2">
+                  <Github className="w-4 h-4" />
+                  View on GitHub
                 </Button>
               </Link>
             </div>
+          </div>
+        </section>
+
+        {/* Product Screenshot */}
+        <section className="relative mx-auto max-w-6xl px-6 pb-16 md:pb-20">
+          <MockDashboard />
+        </section>
+
+        {/* Quick Start */}
+        <QuickStart />
+
+        {/* Who It's For Section */}
+        <section className="relative mx-auto max-w-6xl px-6 py-16 md:py-20">
+          <div className="text-center mb-10 md:mb-12">
+            <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-3">
+              Who It's For
+            </h2>
+            <p className="text-muted-foreground max-w-xl mx-auto">
+              ParamTune is built for teams that need control over their
+              configuration without vendor lock-in.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {[
+              {
+                icon: <Smartphone className="w-6 h-6" />,
+                title: 'Mobile Teams',
+                description:
+                  'Manage feature flags and remote configs across iOS and Android releases with schema validation.',
+              },
+              {
+                icon: <Server className="w-6 h-6" />,
+                title: 'Platform Engineers',
+                description:
+                  'Centralize service configuration with version history and rollback support.',
+              },
+              {
+                icon: <Users className="w-6 h-6" />,
+                title: 'Multi-tenant Apps',
+                description:
+                  'Give each customer their own config namespace with clear separation.',
+              },
+            ].map((item, index) => (
+              <Card key={index} className="text-center">
+                <div className="space-y-3">
+                  <div className="mx-auto h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+                    {item.icon}
+                  </div>
+                  <h3 className="text-lg font-semibold">{item.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {item.description}
+                  </p>
+                </div>
+              </Card>
+            ))}
           </div>
         </section>
 
@@ -70,8 +131,8 @@ export default function Home() {
               Everything you need
             </h2>
             <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              Everything you need to safely evolve configs across iOS, Android,
-              Web, and more—without giving up ownership to a hosted service.
+              Built for teams who need to safely evolve configs across
+              platforms.
             </p>
           </div>
 
@@ -169,77 +230,59 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Additional Features Grid */}
-        <section className="relative mx-auto max-w-6xl px-6 pb-12 md:pb-16">
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+        {/* Why Self-Host Section */}
+        <section className="relative mx-auto max-w-6xl px-6 py-16 md:py-20">
+          <div className="text-center mb-10 md:mb-12">
+            <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-3">
+              Why Self-Host?
+            </h2>
+            <p className="text-muted-foreground max-w-xl mx-auto">
+              Keep your configuration data under your control.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
               {
-                title: 'Schema editor',
-                description:
-                  'Edit JSON schemas with focused tooling, history, and previews tailored for configuration work.',
-                icon: <Edit className="w-5 h-5" />,
+                comparison: 'vs SaaS tools',
+                benefit: 'No per-seat pricing. Free forever.',
+                detail:
+                  'Unlike LaunchDarkly or ConfigCat, ParamTune has no usage limits or monthly fees.',
               },
               {
-                title: 'Live config history',
-                description:
-                  'Understand what changed, when, and for which platform with at-a-glance version history.',
-                icon: <Eye className="w-5 h-5" />,
+                comparison: 'vs Git-based configs',
+                benefit: 'Visual editor, instant validation, change history UI.',
+                detail:
+                  'Get a real UI instead of editing JSON files in pull requests.',
               },
               {
-                title: 'Simple HTTP APIs',
-                description:
-                  'Serve configuration and schemas over clean HTTP endpoints that are easy to consume from any client.',
-                icon: <Link2 className="w-5 h-5" />,
+                comparison: 'vs Vendor platforms',
+                benefit: 'No lock-in. Your data stays on your infrastructure.',
+                detail:
+                  'Unlike Firebase Remote Config, you control where your data lives.',
               },
-              {
-                title: 'Dark, focused UI',
-                description:
-                  'A minimal, keyboard-friendly interface that gets out of the way so you can ship configuration changes faster.',
-                icon: <Moon className="w-5 h-5" />,
-              },
-              {
-                title: 'Fast for power users',
-                description:
-                  'Keyboard-first flows, clear focus states, and carefully chosen defaults.',
-                icon: <Keyboard className="w-5 h-5" />,
-              },
-              {
-                title: 'OSS & extensible',
-                description:
-                  'Open source and self-hosted by default so you can fork, extend, and integrate with your own stack.',
-                icon: <Wrench className="w-5 h-5" />,
-              },
-            ].map((feature, index) => (
-              <Card
-                key={index}
-                className="group hover:shadow-md transition-all duration-200"
-              >
+            ].map((item, index) => (
+              <Card key={index}>
                 <div className="space-y-3">
-                  <div className="flex items-center gap-3">
-                    <div className="text-primary">{feature.icon}</div>
-                    <h3 className="font-semibold group-hover:text-primary transition-colors">
-                      {feature.title}
-                    </h3>
+                  <div className="text-xs font-medium text-primary uppercase tracking-wider">
+                    {item.comparison}
                   </div>
+                  <h3 className="text-lg font-semibold">{item.benefit}</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">
-                    {feature.description}
+                    {item.detail}
                   </p>
                 </div>
               </Card>
             ))}
           </div>
+        </section>
 
-          <div className="mt-10 md:mt-12 text-center">
-            <div className="flex flex-wrap items-center justify-center gap-3 md:gap-4">
-              <Link href="/dashboard">
-                <Button size="lg">Get Started</Button>
-              </Link>
-              <Link href="/dashboard">
-                <Button variant="outline" size="lg">
-                  View Platforms
-                </Button>
-              </Link>
-            </div>
+        {/* Final CTA */}
+        <section className="relative mx-auto max-w-6xl px-6 pb-16 md:pb-20">
+          <div className="text-center">
+            <Link href="/dashboard">
+              <Button size="lg">Open Dashboard</Button>
+            </Link>
           </div>
         </section>
       </main>

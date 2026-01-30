@@ -1,5 +1,6 @@
 import Card from '@/components/ui/Card'
 import Badge from '@/components/ui/Badge'
+import NavHeader from '@/components/NavHeader'
 
 type Endpoint = {
   method: 'GET' | 'POST'
@@ -107,7 +108,9 @@ function MethodBadge({ method }: { method: 'GET' | 'POST' }) {
 
 export default function ApiDocsPage() {
   return (
-    <div className="container mx-auto max-w-4xl py-8 px-4">
+    <>
+      <NavHeader />
+      <div className="container mx-auto max-w-4xl py-8 px-4">
       <div className="mb-8">
         <h1 className="text-3xl font-bold mb-2">API Documentation</h1>
         <p className="text-muted-foreground mb-4">
@@ -185,5 +188,6 @@ export default function ApiDocsPage() {
         </pre>
       </div>
     </div>
+    </>
   )
 }

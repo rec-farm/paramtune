@@ -5,9 +5,14 @@ export const EDITOR_CONSTANTS = {
   FONT_FAMILY: 'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace',
   PADDING_TOP: 16, // pixels
   PADDING_LEFT: 48, // pixels - space for line numbers
+  PADDING_LEFT_COMPACT: 16, // pixels - without line numbers
   PADDING_RIGHT: 16, // pixels
   PADDING_BOTTOM: 16, // pixels
   MIN_HEIGHT: 400, // pixels
+  CHAR_WIDTH: 9.6, // approximate monospace character width in pixels
+  BUFFER_LINES: 5, // extra lines for virtualization buffer
+  CACHE_SIZE_LIMIT: 1000, // syntax highlight cache limit
+  DEBOUNCE_MS: 100, // autocomplete debounce delay
 } as const
 
 // Helper function to calculate line number width based on line count

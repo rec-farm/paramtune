@@ -26,6 +26,7 @@ const JsonOutput = dynamic(() => import('@/components/JsonOutput'), {
 type SchemaTabsProps = {
   defaultValue: string
   updateSchema: (formData: FormData) => Promise<void>
+  restoreVersion: (content: Record<string, unknown>) => Promise<void>
   history: Array<{
     timestamp: number
     content: Record<string, unknown>
@@ -43,6 +44,7 @@ type TabKey = (typeof TABS)[number]
 export default function SchemaTabs({
   defaultValue,
   updateSchema,
+  restoreVersion,
   history,
   currentSchema,
 }: SchemaTabsProps) {
@@ -180,6 +182,7 @@ export default function SchemaTabs({
           <SchemaHistory
             history={history as any}
             currentSchema={currentSchema as any}
+            onRestore={restoreVersion}
           />
         </div>
       )}

@@ -62,6 +62,17 @@ export default async function Page({
     revalidatePath('/dashboard/[platform]/[version]', 'page')
   }
 
+  async function restoreVersion(content: Record<string, unknown>) {
+    'use server'
+
+    const author: Author | undefined = user
+      ? { id: user.id, name: user.name || 'Unknown', image: user.image || undefined }
+      : undefined
+
+    await saveSchema(platformName, versionName, content, author)
+    revalidatePath('/dashboard/[platform]/[version]', 'page')
+  }
+
   return (
     <div className="space-y-4 mx-auto max-w-5xl px-2 md:px-0">
       <header className="space-y-1">
@@ -95,6 +106,7 @@ export default async function Page({
           <SchemaTabs
             defaultValue={JSON.stringify(schema?.content || {}, null, 2)}
             updateSchema={updateSchema}
+            restoreVersion={restoreVersion}
             history={history as any}
             currentSchema={schema as any}
           />

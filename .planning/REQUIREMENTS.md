@@ -9,10 +9,10 @@
 
 - [x] **AUTH-01**: User can sign in with Google SSO
 - [x] **AUTH-02**: User session persists across browser restarts
-- [ ] **AUTH-03**: User sees their name and avatar in the header when logged in
+- [x] **AUTH-03**: User sees their name and avatar in the header when logged in
 - [x] **AUTH-04**: User can log out with a single click
-- [ ] **AUTH-05**: Dashboard routes require authentication (redirect to login)
-- [ ] **AUTH-06**: After login, user returns to their intended destination
+- [x] **AUTH-05**: Dashboard routes require authentication (redirect to login)
+- [x] **AUTH-06**: After login, user returns to their intended destination
 
 ### Audit Trail
 
@@ -53,10 +53,10 @@
 |-------------|-------|--------|
 | AUTH-01 | Phase 13 | Complete |
 | AUTH-02 | Phase 13 | Complete |
-| AUTH-03 | Phase 14 | Pending |
+| AUTH-03 | Phase 14 | Complete |
 | AUTH-04 | Phase 13 | Complete |
-| AUTH-05 | Phase 14 | Pending |
-| AUTH-06 | Phase 14 | Pending |
+| AUTH-05 | Phase 14 | Complete |
+| AUTH-06 | Phase 14 | Complete |
 | AUDT-01 | Phase 15 | Pending |
 | AUDT-02 | Phase 16 | Pending |
 | AUDT-03 | Phase 16 | Pending |

@@ -11,11 +11,11 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 
 Milestone: v1.3 User System & Audit Trail
 Phase: 13 of 16 (Auth Infrastructure)
-Plan: 01 complete
-Status: In progress
-Last activity: 2026-01-31 - Completed 13-01-PLAN.md (BetterAuth infrastructure)
+Plan: 02 complete (phase complete)
+Status: Phase complete - ready for 14-session-management
+Last activity: 2026-01-31 - Completed 13-02-PLAN.md (Auth client and login page)
 
-Progress: [============--------] 75% (12/16 phases)
+Progress: [=============-------] 81% (13/16 phases)
 
 ## Performance Metrics
 
@@ -57,6 +57,11 @@ Phase 13-01 decisions:
 - nextCookies plugin for Next.js session management
 - Build allows missing env vars (warnings only, for CI/CD)
 
+Phase 13-02 decisions:
+- BetterAuth createAuthClient() with defaults (auto-detects /api/auth)
+- Glass card styling consistent with dashboard aesthetic
+- Login page shows user info when authenticated, sign-in when not
+
 ### Deferred Issues
 
 None.
@@ -75,5 +80,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-31
-Stopped at: Completed 13-01-PLAN.md (BetterAuth infrastructure)
+Stopped at: Completed 13-02-PLAN.md (Auth client and login page)
 Resume file: None

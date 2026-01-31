@@ -5,17 +5,17 @@
 See: .planning/PROJECT.md (updated 2026-01-18)
 
 **Core value:** Editing schemas should be a joy, not a pain.
-**Current focus:** Planning next milestone
+**Current focus:** Phase 13 - Auth Infrastructure
 
 ## Current Position
 
 Milestone: v1.3 User System & Audit Trail
-Phase: Not started (defining requirements)
-Plan: —
-Status: Defining requirements
-Last activity: 2026-01-31 — Milestone v1.3 started
+Phase: 13 of 16 (Auth Infrastructure)
+Plan: Not started
+Status: Ready to plan
+Last activity: 2026-01-31 - Roadmap created for v1.3
 
-Progress: ░░░░░░░░░░ 0%
+Progress: [============--------] 75% (12/16 phases)
 
 ## Performance Metrics
 
@@ -47,6 +47,11 @@ Progress: ░░░░░░░░░░ 0%
 
 Decisions archived in PROJECT.md Key Decisions table.
 
+Recent decisions for v1.3:
+- Auth stack: BetterAuth v1.4.x + better-sqlite3 + existing Redis
+- Storage: SQLite for auth tables, Redis for session caching + schema versions
+- Security: Defense-in-depth (middleware for UX redirects, Server Components for validation)
+
 ### Deferred Issues
 
 None.
@@ -60,9 +65,10 @@ None.
 - v1.0 MVP: Phases 1-4, shipped 2026-01-18
 - v1.1 Schema Diff & Polish: Phases 5-8, shipped 2026-01-18
 - v1.2 Performance & Polish: Phases 9-12, shipped 2026-01-18
+- v1.3 User System & Audit Trail: Phases 13-16, in progress
 
 ## Session Continuity
 
 Last session: 2026-01-31
-Stopped at: v1.3 milestone initialized, requirements next
+Stopped at: v1.3 roadmap created, ready to plan Phase 13
 Resume file: None

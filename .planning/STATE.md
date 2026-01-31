@@ -11,9 +11,9 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 
 Milestone: v1.3 User System & Audit Trail
 Phase: 14 of 16 (Route Protection)
-Plan: 01 of 02 complete
-Status: In progress
-Last activity: 2026-01-31 - Completed 14-01-PLAN.md (Dashboard route protection)
+Plan: 02 of 02 complete
+Status: Phase complete - ready for 15-schema-ownership
+Last activity: 2026-01-31 - Completed 14-02-PLAN.md (User avatar and menu)
 
 Progress: [==============------] 87.5% (14/16 phases)
 
@@ -71,6 +71,11 @@ Phase 14-01 decisions:
 - encodeURIComponent for returnTo to preserve query strings
 - Suspense boundary required for useSearchParams in login page
 
+Phase 14-02 decisions:
+- Click toggle instead of CSS hover for accessibility and touch device support
+- No dropdown on mobile - direct logout button for simpler touch UX
+- Avatar fallback to initial letter when no Google profile picture
+
 ### Deferred Issues
 
 None.
@@ -91,5 +96,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-31
-Stopped at: Completed 14-01-PLAN.md (Dashboard route protection)
+Stopped at: Completed 14-02-PLAN.md (User avatar and menu - Phase 14 complete)
 Resume file: None

@@ -40,9 +40,16 @@ A schema/configuration management system for managing versioned JSON schemas acr
 
 ### Active
 
-- [ ] Collaboration features — multi-user support, permissions, change tracking
+- [ ] User authentication via BetterAuth with Google SSO
+- [ ] Audit trail — track who made each schema change
+- [ ] Version history with author attribution and restore capability
+
+### Future
+
 - [ ] Testing — unit tests, integration tests, E2E tests
 - [ ] Structured logging — replace console.log with proper logging
+- [ ] Additional SSO providers (GitHub, Microsoft)
+- [ ] Role-based permissions (admin/editor/viewer)
 
 ### Out of Scope
 
@@ -50,6 +57,19 @@ A schema/configuration management system for managing versioned JSON schemas acr
 - Mobile app — web-first approach, responsive design works
 
 ## Context
+
+## Current Milestone: v1.3 User System & Audit Trail
+
+**Goal:** Enable team accountability by tracking who makes each schema change with full version history.
+
+**Target features:**
+- BetterAuth integration with Google SSO
+- User sessions that persist across refreshes
+- Author metadata on every schema version
+- Version history UI with author attribution and restore capability
+- All authenticated users have equal permissions (no roles)
+
+---
 
 **Current State (v1.2):**
 - Next.js 16 with App Router and React Server Components
@@ -102,4 +122,4 @@ A schema/configuration management system for managing versioned JSON schemas acr
 | 40px touch targets on mobile | WCAG accessibility guidelines | ✓ Good |
 
 ---
-*Last updated: 2026-01-18 after v1.2 milestone*
+*Last updated: 2026-01-31 after v1.3 milestone started*

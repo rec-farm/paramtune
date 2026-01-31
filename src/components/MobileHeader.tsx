@@ -1,7 +1,11 @@
 'use client'
 
+import dynamic from 'next/dynamic'
 import { Menu } from 'lucide-react'
 import { useSidebar } from '@/contexts/SidebarContext'
+
+// Dynamic import with ssr: false to avoid React context issues during static generation
+const MobileAuthNav = dynamic(() => import('./MobileAuthNav'), { ssr: false })
 
 export default function MobileHeader() {
   const { open } = useSidebar()
@@ -26,8 +30,8 @@ export default function MobileHeader() {
           <span className="font-bold text-base tracking-tight">ParamTune</span>
         </div>
 
-        {/* Spacer to balance the header */}
-        <div className="w-10" />
+        {/* Logout button or spacer to balance the header */}
+        <MobileAuthNav />
       </div>
     </header>
   )

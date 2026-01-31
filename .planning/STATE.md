@@ -5,17 +5,17 @@
 See: .planning/PROJECT.md (updated 2026-01-18)
 
 **Core value:** Editing schemas should be a joy, not a pain.
-**Current focus:** Phase 15 - Author Attribution
+**Current focus:** Phase 16 - Audit Trail UI
 
 ## Current Position
 
 Milestone: v1.3 User System & Audit Trail
-Phase: 15 of 16 (Author Attribution)
+Phase: 16 of 16 (Audit Trail UI)
 Plan: 01 of 01 complete
-Status: Phase complete - ready for 16-audit-trail
-Last activity: 2026-01-31 - Completed 15-01-PLAN.md (Author attribution)
+Status: Phase complete - v1.3 milestone complete
+Last activity: 2026-01-31 - Completed 16-01-PLAN.md (Version restore)
 
-Progress: [===============-----] 93.75% (15/16 phases)
+Progress: [====================] 100% (16/16 phases)
 
 ## Performance Metrics
 
@@ -41,6 +41,7 @@ Progress: [===============-----] 93.75% (15/16 phases)
 | 11. Dashboard Visual Refresh | 1 | ~5 min | ~5 min |
 | 12. Responsive Design | 1 | ~4 min | ~4 min |
 | 15. Author Attribution | 1 | ~3 min | ~3 min |
+| 16. Audit Trail UI | 1 | ~3 min | ~3 min |
 
 ## Accumulated Context
 
@@ -83,6 +84,11 @@ Phase 15-01 decisions:
 - Avatar fallback to initial letter when image not available
 - Legacy entries show "Unknown" in italics
 
+Phase 16-01 decisions:
+- Restore button only visible on non-current versions
+- No confirmation dialog - restore is non-destructive (creates new version, preserves history)
+- Server action takes content directly rather than FormData for restore operation
+
 ### Deferred Issues
 
 None.
@@ -103,5 +109,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-31
-Stopped at: Completed 15-01-PLAN.md (Author attribution - Phase 15 complete)
+Stopped at: Completed 16-01-PLAN.md (Version restore - Phase 16 complete, v1.3 milestone complete)
 Resume file: None

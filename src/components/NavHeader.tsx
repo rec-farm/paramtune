@@ -7,32 +7,34 @@ import { Github } from 'lucide-react'
 
 export default function NavHeader() {
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="mx-auto max-w-6xl flex h-14 items-center justify-between px-6">
-        <Logo asLink />
+    <header className="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[calc(100%-2rem)] max-w-5xl">
+      <div className="border border-primary/30 bg-black/80 backdrop-blur-sm px-6 py-3 shadow-lg">
+        <div className="flex items-center justify-between">
+          <Logo asLink />
 
-        <nav className="flex items-center gap-1 sm:gap-2">
-          <Link
-            href="/api-docs"
-            className="px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            API Docs
-          </Link>
+          <nav className="flex items-center gap-1 sm:gap-3">
+            <Link
+              href="/api-docs"
+              className="px-3 py-1.5 text-xs uppercase tracking-wider font-mono text-muted-foreground hover:text-primary transition-colors hover:bg-primary/5"
+            >
+              API Docs
+            </Link>
 
-          <Link
-            href="https://github.com"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 px-3 py-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <Github className="w-4 h-4" />
-            <span className="hidden sm:inline">GitHub</span>
-          </Link>
+            <Link
+              href="https://github.com"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 px-3 py-1.5 text-xs uppercase tracking-wider font-mono text-muted-foreground hover:text-primary transition-colors hover:bg-primary/5"
+            >
+              <Github className="w-4 h-4" />
+              <span className="hidden sm:inline">GitHub</span>
+            </Link>
 
-          <Link href="/dashboard">
-            <Button size="sm">Dashboard</Button>
-          </Link>
-        </nav>
+            <Link href="/dashboard">
+              <Button size="sm" className="uppercase tracking-wider">Dashboard</Button>
+            </Link>
+          </nav>
+        </div>
       </div>
     </header>
   )

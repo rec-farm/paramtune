@@ -67,10 +67,11 @@ Plans:
   2. After login, user is redirected to their originally intended page
   3. Logged-in user sees their Google name and avatar in the header
   4. User menu provides logout option
-**Plans:** TBD
+**Plans:** 2 plans
 
 Plans:
-- [ ] 14-01: TBD
+- [ ] 14-01-PLAN.md — Route protection infrastructure (middleware, layout validation, returnTo)
+- [ ] 14-02-PLAN.md — User menu UI (avatar dropdown, mobile avatar display)
 
 ### Phase 15: Author Attribution
 **Goal:** Every schema save records who made the change
@@ -116,7 +117,7 @@ Plans:
 | 11. Dashboard Visual Refresh | v1.2 | 1/1 | Complete | 2026-01-18 |
 | 12. Responsive Design | v1.2 | 1/1 | Complete | 2026-01-18 |
 | 13. Auth Infrastructure | v1.3 | 3/3 | Complete | 2026-01-31 |
-| 14. Route Protection | v1.3 | 0/? | Not started | - |
+| 14. Route Protection | v1.3 | 0/2 | Not started | - |
 | 15. Author Attribution | v1.3 | 0/? | Not started | - |
 | 16. Audit Trail UI | v1.3 | 0/? | Not started | - |
 

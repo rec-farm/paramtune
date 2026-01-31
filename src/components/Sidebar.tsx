@@ -70,15 +70,15 @@ export default function Sidebar({ platforms }: SidebarProps) {
         <div className="space-y-5">
           {/* Logo + slogan */}
           <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-primary to-primary/80 flex items-center justify-center">
-              <div className="h-4 w-4 rounded bg-primary-foreground/90" />
+            <div className="h-8 w-8 border border-primary/50 bg-black/50 flex items-center justify-center">
+              <div className="h-4 w-4 bg-primary/90" />
             </div>
             <div className="min-w-0">
-              <div className="font-bold text-lg leading-5 tracking-tight text-sidebar-foreground">
+              <div className="font-bold text-sm leading-5 uppercase tracking-wider text-sidebar-foreground">
                 ParamTune
               </div>
-              <div className="text-[11px] leading-4 text-sidebar-foreground/60 truncate">
-                Tune feature flags & schemas at scale
+              <div className="text-[10px] leading-4 text-sidebar-foreground/60 truncate uppercase tracking-wide">
+                Config Management
               </div>
             </div>
           </div>
@@ -109,7 +109,7 @@ export default function Sidebar({ platforms }: SidebarProps) {
               onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={() => setIsSearchFocused(true)}
               onBlur={() => setIsSearchFocused(false)}
-              className="w-full pl-10 pr-12 py-2 text-sm bg-sidebar/50 border border-sidebar-border/50 rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 transition-colors placeholder:text-sidebar-foreground/40"
+              className="w-full pl-10 pr-12 py-2 text-sm bg-black/50 border border-primary/30 focus:outline-none focus:border-primary/50 transition-colors placeholder:text-sidebar-foreground/40"
             />
             {/* Right-side hint or clear */}
             {searchQuery ? (
@@ -140,7 +140,7 @@ export default function Sidebar({ platforms }: SidebarProps) {
                 )}
                 aria-hidden="true"
               >
-                <kbd className="px-1.5 py-0.5 rounded border border-sidebar-border/60 bg-sidebar/60">
+                <kbd className="px-1.5 py-0.5 border border-primary/30 bg-black/50 font-mono">
                   /
                 </kbd>
               </div>
@@ -165,10 +165,10 @@ export default function Sidebar({ platforms }: SidebarProps) {
             <Link
               href="/dashboard/compare"
               className={cn(
-                'flex items-center gap-2 px-3 py-2 text-sm rounded-md transition-colors',
+                'flex items-center gap-2 px-3 py-2 text-xs uppercase tracking-wider transition-colors border-l',
                 pathname === '/dashboard/compare'
-                  ? 'bg-primary/10 text-primary font-medium'
-                  : 'text-sidebar-foreground/70 hover:bg-sidebar-foreground/5 hover:text-sidebar-foreground'
+                  ? 'bg-black/30 text-primary font-medium border-primary/60'
+                  : 'text-sidebar-foreground/70 hover:bg-black/30 hover:text-sidebar-foreground border-transparent hover:border-primary/40'
               )}
             >
               <GitCompare className="h-4 w-4" />

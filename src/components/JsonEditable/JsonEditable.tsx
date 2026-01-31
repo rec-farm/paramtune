@@ -308,7 +308,7 @@ const JsonEditable = memo(function JsonEditable({
 
       {/* JSON Editor */}
       <div className="space-y-2">
-        <div className={`relative rounded-lg overflow-hidden ${theme === 'light' ? 'bg-gray-100' : 'bg-gray-900/20'}`}>
+        <div className={`relative overflow-hidden border border-primary/30 ${theme === 'light' ? 'bg-gray-100' : 'bg-black/50'}`}>
           <JsonTextarea
             ref={textareaRef}
             value={state.jsonText}
@@ -407,7 +407,7 @@ const JsonEditable = memo(function JsonEditable({
                 {/* tooltip - hover only */}
                 <div
                   role="tooltip"
-                  className="absolute text-xs bg-red-600 text-white px-2 py-1 rounded shadow-lg whitespace-pre max-w-sm opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="absolute text-xs bg-red-600 text-white px-2 py-1 shadow-lg whitespace-pre max-w-sm opacity-0 group-hover:opacity-100 transition-opacity font-mono"
                   style={{
                     top: -28,
                     left: 0,

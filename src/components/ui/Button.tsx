@@ -18,7 +18,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             'btn-secondary': variant === 'secondary',
             'btn-ghost': variant === 'ghost',
             'btn-destructive': variant === 'destructive',
-            'border border-border bg-background hover:bg-accent hover:text-accent-foreground':
+            'border border-primary/30 bg-transparent hover:bg-black/50 hover:border-primary/50':
               variant === 'outline',
           },
           {

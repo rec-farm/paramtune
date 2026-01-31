@@ -64,8 +64,8 @@ export default function SchemaHistory({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold">Schema History</h3>
-          <p className="text-sm text-muted-foreground">
+          <h3 className="text-sm font-medium uppercase tracking-wider">Schema History</h3>
+          <p className="text-xs text-muted-foreground font-mono">
             {history.length} version{history.length !== 1 ? 's' : ''} saved
           </p>
         </div>
@@ -93,10 +93,10 @@ export default function SchemaHistory({
               return (
                 <div
                   key={entry.timestamp}
-                  className={`p-2.5 rounded-lg border cursor-pointer transition-colors ${
+                  className={`p-2.5 border cursor-pointer transition-colors ${
                     isSelected
-                      ? 'border-primary bg-primary/5'
-                      : 'border-border hover:bg-muted/50'
+                      ? 'border-primary/60 bg-primary/10'
+                      : 'border-primary/20 hover:border-primary/40 hover:bg-black/30'
                   }`}
                   onClick={() => setSelectedIndex(index)}
                 >
@@ -163,9 +163,9 @@ export default function SchemaHistory({
 
               <div className="space-y-3">
                 <div>
-                  <h5 className="text-sm font-medium mb-2">Schema Content</h5>
-                  <div className="bg-muted/50 p-3 rounded-lg">
-                    <pre className="text-xs overflow-x-auto">
+                  <h5 className="text-xs font-medium uppercase tracking-wider mb-2">Schema Content</h5>
+                  <div className="bg-black/50 border border-primary/30 p-3">
+                    <pre className="text-xs font-mono overflow-x-auto">
                       {JSON.stringify(selectedEntry.content, null, 2)}
                     </pre>
                   </div>
@@ -173,7 +173,7 @@ export default function SchemaHistory({
 
                 {selectedEntry.dependencies.length > 0 && (
                   <div>
-                    <h5 className="text-sm font-medium mb-2">Dependencies</h5>
+                    <h5 className="text-xs font-medium uppercase tracking-wider mb-2">Dependencies</h5>
                     <div className="flex flex-wrap gap-1">
                       {selectedEntry.dependencies.map((dep, idx) => (
                         <Badge
@@ -190,7 +190,7 @@ export default function SchemaHistory({
 
                 {showDiff && selectedIndex !== null && selectedIndex > 0 && (
                   <div>
-                    <h5 className="text-sm font-medium mb-2">
+                    <h5 className="text-xs font-medium uppercase tracking-wider mb-2">
                       Changes from Version {history.length - selectedIndex + 1}
                     </h5>
                     <SchemaDiff

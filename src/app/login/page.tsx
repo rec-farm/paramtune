@@ -1,19 +1,27 @@
 'use client'
 
+import { Suspense } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { signIn, signOut, useSession } from '@/lib/auth-client'
 
-export default function LoginPage() {
+function LoadingState() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-radial">
+      <div className="glass-card p-8 text-center">
+        <div className="shimmer h-6 w-32 mx-auto rounded" />
+        <p className="text-muted-foreground mt-4">Loading...</p>
+      </div>
+    </div>
+  )
+}
+
+function LoginContent() {
+  const searchParams = useSearchParams()
+  const returnTo = searchParams.get('returnTo') || '/dashboard'
   const { data: session, isPending } = useSession()
 
   if (isPending) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-radial">
-        <div className="glass-card p-8 text-center">
-          <div className="shimmer h-6 w-32 mx-auto rounded" />
-          <p className="text-muted-foreground mt-4">Loading...</p>
-        </div>
-      </div>
-    )
+    return <LoadingState />
   }
 
   if (session) {
@@ -60,10 +68,10 @@ export default function LoginPage() {
 
             {/* Back to app link */}
             <a
-              href="/"
+              href={returnTo}
               className="btn btn-ghost w-full text-center block"
             >
-              Back to Dashboard
+              {returnTo === '/dashboard' ? 'Go to Dashboard' : 'Back to Dashboard'}
             </a>
           </div>
         </div>
@@ -89,7 +97,10 @@ export default function LoginPage() {
         <div className="space-y-6">
           {/* Sign in button */}
           <button
-            onClick={() => signIn.social({ provider: 'google' })}
+            onClick={() => signIn.social({
+              provider: 'google',
+              callbackURL: returnTo
+            })}
             className="btn btn-primary w-full flex items-center justify-center gap-3"
           >
             <svg
@@ -125,5 +136,13 @@ export default function LoginPage() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense fallback={<LoadingState />}>
+      <LoginContent />
+    </Suspense>
   )
 }

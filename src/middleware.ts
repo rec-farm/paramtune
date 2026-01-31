@@ -1,11 +1,24 @@
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
+import { getSessionCookie } from 'better-auth/cookies'
 
 export const config = {
-  matcher: ['/api/:path*'],
+  matcher: ['/api/:path*', '/dashboard/:path*'],
 }
 
 export function middleware(request: NextRequest) {
+  // Dashboard route protection (UX optimization - Server Component validates session for security)
+  if (request.nextUrl.pathname.startsWith('/dashboard')) {
+    const sessionCookie = getSessionCookie(request)
+    if (!sessionCookie) {
+      const returnTo = encodeURIComponent(request.nextUrl.pathname + request.nextUrl.search)
+      return NextResponse.redirect(new URL(`/login?returnTo=${returnTo}`, request.url))
+    }
+    // Has session cookie, allow access (Server Component will validate)
+    return NextResponse.next()
+  }
+
+  // API route CORS and security headers handling
   const origin = request.headers.get('origin') || ''
   const allowedOrigin = process.env.CORS_ORIGIN || '*'
 

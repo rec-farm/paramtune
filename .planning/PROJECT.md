@@ -37,12 +37,16 @@ A schema/configuration management system for managing versioned JSON schemas acr
 - ✓ Modern shadow system and card variants — v1.2
 - ✓ Mobile-responsive dashboard with hamburger menu — v1.2
 - ✓ Touch-friendly 40px targets on mobile — v1.2
+- ✓ Google SSO authentication via BetterAuth — v1.3
+- ✓ Persistent sessions across browser restarts — v1.3
+- ✓ Route protection with returnTo redirect — v1.3
+- ✓ Author attribution on schema saves — v1.3
+- ✓ Version history with author display — v1.3
+- ✓ Version restore with current user attribution — v1.3
 
 ### Active
 
-- [ ] User authentication via BetterAuth with Google SSO
-- [ ] Audit trail — track who made each schema change
-- [ ] Version history with author attribution and restore capability
+(None — defining requirements for next milestone)
 
 ### Future
 
@@ -58,22 +62,9 @@ A schema/configuration management system for managing versioned JSON schemas acr
 
 ## Context
 
-## Current Milestone: v1.3 User System & Audit Trail
-
-**Goal:** Enable team accountability by tracking who makes each schema change with full version history.
-
-**Target features:**
-- BetterAuth integration with Google SSO
-- User sessions that persist across refreshes
-- Author metadata on every schema version
-- Version history UI with author attribution and restore capability
-- All authenticated users have equal permissions (no roles)
-
----
-
-**Current State (v1.2):**
+**Current State (v1.3):**
 - Next.js 16 with App Router and React Server Components
-- 8,115 lines of TypeScript across 75 files
+- 8,659 lines of TypeScript across 80+ files
 - JSON editor with autocomplete, validation, debounced syntax highlighting
 - Light/dark theme support with modern shadow system
 - Schema comparison with visual diff at /dashboard/compare
@@ -83,14 +74,21 @@ A schema/configuration management system for managing versioned JSON schemas acr
 - API docs page at /api-docs
 - Mobile-responsive with hamburger menu and touch-friendly targets
 - Lazy loading for optimized page loads
+- Google SSO authentication via BetterAuth
+- Persistent sessions with SQLite storage
+- Route protection with returnTo redirect
+- Author attribution on every schema version
+- Version restore with one-click restoration
 
 **Technical Environment:**
 - TypeScript 5.9.3, pnpm 10.19.0
 - Tailwind CSS 4.1.17 for styling
-- ioredis for Redis connectivity
+- ioredis for Redis connectivity (schemas)
+- BetterAuth 1.4.18 with better-sqlite3 (auth)
 - Deployable via Vercel or Docker
 
 **Known Issues:**
+- Pre-existing Next.js 16 build issue with `/_global-error` prerendering
 - No test framework currently installed
 - No structured logging framework (console.log still used)
 
@@ -120,6 +118,10 @@ A schema/configuration management system for managing versioned JSON schemas acr
 | Card variants as CSS classes | Reusable, maintainable | ✓ Good |
 | Mobile header with existing glass class | Consistency with dashboard cards | ✓ Good |
 | 40px touch targets on mobile | WCAG accessibility guidelines | ✓ Good |
+| BetterAuth + SQLite for auth | Simpler than Redis for auth tables | ✓ Good |
+| Defense-in-depth route protection | Middleware for UX, Server Component for security | ✓ Good |
+| Optional author fields | Backward compatibility with legacy schemas | ✓ Good |
+| Non-destructive restore | Creates new version, preserves history | ✓ Good |
 
 ---
-*Last updated: 2026-01-31 after v1.3 milestone started*
+*Last updated: 2026-01-31 after v1.3 milestone complete*

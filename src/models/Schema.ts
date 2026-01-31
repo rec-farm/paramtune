@@ -8,6 +8,13 @@ export type Schema = {
   content: Record<string, unknown>
   dependencies: string[]
   output: Record<string, unknown>
+  author?: Author
+}
+
+export type Author = {
+  id: string
+  name: string
+  image?: string
 }
 
 const getKey = (platform: string, version: string) =>
@@ -195,7 +202,8 @@ export async function getSchema(
 export async function saveSchema(
   platform: string,
   version: string,
-  content: Record<string, unknown>
+  content: Record<string, unknown>,
+  author?: Author
 ) {
   'use server'
 
@@ -214,7 +222,7 @@ export async function saveSchema(
   await redis.zadd(
     getKey(platform, version),
     Date.now(),
-    JSON.stringify({ dependencies, content, output })
+    JSON.stringify({ dependencies, content, output, author })
   )
 
   const resolved = await resolveDependencies(dependencies)
@@ -282,6 +290,7 @@ export type SchemaHistoryEntry = {
   content: Record<string, unknown>
   dependencies: string[]
   output: Record<string, unknown>
+  author?: Author
 }
 
 export async function getSchemaHistoryWithTimestamps(
@@ -313,6 +322,7 @@ export async function getSchemaHistoryWithTimestamps(
       content: parsed.content,
       dependencies: parsed.dependencies,
       output: parsed.output,
+      author: parsed.author,
     })
   }
 

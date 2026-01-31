@@ -51,22 +51,22 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AUTH-01 | TBD | Pending |
-| AUTH-02 | TBD | Pending |
-| AUTH-03 | TBD | Pending |
-| AUTH-04 | TBD | Pending |
-| AUTH-05 | TBD | Pending |
-| AUTH-06 | TBD | Pending |
-| AUDT-01 | TBD | Pending |
-| AUDT-02 | TBD | Pending |
-| AUDT-03 | TBD | Pending |
-| AUDT-04 | TBD | Pending |
+| AUTH-01 | Phase 13 | Pending |
+| AUTH-02 | Phase 13 | Pending |
+| AUTH-03 | Phase 14 | Pending |
+| AUTH-04 | Phase 13 | Pending |
+| AUTH-05 | Phase 14 | Pending |
+| AUTH-06 | Phase 14 | Pending |
+| AUDT-01 | Phase 15 | Pending |
+| AUDT-02 | Phase 16 | Pending |
+| AUDT-03 | Phase 16 | Pending |
+| AUDT-04 | Phase 15 | Pending |
 
 **Coverage:**
 - v1.3 requirements: 10 total
-- Mapped to phases: 0
-- Unmapped: 10 ⚠️
+- Mapped to phases: 10
+- Unmapped: 0
 
 ---
 *Requirements defined: 2026-01-31*
-*Last updated: 2026-01-31 after initial definition*
+*Last updated: 2026-01-31 after roadmap creation*

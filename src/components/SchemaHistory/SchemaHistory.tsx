@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useTransition } from 'react'
 import { formatDistanceToNow } from 'date-fns'
 import Card from '@/components/ui/Card'
 import Badge from '@/components/ui/Badge'
@@ -11,14 +11,25 @@ import type { SchemaHistoryEntry } from '@/models/Schema'
 interface SchemaHistoryProps {
   history: Array<SchemaHistoryEntry & { timestamp: number }>
   currentSchema?: SchemaHistoryEntry
+  onRestore?: (content: Record<string, unknown>) => Promise<void>
 }
 
 export default function SchemaHistory({
   history,
   currentSchema,
+  onRestore,
 }: SchemaHistoryProps) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
   const [showDiff, setShowDiff] = useState(false)
+  const [isPending, startTransition] = useTransition()
+
+  const handleRestore = (content: Record<string, unknown>) => {
+    startTransition(async () => {
+      if (onRestore) {
+        await onRestore(content)
+      }
+    })
+  }
 
   const formatTimestamp = (timestamp: number) => {
     const date = new Date(timestamp)
@@ -206,6 +217,19 @@ export default function SchemaHistory({
                   </Badge>
                 </div>
               </div>
+
+              {selectedIndex !== null && selectedIndex !== 0 && onRestore && (
+                <div className="flex justify-end">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    disabled={isPending}
+                    onClick={() => handleRestore(selectedEntry.content)}
+                  >
+                    {isPending ? 'Restoring...' : 'Restore this version'}
+                  </Button>
+                </div>
+              )}
 
               <div className="space-y-3">
                 <div>

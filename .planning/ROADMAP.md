@@ -73,18 +73,18 @@ Plans:
 - [x] 14-01-PLAN.md — Route protection infrastructure (middleware, layout validation, returnTo)
 - [x] 14-02-PLAN.md — User menu UI (avatar dropdown, mobile avatar display)
 
-### Phase 15: Author Attribution
+### Phase 15: Author Attribution ✓
 **Goal:** Every schema save records who made the change
 **Depends on:** Phase 14
 **Requirements:** AUDT-01, AUDT-04
 **Success Criteria** (what must be TRUE):
-  1. Saving a schema records the current user's ID, name, and avatar
-  2. Legacy schemas without author data do not cause errors
-  3. Schema type supports optional author fields
-**Plans:** 1 plan
+  1. Saving a schema records the current user's ID, name, and avatar ✓
+  2. Legacy schemas without author data do not cause errors ✓
+  3. Schema type supports optional author fields ✓
+**Plans:** 1/1 complete
 
 Plans:
-- [ ] 15-01-PLAN.md — Author type, saveSchema update, history display
+- [x] 15-01-PLAN.md — Author type, saveSchema update, history display
 
 ### Phase 16: Audit Trail UI
 **Goal:** Users can see who made each change and restore previous versions
@@ -118,10 +118,10 @@ Plans:
 | 12. Responsive Design | v1.2 | 1/1 | Complete | 2026-01-18 |
 | 13. Auth Infrastructure | v1.3 | 3/3 | Complete | 2026-01-31 |
 | 14. Route Protection | v1.3 | 2/2 | Complete | 2026-01-31 |
-| 15. Author Attribution | v1.3 | 0/1 | Planned | - |
+| 15. Author Attribution | v1.3 | 1/1 | Complete | 2026-01-31 |
 | 16. Audit Trail UI | v1.3 | 0/? | Not started | - |
 
-**Overall:** v1.0 complete, v1.1 complete, v1.2 complete, v1.3 in progress (2/4 phases)
+**Overall:** v1.0 complete, v1.1 complete, v1.2 complete, v1.3 in progress (3/4 phases)
 
 ## Domain Expertise
 

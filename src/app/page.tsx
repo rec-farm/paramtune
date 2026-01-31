@@ -25,24 +25,26 @@ export default function Home() {
   return (
     <>
       <NavHeader />
-      <main className="relative pb-12 md:pb-16">
-        <div className="pointer-events-none absolute inset-0 bg-grid" />
+      <main className="relative pb-12 md:pb-16 overflow-hidden pt-24">
+        {/* Noise overlay on top of everything */}
+        <div className="pointer-events-none fixed inset-0 z-50 bg-noise" />
 
         {/* Hero Section */}
-        <section className="relative mx-auto max-w-6xl px-6 pt-16 pb-12 md:pt-20 md:pb-14 text-center">
-          <div className="mx-auto max-w-4xl space-y-6 md:space-y-7">
-            <div className="space-y-4 md:space-y-5">
-              <Badge variant="secondary" className="mb-4 gap-2">
+        <section className="relative mx-auto max-w-6xl px-6 pt-8 pb-16 md:pt-12 md:pb-20 text-center">
+          <div className="mx-auto max-w-4xl space-y-8 md:space-y-12">
+            <div className="space-y-4 md:space-y-6">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-primary/5 border border-primary/30 text-xs font-mono uppercase tracking-wider punk-border">
+                <span className="w-1.5 h-1.5 bg-primary animate-pulse" />
                 Open source • Self-hosted • API-first
-              </Badge>
-              <h1 className="text-5xl md:text-7xl font-bold tracking-tighter">
+              </div>
+              <h1 className="text-7xl md:text-9xl font-bold tracking-tighter">
                 <span
-                  className={`${stick.className} gradient-text brand-wordmark inline-block -rotate-1`}
+                  className={`${stick.className} gradient-text brand-wordmark inline-block -rotate-2`}
                 >
                   ParamTune
                 </span>
               </h1>
-              <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
+              <p className="text-xl md:text-2xl text-foreground/80 max-w-2xl mx-auto leading-relaxed font-light">
                 Stop scattering configs across repos and services. ParamTune
                 gives your team one place to manage, version, and validate JSON
                 schemas for every platform—fully self-hosted, so you own your
@@ -50,18 +52,18 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="flex items-center justify-center gap-3 md:gap-4 pt-3">
+            <div className="flex items-center justify-center gap-4 md:gap-6 pt-4">
               <a href="#quickstart">
-                <Button size="lg">Get Started</Button>
+                <Button size="lg" className="px-8 uppercase tracking-wide font-semibold">Get Started</Button>
               </a>
               <Link
                 href="https://github.com"
                 target="_blank"
                 rel="noopener noreferrer"
               >
-                <Button variant="outline" size="lg" className="gap-2">
-                  <Github className="w-4 h-4" />
-                  View on GitHub
+                <Button variant="outline" size="lg" className="gap-2 px-8 backdrop-blur-sm">
+                  <Github className="w-5 h-5" />
+                  GitHub
                 </Button>
               </Link>
             </div>
@@ -70,7 +72,9 @@ export default function Home() {
 
         {/* Product Screenshot */}
         <section className="relative mx-auto max-w-6xl px-6 pb-16 md:pb-20">
-          <MockDashboard />
+          <div className="border-2 border-primary/30 bg-black/60 p-2 md:p-4 hover:border-primary/50 transition-colors">
+            <MockDashboard />
+          </div>
         </section>
 
         {/* Quick Start */}
@@ -78,11 +82,11 @@ export default function Home() {
 
         {/* Who It's For Section */}
         <section className="relative mx-auto max-w-6xl px-6 py-16 md:py-20">
-          <div className="text-center mb-10 md:mb-12">
-            <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-3">
+          <div className="text-center mb-10 md:mb-14">
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight uppercase mb-4 inline-block border-b-2 border-primary/50 pb-2">
               Who It's For
             </h2>
-            <p className="text-muted-foreground max-w-xl mx-auto">
+            <p className="text-base md:text-lg text-foreground/70 max-w-xl mx-auto font-light">
               ParamTune is built for teams that need control over their
               configuration without vendor lock-in.
             </p>
@@ -109,28 +113,33 @@ export default function Home() {
                   'Give each customer their own config namespace with clear separation.',
               },
             ].map((item, index) => (
-              <Card key={index} className="text-center">
-                <div className="space-y-3">
-                  <div className="mx-auto h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
+              <div
+                key={index}
+                className={`group p-6 border border-primary/20 bg-black/40 hover:bg-primary/5 hover:border-primary/40 transition-all duration-300 animate-in ${
+                  index === 0 ? 'stagger-1' : index === 1 ? 'stagger-2' : 'stagger-3'
+                }`}
+              >
+                <div className="space-y-4 text-left">
+                  <div className="h-12 w-12 flex items-center justify-center text-primary border border-primary/30 group-hover:border-primary/50 transition-colors">
                     {item.icon}
                   </div>
-                  <h3 className="text-lg font-semibold">{item.title}</h3>
+                  <h3 className="text-lg font-semibold uppercase tracking-wide">{item.title}</h3>
                   <p className="text-sm text-muted-foreground leading-relaxed">
                     {item.description}
                   </p>
                 </div>
-              </Card>
+              </div>
             ))}
           </div>
         </section>
 
         {/* Features Section */}
-        <section className="relative mx-auto max-w-6xl px-6 py-16 md:py-18">
-          <div className="text-center mb-10 md:mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold tracking-tight mb-4">
+        <section className="relative mx-auto max-w-6xl px-6 py-16 md:py-20">
+          <div className="text-center mb-10 md:mb-14">
+            <h2 className="text-4xl md:text-5xl font-bold tracking-tight uppercase mb-4 inline-block border-b-4 border-primary pb-3">
               Everything you need
             </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            <p className="text-base md:text-lg text-foreground/70 max-w-2xl mx-auto font-light">
               Built for teams who need to safely evolve configs across
               platforms.
             </p>
@@ -202,22 +211,21 @@ export default function Home() {
                 badge: 'Cross-platform',
               },
             ].map((feature, index) => (
-              <Card
+              <div
                 key={index}
-                variant="elevated"
-                className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1"
+                className={`group p-8 border border-primary/30 bg-black/50 hover:bg-primary/5 hover:border-primary/60 transition-all duration-300 relative animate-in ${
+                  index === 0 ? 'stagger-1' : index === 1 ? 'stagger-2' : 'stagger-3'
+                }`}
               >
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="h-12 w-12 rounded-lg bg-gradient-to-br from-primary/20 to-primary/10 flex items-center justify-center text-primary group-hover:scale-110 transition-transform duration-200">
-                      {feature.icon}
-                    </div>
-                    <Badge variant="outline" className="text-xs">
-                      {feature.badge}
-                    </Badge>
+                <div className="absolute top-0 right-0 px-3 py-1 bg-primary/10 border-l border-b border-primary/30 text-[10px] font-mono uppercase tracking-wider text-primary">
+                  {feature.badge}
+                </div>
+                <div className="space-y-4 pt-4">
+                  <div className="h-16 w-16 flex items-center justify-center text-primary border-2 border-primary/30 group-hover:border-primary transition-all duration-300 bg-black/50">
+                    {feature.icon}
                   </div>
                   <div className="space-y-2">
-                    <h3 className="text-xl font-semibold group-hover:text-primary transition-colors">
+                    <h3 className="text-2xl font-bold uppercase tracking-tight group-hover:text-primary transition-colors">
                       {feature.title}
                     </h3>
                     <p className="text-muted-foreground leading-relaxed">
@@ -225,18 +233,18 @@ export default function Home() {
                     </p>
                   </div>
                 </div>
-              </Card>
+              </div>
             ))}
           </div>
         </section>
 
         {/* Why Self-Host Section */}
         <section className="relative mx-auto max-w-6xl px-6 py-16 md:py-20">
-          <div className="text-center mb-10 md:mb-12">
-            <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-3">
+          <div className="text-center mb-10 md:mb-14">
+            <h2 className="text-3xl md:text-4xl font-bold tracking-tight uppercase mb-4 inline-block border-b-2 border-primary/50 pb-2">
               Why Self-Host?
             </h2>
-            <p className="text-muted-foreground max-w-xl mx-auto">
+            <p className="text-base md:text-lg text-foreground/70 max-w-xl mx-auto font-light">
               Keep your configuration data under your control.
             </p>
           </div>
@@ -262,27 +270,43 @@ export default function Home() {
                   'Unlike Firebase Remote Config, you control where your data lives.',
               },
             ].map((item, index) => (
-              <Card key={index}>
+              <div
+                key={index}
+                className={`p-6 border-l-2 border-primary/40 bg-black/30 hover:bg-black/50 hover:border-primary/70 transition-all duration-300 animate-in ${
+                  index === 0 ? 'stagger-1' : index === 1 ? 'stagger-2' : 'stagger-3'
+                }`}
+              >
                 <div className="space-y-3">
-                  <div className="text-xs font-medium text-primary uppercase tracking-wider">
+                  <div className="text-[10px] font-mono font-bold text-primary uppercase tracking-widest">
                     {item.comparison}
                   </div>
-                  <h3 className="text-lg font-semibold">{item.benefit}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">
+                  <h3 className="text-lg font-bold">{item.benefit}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed font-light">
                     {item.detail}
                   </p>
                 </div>
-              </Card>
+              </div>
             ))}
           </div>
         </section>
 
         {/* Final CTA */}
-        <section className="relative mx-auto max-w-6xl px-6 pb-16 md:pb-20">
-          <div className="text-center">
-            <Link href="/dashboard">
-              <Button size="lg">Open Dashboard</Button>
-            </Link>
+        <section className="relative mx-auto max-w-6xl px-6 pb-20 md:pb-24">
+          <div className="text-center space-y-8 border-t border-b border-primary/20 py-16 md:py-20 relative">
+            <div className="absolute inset-0 bg-primary/5 -skew-y-1" />
+            <div className="relative">
+              <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">
+                Ready to get started?
+              </h2>
+              <p className="text-lg md:text-xl text-foreground/70 mb-8">
+                Take control of your configuration management today.
+              </p>
+              <Link href="/dashboard">
+                <Button size="lg" className="px-12 uppercase tracking-wider font-bold shadow-2xl">
+                  Open Dashboard
+                </Button>
+              </Link>
+            </div>
           </div>
         </section>
       </main>

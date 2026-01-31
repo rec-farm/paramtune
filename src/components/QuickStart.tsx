@@ -16,19 +16,19 @@ export default function QuickStart() {
 
   return (
     <section id="quickstart" className="relative mx-auto max-w-6xl px-6 py-16 md:py-20">
-      <div className="text-center mb-8">
-        <h2 className="text-2xl md:text-3xl font-bold tracking-tight mb-3">
+      <div className="text-center mb-10 md:mb-12">
+        <h2 className="text-3xl md:text-4xl font-bold tracking-tight uppercase mb-4 inline-block border-b-2 border-primary/50 pb-2">
           Quick Start
         </h2>
-        <p className="text-muted-foreground">
+        <p className="text-base md:text-lg text-foreground/70 font-light">
           Get ParamTune running locally in seconds.
         </p>
       </div>
 
       <div className="mx-auto max-w-2xl">
         <div className="relative group">
-          <div className="flex items-center rounded-lg border border-border bg-card overflow-hidden">
-            <div className="px-4 py-3 bg-muted/50 border-r border-border text-muted-foreground text-sm font-mono">
+          <div className="flex items-center border border-primary/30 bg-black/60 hover:border-primary/50 transition-colors overflow-hidden">
+            <div className="px-4 py-3 bg-primary/10 border-r-2 border-primary/40 text-primary text-sm font-mono font-bold">
               $
             </div>
             <code className="flex-1 px-4 py-3 text-sm font-mono overflow-x-auto">
@@ -36,11 +36,11 @@ export default function QuickStart() {
             </code>
             <button
               onClick={handleCopy}
-              className="px-4 py-3 text-muted-foreground hover:text-foreground transition-colors border-l border-border hover:bg-muted/50"
+              className="px-4 py-3 text-muted-foreground hover:text-primary transition-colors border-l-2 border-primary/40 hover:bg-primary/10"
               aria-label="Copy to clipboard"
             >
               {copied ? (
-                <Check className="w-4 h-4 text-green-500" />
+                <Check className="w-4 h-4 text-primary" />
               ) : (
                 <Copy className="w-4 h-4" />
               )}
@@ -48,9 +48,9 @@ export default function QuickStart() {
           </div>
         </div>
 
-        <p className="mt-4 text-center text-sm text-muted-foreground">
+        <p className="mt-6 text-center text-sm text-muted-foreground font-mono">
           Then open{' '}
-          <code className="px-1.5 py-0.5 rounded bg-muted font-mono text-xs">
+          <code className="px-2 py-1 bg-primary/10 font-mono text-xs border border-primary/30 text-primary">
             http://localhost:3000
           </code>{' '}
           and create your first platform.

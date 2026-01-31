@@ -122,12 +122,36 @@ export default function SchemaHistory({
                         Version {history.length - index}
                       </span>
                     </div>
-                    <span
-                      className="text-xs text-muted-foreground"
-                      title={absolute}
-                    >
-                      {relative}
-                    </span>
+                    <div className="flex items-center gap-2">
+                      {entry.author ? (
+                        <div className="flex items-center gap-1.5">
+                          {entry.author.image ? (
+                            <img
+                              src={entry.author.image}
+                              alt=""
+                              className="h-4 w-4 rounded-full"
+                            />
+                          ) : (
+                            <div className="h-4 w-4 rounded-full bg-primary/20 flex items-center justify-center">
+                              <span className="text-[10px] font-medium">
+                                {entry.author.name?.charAt(0).toUpperCase() || '?'}
+                              </span>
+                            </div>
+                          )}
+                          <span className="text-xs text-muted-foreground">
+                            {entry.author.name}
+                          </span>
+                        </div>
+                      ) : (
+                        <span className="text-xs text-muted-foreground italic">Unknown</span>
+                      )}
+                      <span
+                        className="text-xs text-muted-foreground"
+                        title={absolute}
+                      >
+                        {relative}
+                      </span>
+                    </div>
                   </div>
 
                   <p className="text-sm text-muted-foreground mb-2">
@@ -156,9 +180,31 @@ export default function SchemaHistory({
                 <h4 className="font-medium">
                   Version {history.length - (selectedIndex ?? 0)} Details
                 </h4>
-                <Badge variant="outline" className="text-xs">
-                  {formatTimestamp(selectedEntry.timestamp).absolute}
-                </Badge>
+                <div className="flex items-center gap-3">
+                  {selectedEntry.author ? (
+                    <div className="flex items-center gap-1.5">
+                      {selectedEntry.author.image ? (
+                        <img
+                          src={selectedEntry.author.image}
+                          alt=""
+                          className="h-5 w-5 rounded-full"
+                        />
+                      ) : (
+                        <div className="h-5 w-5 rounded-full bg-primary/20 flex items-center justify-center">
+                          <span className="text-xs font-medium">
+                            {selectedEntry.author.name?.charAt(0).toUpperCase() || '?'}
+                          </span>
+                        </div>
+                      )}
+                      <span className="text-sm">{selectedEntry.author.name}</span>
+                    </div>
+                  ) : (
+                    <span className="text-sm text-muted-foreground italic">Unknown author</span>
+                  )}
+                  <Badge variant="outline" className="text-xs">
+                    {formatTimestamp(selectedEntry.timestamp).absolute}
+                  </Badge>
+                </div>
               </div>
 
               <div className="space-y-3">

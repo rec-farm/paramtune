@@ -58,20 +58,20 @@ Plans:
 - [x] 13-02-PLAN.md — Auth client hooks and login page
 - [x] 13-03-PLAN.md — Header logout buttons (gap closure)
 
-### Phase 14: Route Protection
+### Phase 14: Route Protection ✓
 **Goal:** Dashboard requires authentication with seamless UX
 **Depends on:** Phase 13
 **Requirements:** AUTH-03, AUTH-05, AUTH-06
 **Success Criteria** (what must be TRUE):
-  1. Unauthenticated user visiting /dashboard/* is redirected to login
-  2. After login, user is redirected to their originally intended page
-  3. Logged-in user sees their Google name and avatar in the header
-  4. User menu provides logout option
-**Plans:** 2 plans
+  1. Unauthenticated user visiting /dashboard/* is redirected to login ✓
+  2. After login, user is redirected to their originally intended page ✓
+  3. Logged-in user sees their Google name and avatar in the header ✓
+  4. User menu provides logout option ✓
+**Plans:** 2/2 complete
 
 Plans:
-- [ ] 14-01-PLAN.md — Route protection infrastructure (middleware, layout validation, returnTo)
-- [ ] 14-02-PLAN.md — User menu UI (avatar dropdown, mobile avatar display)
+- [x] 14-01-PLAN.md — Route protection infrastructure (middleware, layout validation, returnTo)
+- [x] 14-02-PLAN.md — User menu UI (avatar dropdown, mobile avatar display)
 
 ### Phase 15: Author Attribution
 **Goal:** Every schema save records who made the change
@@ -117,11 +117,11 @@ Plans:
 | 11. Dashboard Visual Refresh | v1.2 | 1/1 | Complete | 2026-01-18 |
 | 12. Responsive Design | v1.2 | 1/1 | Complete | 2026-01-18 |
 | 13. Auth Infrastructure | v1.3 | 3/3 | Complete | 2026-01-31 |
-| 14. Route Protection | v1.3 | 0/2 | Not started | - |
+| 14. Route Protection | v1.3 | 2/2 | Complete | 2026-01-31 |
 | 15. Author Attribution | v1.3 | 0/? | Not started | - |
 | 16. Audit Trail UI | v1.3 | 0/? | Not started | - |
 
-**Overall:** v1.0 complete, v1.1 complete, v1.2 complete, v1.3 in progress (1/4 phases)
+**Overall:** v1.0 complete, v1.1 complete, v1.2 complete, v1.3 in progress (2/4 phases)
 
 ## Domain Expertise
 

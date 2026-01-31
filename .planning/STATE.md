@@ -5,17 +5,17 @@
 See: .planning/PROJECT.md (updated 2026-01-18)
 
 **Core value:** Editing schemas should be a joy, not a pain.
-**Current focus:** Phase 14 - Route Protection
+**Current focus:** Phase 15 - Author Attribution
 
 ## Current Position
 
 Milestone: v1.3 User System & Audit Trail
-Phase: 14 of 16 (Route Protection)
-Plan: 02 of 02 complete
-Status: Phase complete - ready for 15-schema-ownership
-Last activity: 2026-01-31 - Completed 14-02-PLAN.md (User avatar and menu)
+Phase: 15 of 16 (Author Attribution)
+Plan: 01 of 01 complete
+Status: Phase complete - ready for 16-audit-trail
+Last activity: 2026-01-31 - Completed 15-01-PLAN.md (Author attribution)
 
-Progress: [==============------] 87.5% (14/16 phases)
+Progress: [===============-----] 93.75% (15/16 phases)
 
 ## Performance Metrics
 
@@ -40,6 +40,7 @@ Progress: [==============------] 87.5% (14/16 phases)
 | 10. Page Load Optimization | 1 | ~5 min | ~5 min |
 | 11. Dashboard Visual Refresh | 1 | ~5 min | ~5 min |
 | 12. Responsive Design | 1 | ~4 min | ~4 min |
+| 15. Author Attribution | 1 | ~3 min | ~3 min |
 
 ## Accumulated Context
 
@@ -76,6 +77,12 @@ Phase 14-02 decisions:
 - No dropdown on mobile - direct logout button for simpler touch UX
 - Avatar fallback to initial letter when no Google profile picture
 
+Phase 15-01 decisions:
+- Author field optional throughout for backward compatibility with existing schemas
+- Session captured at page level and passed to server action via closure
+- Avatar fallback to initial letter when image not available
+- Legacy entries show "Unknown" in italics
+
 ### Deferred Issues
 
 None.
@@ -96,5 +103,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-31
-Stopped at: Completed 14-02-PLAN.md (User avatar and menu - Phase 14 complete)
+Stopped at: Completed 15-01-PLAN.md (Author attribution - Phase 15 complete)
 Resume file: None

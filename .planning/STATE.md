@@ -11,9 +11,9 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 
 Milestone: v1.3 User System & Audit Trail
 Phase: 13 of 16 (Auth Infrastructure)
-Plan: Not started
-Status: Ready to plan
-Last activity: 2026-01-31 - Roadmap created for v1.3
+Plan: 01 complete
+Status: In progress
+Last activity: 2026-01-31 - Completed 13-01-PLAN.md (BetterAuth infrastructure)
 
 Progress: [============--------] 75% (12/16 phases)
 
@@ -52,6 +52,11 @@ Recent decisions for v1.3:
 - Storage: SQLite for auth tables, Redis for session caching + schema versions
 - Security: Defense-in-depth (middleware for UX redirects, Server Components for validation)
 
+Phase 13-01 decisions:
+- SQLite-only storage for now (no Redis session caching in first plan)
+- nextCookies plugin for Next.js session management
+- Build allows missing env vars (warnings only, for CI/CD)
+
 ### Deferred Issues
 
 None.
@@ -70,5 +75,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-31
-Stopped at: v1.3 roadmap created, ready to plan Phase 13
+Stopped at: Completed 13-01-PLAN.md (BetterAuth infrastructure)
 Resume file: None

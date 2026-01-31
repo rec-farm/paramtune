@@ -3,12 +3,24 @@ import MobileHeader from '@/components/MobileHeader'
 import { SidebarProvider } from '@/contexts/SidebarContext'
 import Card from '@/components/ui/Card'
 import { getPlatforms, type Platform } from '@/models/Platform'
+import { auth } from '@/lib/auth'
+import { headers } from 'next/headers'
+import { redirect } from 'next/navigation'
 
 type PageProps = {
   children: React.ReactNode
 }
 
 export default async function DashboardLayout({ children }: PageProps) {
+  // Defense-in-depth: validate session server-side (middleware is UX only)
+  const session = await auth.api.getSession({
+    headers: await headers()
+  })
+
+  if (!session) {
+    redirect('/login')
+  }
+
   let platforms: Platform[] = []
   let redisAvailable = true
 

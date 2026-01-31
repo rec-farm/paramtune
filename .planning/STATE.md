@@ -11,9 +11,9 @@ See: .planning/PROJECT.md (updated 2026-01-18)
 
 Milestone: v1.3 User System & Audit Trail
 Phase: 13 of 16 (Auth Infrastructure)
-Plan: 02 complete (phase complete)
+Plan: 03 complete (gap closure complete)
 Status: Phase complete - ready for 14-session-management
-Last activity: 2026-01-31 - Completed 13-02-PLAN.md (Auth client and login page)
+Last activity: 2026-01-31 - Completed 13-03-PLAN.md (Header logout buttons)
 
 Progress: [=============-------] 81% (13/16 phases)
 
@@ -62,13 +62,19 @@ Phase 13-02 decisions:
 - Glass card styling consistent with dashboard aesthetic
 - Login page shows user info when authenticated, sign-in when not
 
+Phase 13-03 decisions:
+- Dynamic import with ssr: false for auth-aware components (avoids React context issues)
+- Separate auth components (AuthNav, MobileAuthNav) from parent headers
+
 ### Deferred Issues
 
 None.
 
 ### Blockers/Concerns
 
-None.
+- **Pre-existing build failure:** `npm run build` fails on `/_global-error` page prerendering (Next.js 16 + React 19 issue)
+- Issue existed before Phase 13 changes, dev server works correctly
+- Need to investigate upstream fix or version downgrade before deployment
 
 ### Roadmap Evolution
 
@@ -80,5 +86,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-31
-Stopped at: Completed 13-02-PLAN.md (Auth client and login page)
+Stopped at: Completed 13-03-PLAN.md (Header logout buttons - gap closure)
 Resume file: None

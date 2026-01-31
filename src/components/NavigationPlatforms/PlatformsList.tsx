@@ -26,9 +26,9 @@ const Version = ({ platform, version }: VersionProps) => {
   return (
     <Link
       className={cn(
-        'block px-3 py-2 text-sm rounded-md transition-colors duration-200 group',
-        'hover:text-foreground hover:bg-accent/20',
-        isActive ? 'bg-accent/20 text-foreground' : 'text-muted-foreground'
+        'block px-3 py-2 text-sm transition-colors duration-200 group border-l',
+        'hover:text-foreground hover:bg-black/30 hover:border-primary/50',
+        isActive ? 'bg-black/30 text-foreground border-primary/60' : 'text-muted-foreground border-transparent'
       )}
       href="/dashboard/[platform]/[version]"
       as={`/dashboard/${encodeURIComponent(platform)}/${encodeURIComponent(
@@ -36,10 +36,10 @@ const Version = ({ platform, version }: VersionProps) => {
       )}`}
     >
       <div className="flex items-center justify-between pl-6">
-        <span className="font-mono">v{version}</span>
+        <span className="font-mono text-xs">v{version}</span>
         <div
           className={cn(
-            'w-1.5 h-1.5 rounded-full transition-opacity duration-200',
+            'w-1.5 h-1.5 transition-opacity duration-200',
             isActive
               ? 'bg-primary/80 opacity-80'
               : 'bg-primary/60 opacity-0 group-hover:opacity-60'
@@ -108,8 +108,8 @@ export default function PlatformsList({
               <button
                 aria-label="Toggle versions"
                 className={cn(
-                  'mr-1 p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/20 transition-colors',
-                  'focus:outline-none focus:ring-2 focus:ring-ring'
+                  'mr-1 p-1 text-muted-foreground hover:text-foreground hover:bg-black/30 transition-colors',
+                  'focus:outline-none focus:ring-1 focus:ring-primary/50'
                 )}
                 onClick={() =>
                   setOpen((prev) => ({
@@ -137,10 +137,10 @@ export default function PlatformsList({
               </button>
               <Link
                 className={cn(
-                  'group flex-1 flex items-center justify-between px-3 py-2 text-sm font-medium rounded-md transition-colors duration-200',
-                  'hover:bg-accent/20',
+                  'group flex-1 flex items-center justify-between px-3 py-2 text-sm font-medium uppercase tracking-wider transition-colors duration-200',
+                  'hover:bg-black/30',
                   isActivePlatform
-                    ? 'bg-accent/20 text-foreground'
+                    ? 'bg-black/30 text-foreground'
                     : 'text-foreground'
                 )}
                 href="/dashboard/[platform]"
@@ -149,11 +149,11 @@ export default function PlatformsList({
                 <span className="truncate">{platform.name}</span>
                 <div className="flex items-center gap-2">
                   {platform.versions && platform.versions.length > 0 && (
-                    <Badge variant="secondary" className="text-xs px-2 py-0">
+                    <Badge variant="secondary" className="text-xs px-1.5 py-0">
                       {platform.versions.length}
                     </Badge>
                   )}
-                  <div className="w-1.5 h-1.5 rounded-full bg-primary/60 opacity-0 group-hover:opacity-60 transition-opacity duration-200" />
+                  <div className="w-1.5 h-1.5 bg-primary/60 opacity-0 group-hover:opacity-60 transition-opacity duration-200" />
                 </div>
               </Link>
             </div>

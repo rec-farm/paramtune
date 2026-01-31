@@ -118,14 +118,14 @@ export default function CompareForm({
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <Badge variant="secondary">A</Badge>
-              <span className="font-medium">Source Schema</span>
+              <span className="text-sm font-medium uppercase tracking-wider">Source Schema</span>
             </div>
 
             <div className="space-y-3">
               <div>
                 <label
                   htmlFor="platformA"
-                  className="block text-sm font-medium mb-1.5"
+                  className="block text-xs font-medium uppercase tracking-wider mb-1.5"
                 >
                   Platform
                 </label>
@@ -133,7 +133,7 @@ export default function CompareForm({
                   id="platformA"
                   value={schemaA.platform}
                   onChange={(e) => handlePlatformChangeA(e.target.value)}
-                  className="w-full px-3 py-2 text-sm bg-background border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50"
+                  className="select"
                 >
                   <option value="">Select platform...</option>
                   {platforms.map((p) => (
@@ -147,7 +147,7 @@ export default function CompareForm({
               <div>
                 <label
                   htmlFor="versionA"
-                  className="block text-sm font-medium mb-1.5"
+                  className="block text-xs font-medium uppercase tracking-wider mb-1.5"
                 >
                   Version
                 </label>
@@ -158,7 +158,7 @@ export default function CompareForm({
                     setSchemaA((prev) => ({ ...prev, version: e.target.value }))
                   }
                   disabled={!schemaA.platform}
-                  className="w-full px-3 py-2 text-sm bg-background border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="select"
                 >
                   <option value="">Select version...</option>
                   {versionsA.map((v) => (
@@ -177,14 +177,14 @@ export default function CompareForm({
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <Badge variant="secondary">B</Badge>
-              <span className="font-medium">Target Schema</span>
+              <span className="text-sm font-medium uppercase tracking-wider">Target Schema</span>
             </div>
 
             <div className="space-y-3">
               <div>
                 <label
                   htmlFor="platformB"
-                  className="block text-sm font-medium mb-1.5"
+                  className="block text-xs font-medium uppercase tracking-wider mb-1.5"
                 >
                   Platform
                 </label>
@@ -192,7 +192,7 @@ export default function CompareForm({
                   id="platformB"
                   value={schemaB.platform}
                   onChange={(e) => handlePlatformChangeB(e.target.value)}
-                  className="w-full px-3 py-2 text-sm bg-background border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50"
+                  className="select"
                 >
                   <option value="">Select platform...</option>
                   {platforms.map((p) => (
@@ -206,7 +206,7 @@ export default function CompareForm({
               <div>
                 <label
                   htmlFor="versionB"
-                  className="block text-sm font-medium mb-1.5"
+                  className="block text-xs font-medium uppercase tracking-wider mb-1.5"
                 >
                   Version
                 </label>
@@ -217,7 +217,7 @@ export default function CompareForm({
                     setSchemaB((prev) => ({ ...prev, version: e.target.value }))
                   }
                   disabled={!schemaB.platform}
-                  className="w-full px-3 py-2 text-sm bg-background border border-border rounded-md focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="select"
                 >
                   <option value="">Select version...</option>
                   {versionsB.map((v) => (
@@ -245,8 +245,8 @@ export default function CompareForm({
 
       {/* Error display */}
       {error && (
-        <Card className="p-4 border-destructive/50 bg-destructive/10">
-          <p className="text-sm text-destructive">{error}</p>
+        <Card className="p-4 border-destructive/50 bg-black/50">
+          <p className="text-sm text-destructive font-mono">{error}</p>
         </Card>
       )}
 

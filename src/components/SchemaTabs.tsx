@@ -73,15 +73,15 @@ export default function SchemaTabs({
                 size="sm"
                 className={
                   isActive
-                    ? 'rounded-md h-10 sm:h-8 text-sm'
-                    : 'rounded-md text-muted-foreground h-10 sm:h-8 text-sm'
+                    ? 'h-10 sm:h-8 text-xs'
+                    : 'text-muted-foreground h-10 sm:h-8 text-xs'
                 }
                 onClick={() => setActive(tab)}
               >
                 <span className="flex items-center gap-2">
                   <span>{label}</span>
                   {typeof count === 'number' && (
-                    <span className="inline-flex items-center justify-center h-5 min-w-5 px-1 rounded-full bg-muted text-xs text-muted-foreground">
+                    <span className="inline-flex items-center justify-center h-5 min-w-5 px-1 border border-primary/30 bg-black/50 text-xs font-mono text-muted-foreground">
                       {count}
                     </span>
                   )}
@@ -120,12 +120,12 @@ export default function SchemaTabs({
                 <h4 className="font-medium mb-2">@extends Directive</h4>
                 <p className="text-muted-foreground mb-2">
                   Use{' '}
-                  <code className="text-xs bg-muted px-1 py-0.5 rounded">
+                  <code className="text-xs bg-black/50 border border-primary/30 px-1 py-0.5 font-mono">
                     @extends
                   </code>{' '}
                   to inherit configuration from other schemas:
                 </p>
-                <div className="bg-muted/50 p-3 rounded-lg font-mono text-xs">{`{
+                <div className="bg-black/50 border border-primary/30 p-3 font-mono text-xs">{`{
   "@extends": "ios/1.0.0",
   "customProperty": "value"
 }`}</div>
@@ -136,21 +136,21 @@ export default function SchemaTabs({
                 <ul className="space-y-1 text-muted-foreground">
                   <li>
                     •{' '}
-                    <code className="text-xs bg-muted px-1 py-0.5 rounded">
+                    <code className="text-xs bg-black/50 border border-primary/30 px-1 py-0.5 font-mono">
                       platform/version
                     </code>{' '}
                     - Exact version
                   </li>
                   <li>
                     •{' '}
-                    <code className="text-xs bg-muted px-1 py-0.5 rounded">
+                    <code className="text-xs bg-black/50 border border-primary/30 px-1 py-0.5 font-mono">
                       platform/latest
                     </code>{' '}
                     - Latest version
                   </li>
                   <li>
                     •{' '}
-                    <code className="text-xs bg-muted px-1 py-0.5 rounded">
+                    <code className="text-xs bg-black/50 border border-primary/30 px-1 py-0.5 font-mono">
                       platform/^1.0.0
                     </code>{' '}
                     - Version range
@@ -163,7 +163,7 @@ export default function SchemaTabs({
                 <ul className="space-y-1 text-muted-foreground">
                   <li>
                     • Start with an empty object{' '}
-                    <code className="text-xs bg-muted px-1 py-0.5 rounded">{`{}`}</code>
+                    <code className="text-xs bg-black/50 border border-primary/30 px-1 py-0.5 font-mono">{`{}`}</code>
                   </li>
                   <li>• Use @extends to inherit base configurations</li>
                   <li>• Override specific properties as needed</li>

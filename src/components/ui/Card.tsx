@@ -42,7 +42,7 @@ const Card = forwardRef<HTMLDivElement, CardProps>(
               {(title || subtitle) && (
                 <div className="space-y-1">
                   {title && (
-                    <h3 className="text-lg font-semibold leading-none tracking-tight">
+                    <h3 className="text-sm font-medium uppercase tracking-wider text-foreground">
                       {title}
                     </h3>
                   )}
@@ -83,7 +83,7 @@ export const CardTitle = forwardRef<
   <h3
     ref={ref}
     className={cn(
-      'text-lg font-semibold leading-none tracking-tight',
+      'text-sm font-medium uppercase tracking-wider',
       className
     )}
     {...props}

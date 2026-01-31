@@ -18,18 +18,18 @@ const Badge = forwardRef<HTMLDivElement, BadgeProps>(
       <div
         ref={ref}
         className={cn(
-          'inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2',
+          'inline-flex items-center border px-2.5 py-0.5 text-xs font-mono font-medium uppercase tracking-wide transition-colors focus:outline-none focus:ring-1 focus:ring-primary/50',
           {
-            'border-transparent bg-primary text-primary-foreground hover:bg-primary/80':
+            'border-primary/50 bg-primary text-primary-foreground hover:bg-primary/80':
               variant === 'default',
-            'border-transparent bg-secondary text-secondary-foreground hover:bg-secondary/80':
+            'border-primary/30 bg-black/50 text-secondary-foreground hover:bg-black/70':
               variant === 'secondary',
-            'border-transparent bg-destructive text-destructive-foreground hover:bg-destructive/80':
+            'border-destructive/50 bg-destructive text-destructive-foreground hover:bg-destructive/80':
               variant === 'destructive',
-            'text-foreground': variant === 'outline',
-            'border-transparent bg-green-500 text-white hover:bg-green-600':
+            'border-primary/30 text-foreground': variant === 'outline',
+            'border-green-500/50 bg-green-500 text-white hover:bg-green-600':
               variant === 'success',
-            'border-transparent bg-yellow-500 text-black hover:bg-yellow-600':
+            'border-yellow-500/50 bg-yellow-500 text-black hover:bg-yellow-600':
               variant === 'warning',
           },
           className

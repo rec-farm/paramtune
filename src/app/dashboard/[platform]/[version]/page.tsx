@@ -1,8 +1,10 @@
 import { revalidatePath } from 'next/cache'
 import { Suspense } from 'react'
 import Link from 'next/link'
+import { headers } from 'next/headers'
 import { GitCompare } from 'lucide-react'
 
+import { auth } from '@/lib/auth'
 import PageTitle from '@/components/PageTitle'
 import SchemaTabs from '@/components/SchemaTabs'
 import Badge from '@/components/ui/Badge'
@@ -11,6 +13,7 @@ import {
   getSchema,
   saveSchema,
   getSchemaHistoryWithTimestamps,
+  type Author,
 } from '@/models/Schema'
 
 export const dynamic = 'force-dynamic'
@@ -24,6 +27,12 @@ export default async function Page({
   const { platform, version } = resolvedParams
   const platformName = decodeURIComponent(platform)
   const versionName = decodeURIComponent(version)
+
+  const session = await auth.api.getSession({
+    headers: await headers()
+  })
+  const user = session?.user
+
   const schema = await getSchema(platformName, versionName)
   const history = await getSchemaHistoryWithTimestamps(
     platformName,
@@ -43,7 +52,12 @@ export default async function Page({
       throw new Error('Invalid JSON content')
     }
 
-    await saveSchema(platformName, versionName, content)
+    // Build author from captured user context
+    const author: Author | undefined = user
+      ? { id: user.id, name: user.name || 'Unknown', image: user.image || undefined }
+      : undefined
+
+    await saveSchema(platformName, versionName, content, author)
 
     revalidatePath('/dashboard/[platform]/[version]', 'page')
   }

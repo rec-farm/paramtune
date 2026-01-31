@@ -5,7 +5,7 @@
 - [x] **[v1.0 MVP](milestones/v1.0-ROADMAP.md)** - Phases 1-4 (shipped 2026-01-18)
 - [x] **[v1.1 Schema Diff & Polish](milestones/v1.1-ROADMAP.md)** - Phases 5-8 (shipped 2026-01-18)
 - [x] **[v1.2 Performance & Polish](milestones/v1.2-ROADMAP.md)** - Phases 9-12 (shipped 2026-01-18)
-- [x] **v1.3 User System & Audit Trail** - Phases 13-16 (shipped 2026-01-31)
+- [x] **[v1.3 User System & Audit Trail](milestones/v1.3-ROADMAP.md)** - Phases 13-16 (shipped 2026-01-31)
 
 ## Completed Milestones
 
@@ -39,66 +39,15 @@
 
 </details>
 
-## v1.3 User System & Audit Trail
+<details>
+<summary>v1.3 User System & Audit Trail (Phases 13-16) - SHIPPED 2026-01-31</summary>
 
-**Milestone Goal:** Enable team accountability by tracking who makes each schema change
+- [x] Phase 13: Auth Infrastructure (3/3 plans) - BetterAuth, Google OAuth, login page
+- [x] Phase 14: Route Protection (2/2 plans) - Middleware, returnTo, user menu
+- [x] Phase 15: Author Attribution (1/1 plan) - Author type, saveSchema update
+- [x] Phase 16: Audit Trail UI (1/1 plan) - Version restore with author attribution
 
-### Phase 13: Auth Infrastructure ✓
-**Goal:** Users can authenticate via Google and maintain persistent sessions
-**Depends on:** Nothing (first phase of milestone)
-**Requirements:** AUTH-01, AUTH-02, AUTH-04
-**Success Criteria** (what must be TRUE):
-  1. User can click "Sign in with Google" and complete OAuth flow ✓
-  2. User remains logged in after closing and reopening browser ✓
-  3. User can log out with a single click from any page ✓
-**Plans:** 3/3 complete
-
-Plans:
-- [x] 13-01-PLAN.md — BetterAuth core setup (SQLite, Google OAuth, API routes)
-- [x] 13-02-PLAN.md — Auth client hooks and login page
-- [x] 13-03-PLAN.md — Header logout buttons (gap closure)
-
-### Phase 14: Route Protection ✓
-**Goal:** Dashboard requires authentication with seamless UX
-**Depends on:** Phase 13
-**Requirements:** AUTH-03, AUTH-05, AUTH-06
-**Success Criteria** (what must be TRUE):
-  1. Unauthenticated user visiting /dashboard/* is redirected to login ✓
-  2. After login, user is redirected to their originally intended page ✓
-  3. Logged-in user sees their Google name and avatar in the header ✓
-  4. User menu provides logout option ✓
-**Plans:** 2/2 complete
-
-Plans:
-- [x] 14-01-PLAN.md — Route protection infrastructure (middleware, layout validation, returnTo)
-- [x] 14-02-PLAN.md — User menu UI (avatar dropdown, mobile avatar display)
-
-### Phase 15: Author Attribution ✓
-**Goal:** Every schema save records who made the change
-**Depends on:** Phase 14
-**Requirements:** AUDT-01, AUDT-04
-**Success Criteria** (what must be TRUE):
-  1. Saving a schema records the current user's ID, name, and avatar ✓
-  2. Legacy schemas without author data do not cause errors ✓
-  3. Schema type supports optional author fields ✓
-**Plans:** 1/1 complete
-
-Plans:
-- [x] 15-01-PLAN.md — Author type, saveSchema update, history display
-
-### Phase 16: Audit Trail UI ✓
-**Goal:** Users can see who made each change and restore previous versions
-**Depends on:** Phase 15
-**Requirements:** AUDT-02, AUDT-03
-**Success Criteria** (what must be TRUE):
-  1. Version history displays author name and avatar for each version ✓
-  2. Legacy versions without author show "Unknown" or system indicator ✓
-  3. User can restore any previous version (creates new version with current user as author) ✓
-  4. Restored version appears at top of history with correct author attribution ✓
-**Plans:** 1/1 complete
-
-Plans:
-- [x] 16-01-PLAN.md — Version restore functionality with author attribution
+</details>
 
 ## Progress
 

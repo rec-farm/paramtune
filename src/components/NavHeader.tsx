@@ -1,9 +1,13 @@
 'use client'
 
+import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import Logo from './Logo'
 import Button from './ui/Button'
 import { Github } from 'lucide-react'
+
+// Dynamic import with ssr: false to avoid React context issues during static generation
+const AuthNav = dynamic(() => import('./AuthNav'), { ssr: false })
 
 export default function NavHeader() {
   return (
@@ -29,6 +33,8 @@ export default function NavHeader() {
               <Github className="w-4 h-4" />
               <span className="hidden sm:inline">GitHub</span>
             </Link>
+
+            <AuthNav />
 
             <Link href="/dashboard">
               <Button size="sm" className="uppercase tracking-wider">Dashboard</Button>

@@ -104,7 +104,7 @@ None.
 - v1.0 MVP: Phases 1-4, shipped 2026-01-18
 - v1.1 Schema Diff & Polish: Phases 5-8, shipped 2026-01-18
 - v1.2 Performance & Polish: Phases 9-12, shipped 2026-01-18
-- v1.3 User System & Audit Trail: Phases 13-16, in progress
+- v1.3 User System & Audit Trail: Phases 13-16, shipped 2026-01-31
 
 ## Session Continuity
 

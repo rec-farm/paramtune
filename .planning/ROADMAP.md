@@ -5,7 +5,7 @@
 - [x] **[v1.0 MVP](milestones/v1.0-ROADMAP.md)** - Phases 1-4 (shipped 2026-01-18)
 - [x] **[v1.1 Schema Diff & Polish](milestones/v1.1-ROADMAP.md)** - Phases 5-8 (shipped 2026-01-18)
 - [x] **[v1.2 Performance & Polish](milestones/v1.2-ROADMAP.md)** - Phases 9-12 (shipped 2026-01-18)
-- [ ] **v1.3 User System & Audit Trail** - Phases 13-16 (in progress)
+- [x] **v1.3 User System & Audit Trail** - Phases 13-16 (shipped 2026-01-31)
 
 ## Completed Milestones
 
@@ -86,19 +86,19 @@ Plans:
 Plans:
 - [x] 15-01-PLAN.md — Author type, saveSchema update, history display
 
-### Phase 16: Audit Trail UI
+### Phase 16: Audit Trail UI ✓
 **Goal:** Users can see who made each change and restore previous versions
 **Depends on:** Phase 15
 **Requirements:** AUDT-02, AUDT-03
 **Success Criteria** (what must be TRUE):
-  1. Version history displays author name and avatar for each version
-  2. Legacy versions without author show "Unknown" or system indicator
-  3. User can restore any previous version (creates new version with current user as author)
-  4. Restored version appears at top of history with correct author attribution
-**Plans:** 1 plan
+  1. Version history displays author name and avatar for each version ✓
+  2. Legacy versions without author show "Unknown" or system indicator ✓
+  3. User can restore any previous version (creates new version with current user as author) ✓
+  4. Restored version appears at top of history with correct author attribution ✓
+**Plans:** 1/1 complete
 
 Plans:
-- [ ] 16-01-PLAN.md — Version restore functionality with author attribution
+- [x] 16-01-PLAN.md — Version restore functionality with author attribution
 
 ## Progress
 
@@ -119,9 +119,9 @@ Plans:
 | 13. Auth Infrastructure | v1.3 | 3/3 | Complete | 2026-01-31 |
 | 14. Route Protection | v1.3 | 2/2 | Complete | 2026-01-31 |
 | 15. Author Attribution | v1.3 | 1/1 | Complete | 2026-01-31 |
-| 16. Audit Trail UI | v1.3 | 0/1 | Not started | - |
+| 16. Audit Trail UI | v1.3 | 1/1 | Complete | 2026-01-31 |
 
-**Overall:** v1.0 complete, v1.1 complete, v1.2 complete, v1.3 in progress (3/4 phases)
+**Overall:** v1.0 complete, v1.1 complete, v1.2 complete, v1.3 complete (4/4 phases)
 
 ## Domain Expertise
 

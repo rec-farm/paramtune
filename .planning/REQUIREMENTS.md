@@ -17,8 +17,8 @@
 ### Audit Trail
 
 - [x] **AUDT-01**: Schema version records author (user ID, name, avatar) on save
-- [ ] **AUDT-02**: Version history displays author name and avatar for each version
-- [ ] **AUDT-03**: User can restore a previous schema version (creates new version with current user as author)
+- [x] **AUDT-02**: Version history displays author name and avatar for each version
+- [x] **AUDT-03**: User can restore a previous schema version (creates new version with current user as author)
 - [x] **AUDT-04**: Legacy schemas without author display gracefully (show "Unknown" or system indicator)
 
 ## Future Requirements
@@ -58,8 +58,8 @@
 | AUTH-05 | Phase 14 | Complete |
 | AUTH-06 | Phase 14 | Complete |
 | AUDT-01 | Phase 15 | Complete |
-| AUDT-02 | Phase 16 | Pending |
-| AUDT-03 | Phase 16 | Pending |
+| AUDT-02 | Phase 16 | Complete |
+| AUDT-03 | Phase 16 | Complete |
 | AUDT-04 | Phase 15 | Complete |
 
 **Coverage:**

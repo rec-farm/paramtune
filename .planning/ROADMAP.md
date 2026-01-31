@@ -95,10 +95,10 @@ Plans:
   2. Legacy versions without author show "Unknown" or system indicator
   3. User can restore any previous version (creates new version with current user as author)
   4. Restored version appears at top of history with correct author attribution
-**Plans:** TBD
+**Plans:** 1 plan
 
 Plans:
-- [ ] 16-01: TBD
+- [ ] 16-01-PLAN.md — Version restore functionality with author attribution
 
 ## Progress
 
@@ -119,7 +119,7 @@ Plans:
 | 13. Auth Infrastructure | v1.3 | 3/3 | Complete | 2026-01-31 |
 | 14. Route Protection | v1.3 | 2/2 | Complete | 2026-01-31 |
 | 15. Author Attribution | v1.3 | 1/1 | Complete | 2026-01-31 |
-| 16. Audit Trail UI | v1.3 | 0/? | Not started | - |
+| 16. Audit Trail UI | v1.3 | 0/1 | Not started | - |
 
 **Overall:** v1.0 complete, v1.1 complete, v1.2 complete, v1.3 in progress (3/4 phases)
 

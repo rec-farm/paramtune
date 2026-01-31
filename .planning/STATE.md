@@ -5,17 +5,17 @@
 See: .planning/PROJECT.md (updated 2026-01-18)
 
 **Core value:** Editing schemas should be a joy, not a pain.
-**Current focus:** Phase 13 - Auth Infrastructure
+**Current focus:** Phase 14 - Route Protection
 
 ## Current Position
 
 Milestone: v1.3 User System & Audit Trail
-Phase: 13 of 16 (Auth Infrastructure)
-Plan: 03 complete (gap closure complete)
-Status: Phase complete - ready for 14-session-management
-Last activity: 2026-01-31 - Completed 13-03-PLAN.md (Header logout buttons)
+Phase: 14 of 16 (Route Protection)
+Plan: 01 of 02 complete
+Status: In progress
+Last activity: 2026-01-31 - Completed 14-01-PLAN.md (Dashboard route protection)
 
-Progress: [=============-------] 81% (13/16 phases)
+Progress: [==============------] 87.5% (14/16 phases)
 
 ## Performance Metrics
 
@@ -66,6 +66,11 @@ Phase 13-03 decisions:
 - Dynamic import with ssr: false for auth-aware components (avoids React context issues)
 - Separate auth components (AuthNav, MobileAuthNav) from parent headers
 
+Phase 14-01 decisions:
+- Defense-in-depth: middleware cookie check for UX, Server Component session validation for security
+- encodeURIComponent for returnTo to preserve query strings
+- Suspense boundary required for useSearchParams in login page
+
 ### Deferred Issues
 
 None.
@@ -86,5 +91,5 @@ None.
 ## Session Continuity
 
 Last session: 2026-01-31
-Stopped at: Completed 13-03-PLAN.md (Header logout buttons - gap closure)
+Stopped at: Completed 14-01-PLAN.md (Dashboard route protection)
 Resume file: None

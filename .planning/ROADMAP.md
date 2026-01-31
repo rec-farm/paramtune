@@ -43,19 +43,20 @@
 
 **Milestone Goal:** Enable team accountability by tracking who makes each schema change
 
-### Phase 13: Auth Infrastructure
+### Phase 13: Auth Infrastructure ✓
 **Goal:** Users can authenticate via Google and maintain persistent sessions
 **Depends on:** Nothing (first phase of milestone)
 **Requirements:** AUTH-01, AUTH-02, AUTH-04
 **Success Criteria** (what must be TRUE):
-  1. User can click "Sign in with Google" and complete OAuth flow
-  2. User remains logged in after closing and reopening browser
-  3. User can log out with a single click from any page
-**Plans:** 2 plans
+  1. User can click "Sign in with Google" and complete OAuth flow ✓
+  2. User remains logged in after closing and reopening browser ✓
+  3. User can log out with a single click from any page ✓
+**Plans:** 3/3 complete
 
 Plans:
-- [ ] 13-01-PLAN.md — BetterAuth core setup (SQLite, Google OAuth, API routes)
-- [ ] 13-02-PLAN.md — Auth client hooks and login page
+- [x] 13-01-PLAN.md — BetterAuth core setup (SQLite, Google OAuth, API routes)
+- [x] 13-02-PLAN.md — Auth client hooks and login page
+- [x] 13-03-PLAN.md — Header logout buttons (gap closure)
 
 ### Phase 14: Route Protection
 **Goal:** Dashboard requires authentication with seamless UX
@@ -114,12 +115,12 @@ Plans:
 | 10. Page Load Optimization | v1.2 | 1/1 | Complete | 2026-01-18 |
 | 11. Dashboard Visual Refresh | v1.2 | 1/1 | Complete | 2026-01-18 |
 | 12. Responsive Design | v1.2 | 1/1 | Complete | 2026-01-18 |
-| 13. Auth Infrastructure | v1.3 | 0/2 | Planned | - |
+| 13. Auth Infrastructure | v1.3 | 3/3 | Complete | 2026-01-31 |
 | 14. Route Protection | v1.3 | 0/? | Not started | - |
 | 15. Author Attribution | v1.3 | 0/? | Not started | - |
 | 16. Audit Trail UI | v1.3 | 0/? | Not started | - |
 
-**Overall:** v1.0 complete, v1.1 complete, v1.2 complete, v1.3 in progress (0/4 phases)
+**Overall:** v1.0 complete, v1.1 complete, v1.2 complete, v1.3 in progress (1/4 phases)
 
 ## Domain Expertise
 

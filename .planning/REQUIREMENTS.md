@@ -7,10 +7,10 @@
 
 ### Authentication
 
-- [ ] **AUTH-01**: User can sign in with Google SSO
-- [ ] **AUTH-02**: User session persists across browser restarts
+- [x] **AUTH-01**: User can sign in with Google SSO
+- [x] **AUTH-02**: User session persists across browser restarts
 - [ ] **AUTH-03**: User sees their name and avatar in the header when logged in
-- [ ] **AUTH-04**: User can log out with a single click
+- [x] **AUTH-04**: User can log out with a single click
 - [ ] **AUTH-05**: Dashboard routes require authentication (redirect to login)
 - [ ] **AUTH-06**: After login, user returns to their intended destination
 
@@ -51,10 +51,10 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| AUTH-01 | Phase 13 | Pending |
-| AUTH-02 | Phase 13 | Pending |
+| AUTH-01 | Phase 13 | Complete |
+| AUTH-02 | Phase 13 | Complete |
 | AUTH-03 | Phase 14 | Pending |
-| AUTH-04 | Phase 13 | Pending |
+| AUTH-04 | Phase 13 | Complete |
 | AUTH-05 | Phase 14 | Pending |
 | AUTH-06 | Phase 14 | Pending |
 | AUDT-01 | Phase 15 | Pending |

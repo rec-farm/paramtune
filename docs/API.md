@@ -17,6 +17,17 @@ All API endpoints return JSON responses. CORS is controlled via the `CORS_ORIGIN
 
 ### Platform Management
 
+#### GET /api/schemas
+Returns all platforms with their metadata.
+
+**Response:**
+```json
+[
+  { "name": "mobile", "versions": ["1.0.0", "1.1.0"] },
+  { "name": "web", "versions": ["2.0.0"] }
+]
+```
+
 #### GET /api/[platform]
 Returns platform metadata including name and available versions.
 
@@ -150,6 +161,17 @@ Schemas support composition using the `@extends` directive:
 
 ### Circular Dependency Detection
 The system detects and prevents circular dependencies with clear error messages.
+If schema A extends B and B extends A, the save will fail with a `Circular dependency detected` error.
+
+### Schema Validation
+Before saving, schemas are validated:
+- Content must be a plain JSON object (not array, string, null, etc.)
+- All `@extends` references must resolve to existing platform/version pairs
+- Version ranges must match at least one available version
+- Circular dependency chains are rejected at any depth
+
+### Cascade Updates
+When a base schema is updated, all schemas that depend on it (via `@extends`) are automatically re-processed. The cascade uses visited-set tracking to prevent infinite loops.
 
 ## Examples
 

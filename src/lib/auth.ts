@@ -4,6 +4,8 @@ import Database from 'better-sqlite3'
 
 const db = new Database('./data/auth.db')
 
+const isDev = process.env.NODE_ENV === 'development'
+
 export const auth = betterAuth({
   database: {
     db,
@@ -11,9 +13,10 @@ export const auth = betterAuth({
   },
   socialProviders: {
     google: {
-      clientId: process.env.GOOGLE_CLIENT_ID!,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
+      clientId: process.env.GOOGLE_CLIENT_ID || 'fake-client-id',
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'fake-client-secret',
     },
   },
+  emailAndPassword: isDev ? { enabled: true } : undefined,
   plugins: [nextCookies()],
 })

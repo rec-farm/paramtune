@@ -1,7 +1,7 @@
 'use client'
 
-import { Suspense } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { Suspense, useState } from 'react'
+import { useSearchParams, useRouter } from 'next/navigation'
 import { signIn, signOut, useSession } from '@/lib/auth-client'
 
 function LoadingState() {
@@ -12,6 +12,45 @@ function LoadingState() {
         <p className="text-muted-foreground mt-4">Loading...</p>
       </div>
     </div>
+  )
+}
+
+function DevLoginButton({ returnTo }: { returnTo: string }) {
+  const [loading, setLoading] = useState(false)
+  const router = useRouter()
+
+  async function handleDevLogin() {
+    setLoading(true)
+    try {
+      const res = await fetch('/api/auth/dev-login', { method: 'POST' })
+      if (res.ok) {
+        router.push(returnTo)
+      }
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  return (
+    <>
+      <div className="relative">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-primary/20" />
+        </div>
+        <div className="relative flex justify-center text-xs uppercase">
+          <span className="bg-black/50 px-2 text-muted-foreground tracking-wider">
+            Development only
+          </span>
+        </div>
+      </div>
+      <button
+        onClick={handleDevLogin}
+        disabled={loading}
+        className="btn btn-secondary w-full"
+      >
+        {loading ? 'Signing in...' : 'Dev Login (skip OAuth)'}
+      </button>
+    </>
   )
 }
 
@@ -127,6 +166,11 @@ function LoginContent() {
               </span>
             </div>
           </div>
+
+          {/* Dev login - only in development */}
+          {process.env.NODE_ENV === 'development' && (
+            <DevLoginButton returnTo={returnTo} />
+          )}
 
           {/* Info text */}
           <p className="text-xs text-muted-foreground text-center">

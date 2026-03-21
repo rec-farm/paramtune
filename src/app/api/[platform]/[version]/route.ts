@@ -1,42 +1,32 @@
-import { NextResponse } from 'next/server'
+import { Effect } from 'effect'
 
 import { getVersion, getVersions } from '@/models/Version'
+import { handleApiWithFailures, failWith } from '@/lib/apiHandler'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
-export async function GET(
+export function GET(
   _request: Request,
   { params }: { params: Promise<{ platform: string; version: string }> }
 ) {
-  try {
-    const resolvedParams = await params
-    const { platform, version } = resolvedParams
-    const platformName = decodeURIComponent(platform)
-    const versionName = decodeURIComponent(version)
+  return handleApiWithFailures(
+    Effect.gen(function* () {
+      const { platform, version } = yield* Effect.promise(() => params)
+      const platformName = decodeURIComponent(platform)
+      const versionName = decodeURIComponent(version)
 
-    if (version === 'versions') {
-      const list = await getVersions(platformName)
-      return NextResponse.json(list, {
-        status: 200,
-        headers: { 'Cache-Control': 'no-store' },
-      })
-    }
+      if (version === 'versions') {
+        return yield* Effect.promise(() => getVersions(platformName))
+      }
 
-    const data = await getVersion(platformName, versionName)
-    if (!data) {
-      return NextResponse.json({ error: 'Version not found' }, { status: 404 })
-    }
-    return NextResponse.json(data, {
-      status: 200,
-      headers: { 'Cache-Control': 'no-store' },
+      const data = yield* Effect.promise(() =>
+        getVersion(platformName, versionName)
+      )
+      if (!data) {
+        return yield* failWith('Version not found', 404)
+      }
+      return data
     })
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Unknown error'
-    console.error('GET /api/[platform]/[version] error:', error)
-    return NextResponse.json(
-      { error: process.env.NODE_ENV === 'development' ? message : 'Internal Server Error' },
-      { status: 500 }
-    )
-  }
+  )
 }

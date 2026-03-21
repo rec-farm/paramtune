@@ -1,59 +1,52 @@
-import { NextResponse } from 'next/server'
+import { Effect } from 'effect'
 
 import { getPlatform, savePlatform } from '@/models/Platform'
+import { handleApiWithFailures, failWith } from '@/lib/apiHandler'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
-export async function GET(
+export function GET(
   _request: Request,
   { params }: { params: Promise<{ platform: string }> }
 ) {
-  try {
-    const resolvedParams = await params
-    const { platform } = resolvedParams
-    const platformName = decodeURIComponent(platform)
-    const data = await getPlatform(platformName)
+  return handleApiWithFailures(
+    Effect.gen(function* () {
+      const { platform } = yield* Effect.promise(() => params)
+      const platformName = decodeURIComponent(platform)
+      const data = yield* Effect.promise(() => getPlatform(platformName))
 
-    if (!data) {
-      return NextResponse.json({ error: 'Platform not found' }, { status: 404 })
-    }
+      if (!data) {
+        return yield* failWith('Platform not found', 404)
+      }
 
-    return NextResponse.json(data, {
-      status: 200,
-      headers: { 'Cache-Control': 'no-store' },
+      return data
     })
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Unknown error'
-    console.error('GET /api/[platform] error:', error)
-    return NextResponse.json(
-      { error: process.env.NODE_ENV === 'development' ? message : 'Internal Server Error' },
-      { status: 500 }
-    )
-  }
+  )
 }
 
-export async function POST(
+export function POST(
   request: Request,
   { params }: { params: Promise<{ platform: string }> }
 ) {
-  try {
-    const resolvedParams = await params
-    const { platform } = resolvedParams
-    const platformName = decodeURIComponent(platform)
-    const body = await request.json().catch(() => null)
-    if (!body || typeof body !== 'object') {
-      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
-    }
+  return handleApiWithFailures(
+    Effect.gen(function* () {
+      const { platform } = yield* Effect.promise(() => params)
+      const platformName = decodeURIComponent(platform)
+      const body = yield* Effect.tryPromise({
+        try: () => request.json(),
+        catch: () => 'parse-error' as const,
+      }).pipe(Effect.catchAll(() => Effect.succeed(null)))
 
-    await savePlatform(platformName, body as Record<string, unknown>)
-    return NextResponse.json({ ok: true }, { status: 201 })
-  } catch (error: unknown) {
-    const message = error instanceof Error ? error.message : 'Unknown error'
-    console.error('POST /api/[platform] error:', error)
-    return NextResponse.json(
-      { error: process.env.NODE_ENV === 'development' ? message : 'Internal Server Error' },
-      { status: 500 }
-    )
-  }
+      if (!body || typeof body !== 'object') {
+        return yield* failWith('Invalid JSON body', 400)
+      }
+
+      yield* Effect.promise(() =>
+        savePlatform(platformName, body as Record<string, unknown>)
+      )
+      return { ok: true }
+    }),
+    { status: 201 }
+  )
 }

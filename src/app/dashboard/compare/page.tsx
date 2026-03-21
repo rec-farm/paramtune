@@ -1,3 +1,5 @@
+import { Effect } from 'effect'
+
 import { getPlatforms } from '@/models/Platform'
 import { getPlatform } from '@/models/Platform'
 import { compareSchemas, getSchema, type Schema } from '@/models/Schema'
@@ -30,17 +32,19 @@ export default async function ComparePage() {
     versionB: string
   ): Promise<CompareResult> {
     'use server'
-    const [diffResult, schemaA, schemaB] = await Promise.all([
-      compareSchemas(platformA, versionA, platformB, versionB),
-      getSchema(platformA, versionA),
-      getSchema(platformB, versionB),
-    ])
-
-    return {
-      diffResult,
-      schemaAContent: (schemaA as Schema)?.content ?? {},
-      schemaBContent: (schemaB as Schema)?.content ?? {},
-    }
+    return Effect.runPromise(
+      Effect.all([
+        Effect.promise(() => compareSchemas(platformA, versionA, platformB, versionB)),
+        Effect.promise(() => getSchema(platformA, versionA)),
+        Effect.promise(() => getSchema(platformB, versionB)),
+      ], { concurrency: 'unbounded' }).pipe(
+        Effect.map(([diffResult, schemaA, schemaB]) => ({
+          diffResult,
+          schemaAContent: (schemaA as Schema)?.content ?? {},
+          schemaBContent: (schemaB as Schema)?.content ?? {},
+        }))
+      )
+    )
   }
 
   return (

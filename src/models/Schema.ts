@@ -1,8 +1,54 @@
+import { Effect, Data } from 'effect'
 import semver from 'semver'
 
 import redis from '@/connections/redis'
+import { redisCall } from '@/lib/effectRedis'
 import { getPlatforms } from './Platform'
 import type { Platform } from './Platform'
+import { diffSchemas, type DiffResult } from '@/lib/schemaDiff'
+
+// ── Error types ──────────────────────────────────────────────────────────────
+
+export class MissingPlatformError extends Data.TaggedError(
+  'MissingPlatformError'
+)<{
+  readonly platform: string
+}> {
+  get message() {
+    return `Missing platform (${this.platform})`
+  }
+}
+
+export class VersionNotFoundError extends Data.TaggedError(
+  'VersionNotFoundError'
+)<{
+  readonly platform: string
+  readonly requested: string
+}> {
+  get message() {
+    return `No version found for ${this.platform} satisfying "${this.requested}"`
+  }
+}
+
+export class CircularDependencyError extends Data.TaggedError(
+  'CircularDependencyError'
+)<{
+  readonly ref: string
+}> {
+  get message() {
+    return `Circular dependency detected at ${this.ref}`
+  }
+}
+
+export class InvalidContentError extends Data.TaggedError(
+  'InvalidContentError'
+)<{}> {
+  get message() {
+    return 'Schema content must be a JSON object'
+  }
+}
+
+// ── Types ────────────────────────────────────────────────────────────────────
 
 export type Schema = {
   content: Record<string, unknown>
@@ -17,80 +63,44 @@ export type Author = {
   image?: string
 }
 
-const getKey = (platform: string, version: string) =>
-  `schemas:${platform}:${version}`
+export type SchemaValidationResult = {
+  valid: boolean
+  errors: string[]
+}
 
-function findDependenciesInContent(content: Record<string, unknown>) {
-  const dependencies = Object.entries(content)
-    .flatMap(([key, value]) => {
-      if (key === '@extends' && typeof value === 'string') {
-        return value
-      }
-
-      if (typeof value === 'object' && value !== null) {
-        return findDependenciesInContent(value as Record<string, unknown>)
-      }
-
-      return null
-    })
-    .filter((dependency) => typeof dependency === 'string') as string[]
-
-  return Array.from(new Set(dependencies))
+export type SchemaHistoryEntry = {
+  timestamp: number
+  content: Record<string, unknown>
+  dependencies: string[]
+  output: Record<string, unknown>
+  author?: Author
 }
 
 type ResolvedDependency = { platform: string; version: string }
 
-async function resolveDependencies(
-  dependencies: string[]
-): Promise<ResolvedDependency[]> {
-  const platforms = await getPlatforms()
+export type SchemaError =
+  | MissingPlatformError
+  | VersionNotFoundError
+  | CircularDependencyError
+  | InvalidContentError
 
-  function findPlatform(platformName: string): Platform | undefined {
-    return platforms.find((p) => p.name === platformName)
-  }
+// ── Pure helpers ─────────────────────────────────────────────────────────────
 
-  function resolveVersion(
-    platform: Platform,
-    requested: string
-  ): string | null {
-    if (requested === 'latest') {
-      const sorted = [...(platform.versions || [])].sort(semver.rcompare)
-      return sorted[0] ?? null
-    }
+const getKey = (platform: string, version: string) =>
+  `schemas:${platform}:${version}`
 
-    const hasRangeOperator = /[~^*><=|]/.test(requested)
-    if (hasRangeOperator) {
-      const max = semver.maxSatisfying(platform.versions || [], requested)
-      return max ?? null
-    }
-
-    return (platform.versions || []).includes(requested) ? requested : null
-  }
-
-  const resolved: ResolvedDependency[] = []
-
-  for (const dependency of dependencies) {
-    const [rawPlatform, rawVersion = 'latest'] = dependency.split('/') as [
-      string,
-      string | undefined
-    ]
-
-    const platform = findPlatform(rawPlatform)
-    if (!platform) {
-      throw new Error(`Missing platform (${rawPlatform})`)
-    }
-
-    const chosenVersion = resolveVersion(platform, rawVersion || 'latest')
-    if (!chosenVersion) {
-      throw new Error(
-        `No version found for ${rawPlatform} satisfying "${rawVersion}"`
-      )
-    }
-
-    resolved.push({ platform: rawPlatform, version: chosenVersion })
-  }
-
-  return resolved
+function findDependenciesInContent(
+  content: Record<string, unknown>
+): string[] {
+  const dependencies = Object.entries(content)
+    .flatMap(([key, value]) => {
+      if (key === '@extends' && typeof value === 'string') return value
+      if (typeof value === 'object' && value !== null)
+        return findDependenciesInContent(value as Record<string, unknown>)
+      return null
+    })
+    .filter((dependency) => typeof dependency === 'string') as string[]
+  return Array.from(new Set(dependencies))
 }
 
 function isPlainObject(value: unknown): value is Record<string, unknown> {
@@ -114,89 +124,222 @@ function deepMerge(
   return result
 }
 
-async function getLatestSchemaContent(
+// ── Effect-based internals ───────────────────────────────────────────────────
+
+const resolveDependenciesEffect = (
+  dependencies: string[]
+): Effect.Effect<
+  ResolvedDependency[],
+  MissingPlatformError | VersionNotFoundError
+> =>
+  Effect.gen(function* () {
+    const platforms = yield* Effect.promise(() => getPlatforms())
+
+    function findPlatform(name: string): Platform | undefined {
+      return platforms.find((p) => p.name === name)
+    }
+
+    function resolveVersion(
+      platform: Platform,
+      requested: string
+    ): string | null {
+      if (requested === 'latest') {
+        const sorted = [...(platform.versions || [])].sort(semver.rcompare)
+        return sorted[0] ?? null
+      }
+      if (/[~^*><=|]/.test(requested)) {
+        return semver.maxSatisfying(platform.versions || [], requested) ?? null
+      }
+      return (platform.versions || []).includes(requested) ? requested : null
+    }
+
+    const resolved: ResolvedDependency[] = []
+
+    for (const dependency of dependencies) {
+      const [rawPlatform, rawVersion = 'latest'] = dependency.split('/') as [
+        string,
+        string | undefined,
+      ]
+
+      const platform = findPlatform(rawPlatform)
+      if (!platform) {
+        return yield* new MissingPlatformError({ platform: rawPlatform })
+      }
+
+      const version = rawVersion || 'latest'
+      const chosenVersion = resolveVersion(platform, version)
+      if (!chosenVersion) {
+        return yield* new VersionNotFoundError({
+          platform: rawPlatform,
+          requested: version,
+        })
+      }
+
+      resolved.push({ platform: rawPlatform, version: chosenVersion })
+    }
+
+    return resolved
+  })
+
+const getSchemaEffect = (
   platform: string,
   version: string
-): Promise<Record<string, unknown>> {
-  const base = await getSchema(platform, version)
-  return (base as Schema)?.content ?? {}
-}
+): Effect.Effect<Schema | Record<string, never>> =>
+  redisCall(() =>
+    redis.zrevrangebyscore(
+      getKey(platform, version),
+      '+inf',
+      '-inf',
+      'LIMIT',
+      0,
+      1
+    )
+  ).pipe(
+    Effect.map(([schema]) => (schema ? (JSON.parse(schema) as Schema) : {}))
+  )
 
-async function processNodeWithExtends(
+const getLatestSchemaContentEffect = (
+  platform: string,
+  version: string
+): Effect.Effect<Record<string, unknown>> =>
+  getSchemaEffect(platform, version).pipe(
+    Effect.map((base) => (base as Schema)?.content ?? {})
+  )
+
+const processNodeWithExtendsEffect = (
   node: unknown,
   visited: Set<string>
-): Promise<unknown> {
-  if (Array.isArray(node)) {
-    return Promise.all(
-      node.map((item) => processNodeWithExtends(item, visited))
-    )
-  }
-  if (!isPlainObject(node)) {
-    return node
-  }
-
-  let result: Record<string, unknown> = {}
-
-  if (typeof node['@extends'] === 'string') {
-    const ref = node['@extends'] as string
-    const [platform, versionRange = 'latest'] = ref.split('/') as [
-      string,
-      string | undefined
-    ]
-
-    const key = `${platform}/${versionRange}`
-    if (visited.has(key)) {
-      throw new Error(`Circular dependency detected at ${key}`)
+): Effect.Effect<
+  unknown,
+  MissingPlatformError | VersionNotFoundError | CircularDependencyError
+> =>
+  Effect.gen(function* () {
+    if (Array.isArray(node)) {
+      return yield* Effect.all(
+        node.map((item) => processNodeWithExtendsEffect(item, visited))
+      )
     }
-    visited.add(key)
 
-    const deps = await resolveDependencies([ref])
-    const concrete = deps[0]
-    const baseContent = await getLatestSchemaContent(
-      concrete.platform,
-      concrete.version
+    if (!isPlainObject(node)) return node
+
+    if (typeof node['@extends'] === 'string') {
+      const ref = node['@extends'] as string
+      const [platform, versionRange = 'latest'] = ref.split('/') as [
+        string,
+        string | undefined,
+      ]
+      const key = `${platform}/${versionRange}`
+
+      if (visited.has(key)) {
+        return yield* new CircularDependencyError({ ref: key })
+      }
+      visited.add(key)
+
+      const deps = yield* resolveDependenciesEffect([ref])
+      const concrete = deps[0]
+      const baseContent = yield* getLatestSchemaContentEffect(
+        concrete.platform,
+        concrete.version
+      )
+      const processedBase = (yield* processNodeWithExtendsEffect(
+        baseContent,
+        visited
+      )) as Record<string, unknown>
+
+      const override = { ...node }
+      delete override['@extends']
+      const processedOverride = (yield* processNodeWithExtendsEffect(
+        override,
+        visited
+      )) as Record<string, unknown>
+
+      return deepMerge(processedBase, processedOverride)
+    }
+
+    const entries = yield* Effect.all(
+      Object.entries(node).map(([k, v]) =>
+        processNodeWithExtendsEffect(v, visited).pipe(
+          Effect.map((processed) => [k, processed] as const)
+        )
+      )
     )
-    const processedBase = (await processNodeWithExtends(
-      baseContent,
-      visited
+    return Object.fromEntries(entries)
+  })
+
+const saveSchemaEffect = (
+  platform: string,
+  version: string,
+  content: Record<string, unknown>,
+  author?: Author
+): Effect.Effect<void, SchemaError> =>
+  Effect.gen(function* () {
+    if (!isPlainObject(content)) {
+      return yield* new InvalidContentError()
+    }
+
+    const dependencies = findDependenciesInContent(content)
+    yield* resolveDependenciesEffect(dependencies)
+
+    const output = (yield* processNodeWithExtendsEffect(
+      content,
+      new Set()
     )) as Record<string, unknown>
 
-    const override = { ...node }
-    delete override['@extends']
-    const processedOverride = (await processNodeWithExtends(
-      override,
-      visited
-    )) as Record<string, unknown>
-
-    result = deepMerge(processedBase, processedOverride)
-  } else {
-    const entries = await Promise.all(
-      Object.entries(node).map(async ([k, v]) => [
-        k,
-        await processNodeWithExtends(v, visited),
-      ])
+    yield* redisCall(() =>
+      redis.zadd(
+        getKey(platform, version),
+        Date.now(),
+        JSON.stringify({ dependencies, content, output, author })
+      )
     )
-    result = Object.fromEntries(entries)
-  }
 
-  return result
-}
+    const resolved = yield* resolveDependenciesEffect(dependencies)
+    const selfId = `${platform}/${version}`
+
+    for (const dep of resolved) {
+      yield* redisCall(() =>
+        redis.sadd(
+          `schemas:dependents:${dep.platform}:${dep.version}`,
+          selfId
+        )
+      )
+    }
+
+    yield* cascadeDependentsEffect(platform, version, new Set([selfId]))
+  })
+
+const cascadeDependentsEffect = (
+  platform: string,
+  version: string,
+  visited: Set<string>
+): Effect.Effect<void, SchemaError> =>
+  Effect.gen(function* () {
+    const dependentsKey = `schemas:dependents:${platform}:${version}`
+    const dependents = yield* redisCall(() => redis.smembers(dependentsKey))
+
+    for (const dep of dependents) {
+      if (visited.has(dep)) continue
+      visited.add(dep)
+      const [depPlatform, depVersion] = dep.split('/')
+      const latest = (yield* getSchemaEffect(
+        depPlatform,
+        depVersion
+      )) as Schema
+      if (latest && latest.content) {
+        yield* saveSchemaEffect(depPlatform, depVersion, latest.content)
+        yield* cascadeDependentsEffect(depPlatform, depVersion, visited)
+      }
+    }
+  })
+
+// ── Public API (server actions) ──────────────────────────────────────────────
 
 export async function getSchema(
   platform: string,
   version: string
 ): Promise<Schema | Record<string, never>> {
   'use server'
-
-  const [schema] = await redis.zrevrangebyscore(
-    getKey(platform, version),
-    '+inf',
-    '-inf',
-    'LIMIT',
-    0,
-    1
-  )
-  return schema ? (JSON.parse(schema) as Schema) : {}
+  return Effect.runPromise(getSchemaEffect(platform, version))
 }
 
 export async function saveSchema(
@@ -206,50 +349,19 @@ export async function saveSchema(
   author?: Author
 ) {
   'use server'
-
-  if (!isPlainObject(content)) {
-    throw new Error('Schema content must be a JSON object')
-  }
-
-  const dependencies = findDependenciesInContent(content)
-  await resolveDependencies(dependencies)
-
-  const output = (await processNodeWithExtends(content, new Set())) as Record<
-    string,
-    unknown
-  >
-
-  await redis.zadd(
-    getKey(platform, version),
-    Date.now(),
-    JSON.stringify({ dependencies, content, output, author })
-  )
-
-  const resolved = await resolveDependencies(dependencies)
-  const selfId = `${platform}/${version}`
-  for (const dep of resolved) {
-    await redis.sadd(
-      `schemas:dependents:${dep.platform}:${dep.version}`,
-      selfId
-    )
-  }
-
-  await cascadeDependents(platform, version, new Set([selfId]))
+  return Effect.runPromise(saveSchemaEffect(platform, version, content, author))
 }
 
 export async function previewJsonOutput(content: Record<string, unknown>) {
   'use server'
-
-  const dependencies = findDependenciesInContent(content)
-  await resolveDependencies(dependencies)
-
-  const output = await processNodeWithExtends(content, new Set())
-  return JSON.stringify(output)
-}
-
-export type SchemaValidationResult = {
-  valid: boolean
-  errors: string[]
+  return Effect.runPromise(
+    Effect.gen(function* () {
+      const dependencies = findDependenciesInContent(content)
+      yield* resolveDependenciesEffect(dependencies)
+      const output = yield* processNodeWithExtendsEffect(content, new Set())
+      return JSON.stringify(output)
+    })
+  )
 }
 
 export async function validateSchemaContent(
@@ -257,40 +369,27 @@ export async function validateSchemaContent(
 ): Promise<SchemaValidationResult> {
   'use server'
 
-  const errors: string[] = []
-
-  // Check if content is a valid object
   if (!isPlainObject(content)) {
     return { valid: false, errors: ['Schema content must be a JSON object'] }
   }
 
-  // Extract and validate @extends dependencies
   const dependencies = findDependenciesInContent(content)
-
   if (dependencies.length === 0) {
     return { valid: true, errors: [] }
   }
 
-  // Try to resolve each dependency and collect errors
+  const errors: string[] = []
   for (const dependency of dependencies) {
-    try {
-      await resolveDependencies([dependency])
-    } catch (error) {
-      const errorMessage =
-        error instanceof Error ? error.message : `Invalid dependency: ${dependency}`
-      errors.push(errorMessage)
-    }
+    const error = await Effect.runPromise(
+      resolveDependenciesEffect([dependency]).pipe(
+        Effect.as(null),
+        Effect.catchAll((e) => Effect.succeed(e.message))
+      )
+    )
+    if (error) errors.push(error)
   }
 
   return { valid: errors.length === 0, errors }
-}
-
-export type SchemaHistoryEntry = {
-  timestamp: number
-  content: Record<string, unknown>
-  dependencies: string[]
-  output: Record<string, unknown>
-  author?: Author
 }
 
 export async function getSchemaHistoryWithTimestamps(
@@ -300,62 +399,38 @@ export async function getSchemaHistoryWithTimestamps(
 ): Promise<Array<SchemaHistoryEntry & { timestamp: number }>> {
   'use server'
 
-  const schemasWithScores = await redis.zrevrangebyscore(
-    getKey(platform, version),
-    '+inf',
-    '-inf',
-    'WITHSCORES',
-    'LIMIT',
-    0,
-    limit
+  return Effect.runPromise(
+    redisCall(() =>
+      redis.zrevrangebyscore(
+        getKey(platform, version),
+        '+inf',
+        '-inf',
+        'WITHSCORES',
+        'LIMIT',
+        0,
+        limit
+      )
+    ).pipe(
+      Effect.map((schemasWithScores) => {
+        const result: Array<SchemaHistoryEntry & { timestamp: number }> = []
+        for (let i = 0; i < schemasWithScores.length; i += 2) {
+          const schema = schemasWithScores[i]
+          const timestamp = parseInt(schemasWithScores[i + 1])
+          const parsed = JSON.parse(schema) as Schema
+          result.push({
+            timestamp,
+            content: parsed.content,
+            dependencies: parsed.dependencies,
+            output: parsed.output,
+            author: parsed.author,
+          })
+        }
+        return result
+      })
+    )
   )
-
-  const result: Array<SchemaHistoryEntry & { timestamp: number }> = []
-
-  for (let i = 0; i < schemasWithScores.length; i += 2) {
-    const schema = schemasWithScores[i]
-    const timestamp = parseInt(schemasWithScores[i + 1])
-    const parsed = JSON.parse(schema) as Schema
-
-    result.push({
-      timestamp,
-      content: parsed.content,
-      dependencies: parsed.dependencies,
-      output: parsed.output,
-      author: parsed.author,
-    })
-  }
-
-  return result
 }
 
-async function cascadeDependents(
-  platform: string,
-  version: string,
-  visited: Set<string>
-) {
-  const dependentsKey = `schemas:dependents:${platform}:${version}`
-  const dependents = await redis.smembers(dependentsKey)
-  for (const dep of dependents) {
-    if (visited.has(dep)) continue
-    visited.add(dep)
-    const [depPlatform, depVersion] = dep.split('/')
-    const latest = (await getSchema(depPlatform, depVersion)) as Schema
-    if (latest && latest.content) {
-      await saveSchema(depPlatform, depVersion, latest.content)
-      await cascadeDependents(depPlatform, depVersion, visited)
-    }
-  }
-}
-
-// Cross-schema comparison (for Phase 7 visual diff UI)
-
-import { diffSchemas, type DiffResult } from '@/lib/schemaDiff'
-
-/**
- * Compare schemas across different platforms/versions
- * Returns a diff result showing changes between the two schemas
- */
 export async function compareSchemas(
   platformA: string,
   versionA: string,
@@ -364,14 +439,19 @@ export async function compareSchemas(
 ): Promise<DiffResult> {
   'use server'
 
-  const [schemaA, schemaB] = await Promise.all([
-    getSchema(platformA, versionA),
-    getSchema(platformB, versionB),
-  ])
-
-  // Handle empty schemas
-  const contentA = (schemaA as Schema)?.content ?? {}
-  const contentB = (schemaB as Schema)?.content ?? {}
-
-  return diffSchemas({ content: contentA } as Schema, { content: contentB } as Schema)
+  return Effect.runPromise(
+    Effect.all([
+      getSchemaEffect(platformA, versionA),
+      getSchemaEffect(platformB, versionB),
+    ]).pipe(
+      Effect.map(([schemaA, schemaB]) => {
+        const contentA = (schemaA as Schema)?.content ?? {}
+        const contentB = (schemaB as Schema)?.content ?? {}
+        return diffSchemas(
+          { content: contentA } as Schema,
+          { content: contentB } as Schema
+        )
+      })
+    )
+  )
 }

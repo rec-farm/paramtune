@@ -12,25 +12,22 @@ export async function POST() {
     return NextResponse.json({ error: 'Not available' }, { status: 404 })
   }
 
-  // Try to sign in first
-  const signInRes = await auth.api.signInEmail({
-    body: { email: DEV_USER.email, password: DEV_USER.password },
-  })
-
-  if (signInRes) {
-    return signInRes
+  // Ensure user exists, then sign in
+  try {
+    await auth.api.signUpEmail({
+      body: {
+        email: DEV_USER.email,
+        password: DEV_USER.password,
+        name: DEV_USER.name,
+      },
+    })
+  } catch {
+    // User already exists — that's fine
   }
 
-  // If sign-in fails, create the account then sign in
-  await auth.api.signUpEmail({
-    body: {
-      email: DEV_USER.email,
-      password: DEV_USER.password,
-      name: DEV_USER.name,
-    },
-  })
-
-  return auth.api.signInEmail({
+  const session = await auth.api.signInEmail({
     body: { email: DEV_USER.email, password: DEV_USER.password },
   })
+
+  return NextResponse.json(session)
 }

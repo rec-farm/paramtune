@@ -6,7 +6,7 @@ export const config = {
   matcher: ['/api/:path*', '/dashboard/:path*'],
 }
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   // Dashboard route protection (UX optimization - Server Component validates session for security)
   if (request.nextUrl.pathname.startsWith('/dashboard')) {
     const sessionCookie = getSessionCookie(request)

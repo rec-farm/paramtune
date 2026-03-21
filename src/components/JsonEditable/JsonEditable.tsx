@@ -26,7 +26,7 @@ const JsonEditable = memo(function JsonEditable({
   onValidationChange,
   className = '',
   placeholder = 'Enter valid JSON...',
-  minHeight = 400,
+  minHeight = 80,
   showLineNumbers = true,
   showActions = true,
   syntaxHighlighting = true,

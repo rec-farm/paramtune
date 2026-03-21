@@ -1,7 +1,6 @@
 'use client'
 
 import Link from 'next/link'
-import Card from '@/components/ui/Card'
 
 export default function DashboardError({
   error,
@@ -12,26 +11,35 @@ export default function DashboardError({
 }) {
   return (
     <div className="flex min-h-screen items-center justify-center px-4">
-      <div className="max-w-xl w-full">
-        <Card title="Something went wrong" subtitle="An error occurred in the dashboard">
-          <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">{error.message}</p>
-            <div className="flex gap-3">
-              <button
-                onClick={reset}
-                className="rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
-              >
-                Try again
-              </button>
-              <Link
-                href="/"
-                className="rounded-md border border-gray-300 px-4 py-2 text-sm font-medium hover:bg-gray-50 transition-colors"
-              >
-                Go home
-              </Link>
-            </div>
+      <div className="max-w-xl w-full border border-primary/30 bg-black/90 p-8 relative">
+        <div className="absolute -top-2 -right-2 w-4 h-4 border-t border-r border-primary" />
+        <div className="space-y-6">
+          <div>
+            <h2 className="text-xl font-display font-bold tracking-widest uppercase text-primary mb-2">
+              SYSTEM_ERROR
+            </h2>
+            <p className="text-[10px] text-gray-500 font-fragmented uppercase tracking-widest">
+              An error occurred in the dashboard
+            </p>
           </div>
-        </Card>
+          <p className="text-sm text-gray-400 font-fragmented border-l-2 border-primary/30 pl-4">
+            {error.message}
+          </p>
+          <div className="flex gap-3">
+            <button
+              onClick={reset}
+              className="bg-primary text-black px-6 py-2 font-display font-bold text-[10px] tracking-widest uppercase hover:translate-x-1 transition-transform"
+            >
+              RETRY
+            </button>
+            <Link
+              href="/"
+              className="border border-primary/30 text-gray-400 px-6 py-2 font-display font-bold text-[10px] tracking-widest uppercase hover:text-white hover:border-primary/50 transition-colors"
+            >
+              GO_HOME
+            </Link>
+          </div>
+        </div>
       </div>
     </div>
   )

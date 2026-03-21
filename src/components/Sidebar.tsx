@@ -60,7 +60,7 @@ export default function Sidebar({ platforms }: SidebarProps) {
 
   const sidebarContent = (
     <div className="h-full flex flex-col">
-      {/* Branding header with subtle scroll indicator */}
+      {/* Search header */}
       <div
         className={cn(
           'px-5 py-4 border-b border-sidebar-border/50 transition-all duration-200',
@@ -68,21 +68,6 @@ export default function Sidebar({ platforms }: SidebarProps) {
         )}
       >
         <div className="space-y-5">
-          {/* Logo + slogan */}
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 border border-primary/50 bg-black/50 flex items-center justify-center">
-              <div className="h-4 w-4 bg-primary/90" />
-            </div>
-            <div className="min-w-0">
-              <div className="font-bold text-sm leading-5 uppercase tracking-wider text-sidebar-foreground">
-                ParamTune
-              </div>
-              <div className="text-[10px] leading-4 text-sidebar-foreground/60 truncate uppercase tracking-wide">
-                Config Management
-              </div>
-            </div>
-          </div>
-
           {/* Search input */}
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -159,8 +144,8 @@ export default function Sidebar({ platforms }: SidebarProps) {
         <div className="px-5 py-5 space-y-4 relative z-0">
           {/* Tools section */}
           <div className="space-y-2">
-            <div className="text-[11px] uppercase tracking-wide text-sidebar-foreground/50 px-1">
-              Tools
+            <div className="text-[10px] font-display font-bold uppercase tracking-widest text-primary/60 px-1">
+              _TOOLS
             </div>
             <Link
               href="/dashboard/compare"
@@ -177,8 +162,8 @@ export default function Sidebar({ platforms }: SidebarProps) {
           </div>
 
           <div className="flex items-center justify-between px-1">
-            <div className="text-[11px] uppercase tracking-wide text-sidebar-foreground/50">
-              Platforms
+            <div className="text-[10px] font-display font-bold uppercase tracking-widest text-primary/60">
+              _PLATFORMS
             </div>
             <Link
               href="/dashboard"
@@ -198,8 +183,8 @@ export default function Sidebar({ platforms }: SidebarProps) {
 
       {/* Footer with subtle gradient */}
       <div className="p-3 border-t border-sidebar-border/50 bg-gradient-to-t from-sidebar/50 to-transparent">
-        <div className="text-xs text-sidebar-foreground/50 text-center">
-          ParamTune v1.0
+        <div className="text-[9px] text-sidebar-foreground/50 text-center font-fragmented uppercase tracking-widest">
+          SYSTEM_CORE_V1.0
         </div>
       </div>
     </div>
@@ -225,7 +210,7 @@ export default function Sidebar({ platforms }: SidebarProps) {
             : 'fixed inset-y-0 left-0 z-50 -translate-x-full'
         )}
       >
-        <div className="relative sticky top-0 h-[100vh] bg-sidebar border-r border-sidebar-border">
+        <div className="h-full bg-sidebar border-r border-sidebar-border">
           {sidebarContent}
           {/* Resizer removed */}
         </div>

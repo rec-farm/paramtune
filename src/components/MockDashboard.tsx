@@ -1,94 +1,100 @@
 export default function MockDashboard() {
   return (
-    <div className="relative mx-auto max-w-4xl">
-      {/* Browser chrome */}
-      <div className="rounded-xl border border-border bg-card shadow-2xl overflow-hidden">
-        {/* Title bar */}
-        <div className="flex items-center gap-2 px-4 py-2.5 bg-muted/50 border-b border-border">
-          <div className="flex gap-1.5">
-            <div className="w-3 h-3 rounded-full bg-red-500/70" />
-            <div className="w-3 h-3 rounded-full bg-yellow-500/70" />
-            <div className="w-3 h-3 rounded-full bg-green-500/70" />
+    <div className="flex flex-col md:flex-row h-[500px]">
+      {/* Sidebar */}
+      <aside className="w-full md:w-72 border-r border-primary/10 p-8 flex flex-col bg-zinc-900/20">
+        <div className="flex items-center gap-2 mb-8">
+          <div className="w-2 h-2 bg-primary" />
+          <h4 className="text-[10px] font-bold text-primary uppercase tracking-[0.2em]">
+            ENDPOINTS
+          </h4>
+        </div>
+        <ul className="space-y-6">
+          <li className="relative">
+            <span className="absolute -left-8 top-1/2 w-4 h-[1px] bg-primary" />
+            <span className="text-xs text-white font-bold bg-primary/10 px-4 py-2 block border-l border-primary">
+              ios-app.json
+            </span>
+          </li>
+          <li className="px-4 text-xs text-gray-600 hover:text-primary cursor-pointer flex items-center gap-2">
+            <span className="w-1 h-1 border border-gray-600" /> android-app.v2
+          </li>
+          <li className="px-4 text-xs text-gray-600 hover:text-primary cursor-pointer flex items-center gap-2">
+            <span className="w-1 h-1 border border-gray-600" /> web-portal.main
+          </li>
+        </ul>
+        <div className="mt-auto pt-8 border-t border-primary/5">
+          <div className="h-1 w-full bg-zinc-800 relative">
+            <div className="absolute inset-0 bg-primary w-2/3" />
           </div>
-          <div className="flex-1 flex justify-center">
-            <div className="px-3 py-1 rounded-md bg-background/50 text-xs text-muted-foreground">
-              localhost:3000/dashboard
+          <p className="text-[8px] mt-2 text-gray-600 font-fragmented">
+            BUFFER_UTILIZATION: 67%
+          </p>
+        </div>
+      </aside>
+
+      {/* Main content */}
+      <div className="flex-1 p-10 bg-black flex flex-col">
+        <div className="flex flex-col md:flex-row justify-between items-start mb-16 gap-6">
+          <div className="relative">
+            <h2 className="text-white text-5xl font-display font-bold tracking-widest mb-2">
+              IOS_APP_STAGING
+            </h2>
+            <div className="flex items-center gap-4 text-primary/40 text-[10px] font-fragmented">
+              <span>HASH: 0x82F...E92</span>
+              <span className="w-1 h-1 bg-primary/40 rounded-full" />
+              <span>LATENCY: 12ms</span>
             </div>
           </div>
-          <div className="w-[54px]" /> {/* Spacer for symmetry */}
+          <div className="flex flex-col gap-2">
+            <div className="bg-primary text-black px-8 py-3 font-display font-bold text-[10px] clip-brutalist text-center">
+              COMMIT_CHANGES
+            </div>
+            <div className="border border-white/10 text-white/50 px-8 py-3 font-display font-bold text-[10px] text-center">
+              LOGS
+            </div>
+          </div>
         </div>
 
-        {/* Dashboard content */}
-        <div className="flex min-h-[320px]">
-          {/* Sidebar */}
-          <div className="w-48 border-r border-border bg-muted/30 p-3 space-y-2">
-            <div className="text-xs font-medium text-muted-foreground uppercase tracking-wider px-2 py-1">
-              Platforms
-            </div>
-            {['ios-app', 'android-app', 'web-client'].map((name, i) => (
-              <div
-                key={name}
-                className={`px-3 py-2 rounded-md text-sm ${
-                  i === 0
-                    ? 'bg-primary/10 text-primary border border-primary/20'
-                    : 'text-muted-foreground hover:bg-muted'
-                }`}
-              >
-                {name}
-              </div>
-            ))}
-            <div className="px-3 py-2 rounded-md text-sm text-muted-foreground/50 border border-dashed border-border">
-              + New platform
-            </div>
+        {/* JSON preview */}
+        <div className="flex-1 border border-primary/10 p-6 font-fragmented text-[11px] text-gray-600 leading-relaxed overflow-hidden bg-zinc-950/50">
+          <div className="flex gap-4 mb-2">
+            <span className="text-primary/30">001</span>
+            <span className="text-primary/80">{'{'}</span>
           </div>
-
-          {/* Main content */}
-          <div className="flex-1 p-4 space-y-4">
-            {/* Header */}
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-lg font-semibold">ios-app</h3>
-                <p className="text-sm text-muted-foreground">
-                  Schema v3 • Updated 2 hours ago
-                </p>
-              </div>
-              <div className="flex gap-2">
-                <div className="px-3 py-1.5 rounded-md bg-muted text-xs">
-                  History
-                </div>
-                <div className="px-3 py-1.5 rounded-md bg-primary text-primary-foreground text-xs">
-                  Edit Schema
-                </div>
-              </div>
-            </div>
-
-            {/* JSON preview */}
-            <div className="rounded-lg border border-border bg-background p-4 font-mono text-sm">
-              <div className="text-muted-foreground">{'{'}</div>
-              <div className="pl-4">
-                <span className="text-blue-400">"feature_flags"</span>
-                <span className="text-muted-foreground">: {'{'}</span>
-              </div>
-              <div className="pl-8">
-                <span className="text-blue-400">"dark_mode"</span>
-                <span className="text-muted-foreground">: </span>
-                <span className="text-green-400">true</span>
-                <span className="text-muted-foreground">,</span>
-              </div>
-              <div className="pl-8">
-                <span className="text-blue-400">"new_checkout"</span>
-                <span className="text-muted-foreground">: </span>
-                <span className="text-yellow-400">false</span>
-              </div>
-              <div className="pl-4 text-muted-foreground">{'}'}</div>
-              <div className="text-muted-foreground">{'}'}</div>
-            </div>
+          <div className="flex gap-4 mb-2">
+            <span className="text-primary/30">002</span>
+            <span className="pl-4">
+              &quot;schema_version&quot;:{' '}
+              <span className="text-white">&quot;3.0.4-build-92&quot;</span>,
+            </span>
+          </div>
+          <div className="flex gap-4 mb-2">
+            <span className="text-primary/30">003</span>
+            <span className="pl-4">
+              &quot;validation_logic&quot;:{' '}
+              <span className="text-primary/40">[...]</span>,
+            </span>
+          </div>
+          <div className="flex gap-4 mb-2">
+            <span className="text-primary/30">004</span>
+            <span className="pl-4">
+              &quot;auto_failover&quot;:{' '}
+              <span className="text-primary">true</span>,
+            </span>
+          </div>
+          <div className="flex gap-4 mb-2 opacity-20">
+            <span className="text-primary/30">005</span>
+            <span className="pl-4">
+              &quot;distributed_nodes&quot;: 12,
+            </span>
+          </div>
+          <div className="mt-8 border-t border-primary/10 pt-4 flex justify-between">
+            <span className="animate-pulse text-primary">READY_FOR_PATCH_03</span>
+            <span className="text-gray-800">UTF-8 // JSON_TYPE</span>
           </div>
         </div>
       </div>
-
-      {/* Glow effect */}
-      <div className="absolute -inset-4 -z-10 bg-gradient-to-r from-primary/20 via-primary/5 to-primary/20 blur-3xl opacity-50" />
     </div>
   )
 }

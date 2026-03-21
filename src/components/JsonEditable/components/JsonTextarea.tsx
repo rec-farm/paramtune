@@ -28,7 +28,7 @@ export const JsonTextarea = memo(
       onScroll,
       isValid,
       placeholder = 'Enter valid JSON...',
-      minHeight = 400,
+      minHeight = 200,
       maxHeight = 800,
       showLineNumbers = true,
       maskText = true,

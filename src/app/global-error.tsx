@@ -12,16 +12,19 @@ export default function GlobalError({
   return (
     <html>
       <body className="min-h-screen flex items-center justify-center bg-black text-white">
-        <div className="text-center p-8 max-w-md">
-          <h2 className="text-2xl font-bold mb-4">Something went wrong!</h2>
-          <p className="text-gray-400 mb-6">
+        <div className="text-center p-8 max-w-md border border-[#D9F99D]/30 relative">
+          <div className="absolute -top-2 -right-2 w-4 h-4 border-t border-r border-[#D9F99D]" />
+          <h2 className="text-2xl font-bold mb-4 tracking-widest uppercase text-[#D9F99D]">
+            SYSTEM_ERROR
+          </h2>
+          <p className="text-gray-400 mb-6 text-sm">
             {error.message || 'An unexpected error occurred.'}
           </p>
           <button
             onClick={() => reset()}
-            className="px-6 py-2 bg-yellow-400 text-black font-medium rounded hover:bg-yellow-300 transition-colors"
+            className="px-8 py-3 bg-[#D9F99D] text-black font-bold tracking-widest uppercase hover:translate-x-1 transition-transform"
           >
-            Try again
+            RETRY
           </button>
         </div>
       </body>

@@ -1,6 +1,6 @@
 'use client'
 
-import { ChevronDown, LogOut, User } from 'lucide-react'
+import { ChevronDown, LogOut } from 'lucide-react'
 import { signOut, useSession } from '@/lib/auth-client'
 import { useState, useRef, useEffect } from 'react'
 
@@ -52,13 +52,13 @@ export default function UserMenu() {
 
       {/* Dropdown menu */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-56 rounded-md bg-black/90 border border-primary/20 shadow-lg shadow-black/50 z-50 animate-in fade-in slide-in-from-top-2 duration-150">
+        <div className="absolute right-0 mt-2 w-56 bg-black/95 border border-primary/20 shadow-lg shadow-black/50 z-50 animate-in">
           {/* User info section */}
           <div className="px-4 py-3 border-b border-primary/10">
-            <p className="text-sm font-medium text-foreground truncate">
+            <p className="text-sm font-display font-bold text-foreground truncate tracking-wider uppercase">
               {user.name}
             </p>
-            <p className="text-xs text-muted-foreground truncate">
+            <p className="text-[10px] text-gray-500 truncate font-fragmented">
               {user.email}
             </p>
           </div>

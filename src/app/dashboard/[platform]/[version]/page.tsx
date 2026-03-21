@@ -92,12 +92,14 @@ export default async function Page({
             </Badge>
           </div>
         </div>
-        <div className="text-xs text-muted-foreground">
-          {history.length} {history.length === 1 ? 'version' : 'versions'} •{' '}
-          {(schema as any)?.dependencies?.length ?? 0} {(schema as any)?.dependencies?.length === 1 ? 'dep' : 'deps'} •{' '}
-          {history[0]?.timestamp
+        <div className="text-[10px] text-gray-500 font-fragmented uppercase tracking-wider flex items-center gap-3">
+          <span>{history.length} {history.length === 1 ? 'version' : 'versions'}</span>
+          <span className="w-1 h-1 bg-primary/40 rounded-full" />
+          <span>{(schema as any)?.dependencies?.length ?? 0} {(schema as any)?.dependencies?.length === 1 ? 'dep' : 'deps'}</span>
+          <span className="w-1 h-1 bg-primary/40 rounded-full" />
+          <span>{history[0]?.timestamp
             ? new Date(history[0].timestamp).toLocaleDateString()
-            : '—'}
+            : '—'}</span>
         </div>
       </header>
 

@@ -1,10 +1,24 @@
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Inter, Syncopate, Space_Mono } from 'next/font/google'
 import './globals.css'
 
 const inter = Inter({
   subsets: ['latin'],
   variable: '--font-inter',
+  display: 'swap',
+})
+
+const syncopate = Syncopate({
+  weight: ['400', '700'],
+  subsets: ['latin'],
+  variable: '--font-display',
+  display: 'swap',
+})
+
+const spaceMono = Space_Mono({
+  weight: ['400', '700'],
+  subsets: ['latin'],
+  variable: '--font-fragmented',
   display: 'swap',
 })
 
@@ -20,8 +34,8 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={inter.variable}>
-      <body className="font-sans antialiased min-h-screen bg-background text-foreground">
+    <html lang="en" className={`${inter.variable} ${syncopate.variable} ${spaceMono.variable}`}>
+      <body className="font-fragmented antialiased min-h-screen bg-background text-foreground">
         <div className="relative">{children}</div>
       </body>
     </html>

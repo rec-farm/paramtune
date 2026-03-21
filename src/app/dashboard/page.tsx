@@ -1,5 +1,4 @@
 import Badge from '@/components/ui/Badge'
-import Button from '@/components/ui/Button'
 import Card from '@/components/ui/Card'
 import CreatePlatformForm from '@/components/CreatePlatformForm'
 import { getPlatforms, savePlatform } from '@/models/Platform'
@@ -43,11 +42,13 @@ export default async function Page() {
       >
         {platforms.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center">
-            <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/20 to-muted flex items-center justify-center mb-4">
-              <div className="w-8 h-8 rounded bg-primary/30 animate-pulse" />
+            <div className="w-16 h-16 border border-primary/30 flex items-center justify-center mb-4">
+              <div className="w-8 h-8 bg-primary/20 animate-pulse" />
             </div>
-            <h3 className="text-lg font-semibold mb-2">No platforms yet</h3>
-            <p className="text-muted-foreground text-sm max-w-sm">
+            <h3 className="text-lg font-display font-bold tracking-widest uppercase mb-2">
+              NO_PLATFORMS
+            </h3>
+            <p className="text-gray-500 text-sm font-fragmented max-w-sm">
               Create your first platform to start managing configurations and
               schemas
             </p>
@@ -62,12 +63,12 @@ export default async function Page() {
                 <Link
                   key={platform.name}
                   href={href}
-                  className="group relative card card-interactive p-4 sm:p-5 border-border/50 focus:outline-none focus:ring-2 focus:ring-ring min-h-[100px]"
+                  className="group relative border border-primary/20 bg-black/40 hover:bg-primary/5 hover:border-primary/40 transition-all duration-300 p-5 min-h-[100px] focus:outline-none focus:ring-1 focus:ring-primary/50"
                 >
                   <div className="space-y-4">
                     <div className="flex items-start justify-between">
-                      <div className="space-y-1">
-                        <h3 className="font-semibold text-lg group-hover:text-primary transition-colors">
+                      <div className="space-y-2">
+                        <h3 className="font-display font-bold text-base tracking-widest uppercase group-hover:text-primary transition-colors">
                           {platform.name}
                         </h3>
                         <div className="flex items-center gap-2">
@@ -79,36 +80,34 @@ export default async function Page() {
                           </Badge>
                         </div>
                         {latestVersion && (
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-xs text-gray-500 font-fragmented">
                             Latest: v{latestVersion}
                           </p>
                         )}
                       </div>
 
-                      <div className="opacity-70 group-hover:opacity-100 transition-opacity duration-200">
-                        <Button variant="ghost" size="sm" aria-label="Open">
-                          <svg
-                            className="w-4 h-4"
-                            fill="none"
-                            stroke="currentColor"
-                            viewBox="0 0 24 24"
-                          >
-                            <path
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              strokeWidth={2}
-                              d="M9 5l7 7-7 7"
-                            />
-                          </svg>
-                        </Button>
+                      <div className="opacity-50 group-hover:opacity-100 transition-opacity duration-200 text-primary">
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M9 5l7 7-7 7"
+                          />
+                        </svg>
                       </div>
                     </div>
 
-                    <div className="pt-2 border-t border-border/30">
-                      <span className="inline-flex items-center text-sm text-muted-foreground group-hover:text-foreground transition-colors">
-                        Open configurations
+                    <div className="pt-2 border-t border-primary/10">
+                      <span className="inline-flex items-center text-[10px] font-display font-bold tracking-widest uppercase text-gray-500 group-hover:text-primary transition-colors">
+                        OPEN_CONFIGS
                         <svg
-                          className="w-4 h-4 ml-1"
+                          className="w-3 h-3 ml-1"
                           viewBox="0 0 24 24"
                           fill="none"
                           stroke="currentColor"

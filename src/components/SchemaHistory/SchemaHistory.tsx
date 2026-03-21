@@ -74,22 +74,20 @@ export default function SchemaHistory({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <div>
-          <h3 className="text-sm font-medium uppercase tracking-wider">Schema History</h3>
-          <p className="text-xs text-muted-foreground font-mono">
+        <div className="space-y-1">
+          <h3 className="text-sm font-display font-bold uppercase tracking-widest">Schema History</h3>
+          <p className="text-[10px] text-muted-foreground font-fragmented uppercase tracking-wider">
             {history.length} version{history.length !== 1 ? 's' : ''} saved
           </p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowDiff(!showDiff)}
-            disabled={selectedIndex === null || selectedIndex === 0}
-          >
-            {showDiff ? 'Hide' : 'Show'} Diff
-          </Button>
-        </div>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setShowDiff(!showDiff)}
+          disabled={selectedIndex === null || selectedIndex === 0}
+        >
+          {showDiff ? 'Hide' : 'Show'} Diff
+        </Button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -104,14 +102,14 @@ export default function SchemaHistory({
               return (
                 <div
                   key={entry.timestamp}
-                  className={`p-2.5 border cursor-pointer transition-colors ${
+                  className={`p-3 border cursor-pointer transition-colors ${
                     isSelected
                       ? 'border-primary/60 bg-primary/10'
                       : 'border-primary/20 hover:border-primary/40 hover:bg-black/30'
                   }`}
                   onClick={() => setSelectedIndex(index)}
                 >
-                  <div className="flex items-center justify-between mb-2">
+                  <div className="flex items-center justify-between mb-1.5">
                     <div className="flex items-center gap-2">
                       <Badge
                         variant={
@@ -121,7 +119,7 @@ export default function SchemaHistory({
                             ? 'secondary'
                             : 'outline'
                         }
-                        className="text-xs"
+                        className="text-[10px]"
                       >
                         {changeType === 'latest'
                           ? 'Current'
@@ -129,7 +127,7 @@ export default function SchemaHistory({
                           ? 'Initial'
                           : 'Update'}
                       </Badge>
-                      <span className="text-sm font-medium">
+                      <span className="text-sm font-fragmented font-medium">
                         Version {history.length - index}
                       </span>
                     </div>
@@ -143,21 +141,21 @@ export default function SchemaHistory({
                               className="h-4 w-4 rounded-full"
                             />
                           ) : (
-                            <div className="h-4 w-4 rounded-full bg-primary/20 flex items-center justify-center">
-                              <span className="text-[10px] font-medium">
+                            <div className="h-4 w-4 bg-primary/20 flex items-center justify-center">
+                              <span className="text-[10px] font-fragmented font-medium">
                                 {entry.author.name?.charAt(0).toUpperCase() || '?'}
                               </span>
                             </div>
                           )}
-                          <span className="text-xs text-muted-foreground">
+                          <span className="text-[10px] text-muted-foreground font-fragmented">
                             {entry.author.name}
                           </span>
                         </div>
                       ) : (
-                        <span className="text-xs text-muted-foreground italic">Unknown</span>
+                        <span className="text-[10px] text-muted-foreground font-fragmented uppercase tracking-wider">Unknown</span>
                       )}
                       <span
-                        className="text-xs text-muted-foreground"
+                        className="text-[10px] text-muted-foreground font-fragmented"
                         title={absolute}
                       >
                         {relative}
@@ -165,16 +163,19 @@ export default function SchemaHistory({
                     </div>
                   </div>
 
-                  <p className="text-sm text-muted-foreground mb-2">
+                  <p className="text-xs text-muted-foreground font-fragmented mb-2">
                     {getChangeDescription(index)}
                   </p>
 
-                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                  <div className="flex items-center gap-3 text-[10px] text-muted-foreground font-fragmented uppercase tracking-wider">
                     <span>
                       {Object.keys(entry.content || {}).length} properties
                     </span>
                     {entry.dependencies.length > 0 && (
-                      <span>{entry.dependencies.length} dependencies</span>
+                      <>
+                        <span className="w-1 h-1 bg-primary/40 rounded-full" />
+                        <span>{entry.dependencies.length} dependencies</span>
+                      </>
                     )}
                   </div>
                 </div>
@@ -188,8 +189,8 @@ export default function SchemaHistory({
           {selectedEntry ? (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <h4 className="font-medium">
-                  Version {history.length - (selectedIndex ?? 0)} Details
+                <h4 className="text-sm font-display font-bold uppercase tracking-widest">
+                  Version {history.length - (selectedIndex ?? 0)}
                 </h4>
                 <div className="flex items-center gap-3">
                   {selectedEntry.author ? (
@@ -201,18 +202,18 @@ export default function SchemaHistory({
                           className="h-5 w-5 rounded-full"
                         />
                       ) : (
-                        <div className="h-5 w-5 rounded-full bg-primary/20 flex items-center justify-center">
-                          <span className="text-xs font-medium">
+                        <div className="h-5 w-5 bg-primary/20 flex items-center justify-center">
+                          <span className="text-[10px] font-fragmented font-medium">
                             {selectedEntry.author.name?.charAt(0).toUpperCase() || '?'}
                           </span>
                         </div>
                       )}
-                      <span className="text-sm">{selectedEntry.author.name}</span>
+                      <span className="text-xs font-fragmented">{selectedEntry.author.name}</span>
                     </div>
                   ) : (
-                    <span className="text-sm text-muted-foreground italic">Unknown author</span>
+                    <span className="text-[10px] text-muted-foreground font-fragmented uppercase tracking-wider">Unknown author</span>
                   )}
-                  <Badge variant="outline" className="text-xs">
+                  <Badge variant="outline" className="text-[10px]">
                     {formatTimestamp(selectedEntry.timestamp).absolute}
                   </Badge>
                 </div>
@@ -231,11 +232,11 @@ export default function SchemaHistory({
                 </div>
               )}
 
-              <div className="space-y-3">
+              <div className="space-y-4">
                 <div>
-                  <h5 className="text-xs font-medium uppercase tracking-wider mb-2">Schema Content</h5>
+                  <h5 className="text-[10px] font-fragmented font-bold uppercase tracking-widest text-muted-foreground mb-2">Schema Content</h5>
                   <div className="bg-black/50 border border-primary/30 p-3">
-                    <pre className="text-xs font-mono overflow-x-auto">
+                    <pre className="text-xs font-fragmented overflow-x-auto text-foreground/80">
                       {JSON.stringify(selectedEntry.content, null, 2)}
                     </pre>
                   </div>
@@ -243,13 +244,13 @@ export default function SchemaHistory({
 
                 {selectedEntry.dependencies.length > 0 && (
                   <div>
-                    <h5 className="text-xs font-medium uppercase tracking-wider mb-2">Dependencies</h5>
-                    <div className="flex flex-wrap gap-1">
+                    <h5 className="text-[10px] font-fragmented font-bold uppercase tracking-widest text-muted-foreground mb-2">Dependencies</h5>
+                    <div className="flex flex-wrap gap-1.5">
                       {selectedEntry.dependencies.map((dep, idx) => (
                         <Badge
                           key={idx}
                           variant="secondary"
-                          className="text-xs"
+                          className="text-[10px]"
                         >
                           {dep}
                         </Badge>
@@ -260,7 +261,7 @@ export default function SchemaHistory({
 
                 {showDiff && selectedIndex !== null && selectedIndex > 0 && (
                   <div>
-                    <h5 className="text-xs font-medium uppercase tracking-wider mb-2">
+                    <h5 className="text-[10px] font-fragmented font-bold uppercase tracking-widest text-muted-foreground mb-2">
                       Changes from Version {history.length - selectedIndex + 1}
                     </h5>
                     <SchemaDiff
@@ -272,8 +273,13 @@ export default function SchemaHistory({
               </div>
             </div>
           ) : (
-            <div className="text-center py-8 text-muted-foreground">
-              <p>Select a version to view details</p>
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <div className="w-10 h-10 border border-primary/30 flex items-center justify-center mb-4">
+                <div className="w-4 h-4 border border-primary/20" />
+              </div>
+              <p className="text-[10px] font-fragmented uppercase tracking-widest text-muted-foreground">
+                Select a version to view details
+              </p>
             </div>
           )}
         </Card>

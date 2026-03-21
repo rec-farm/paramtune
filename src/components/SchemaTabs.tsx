@@ -106,7 +106,7 @@ export default function SchemaTabs({
       {active === 'Preview' && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <Card
-            title="Live Preview"
+            title="LIVE_PREVIEW"
             subtitle="See how your configuration will be consumed"
             variant="elevated"
             className="p-4"
@@ -116,7 +116,7 @@ export default function SchemaTabs({
               content={(currentSchema?.output as any) || {}}
             />
           </Card>
-          <Card title="Configuration Guide" className="p-4">
+          <Card title="CONFIG_GUIDE" className="p-4">
             <div className="space-y-4 text-sm">
               <div>
                 <h4 className="font-medium mb-2">@extends Directive</h4>

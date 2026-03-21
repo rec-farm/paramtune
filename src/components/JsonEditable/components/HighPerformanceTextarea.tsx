@@ -30,7 +30,7 @@ export const JsonTextarea = memo(
       onSelect,
       isValid,
       placeholder = 'Enter valid JSON...',
-      minHeight = 400,
+      minHeight = 80,
       maxHeight = 800,
       showLineNumbers = true,
       maskText = true,
@@ -68,9 +68,13 @@ export const JsonTextarea = memo(
       Math.ceil((scrollTop + containerHeight) / LINE_HEIGHT) + BUFFER_LINES
     )
 
+    // Auto-size: compute height from content, clamped between min and max
+    const contentHeight = lineCount * LINE_HEIGHT + 32 // 16px padding top + bottom
+    const computedHeight = Math.max(minHeight, Math.min(maxHeight, contentHeight))
+
     const textareaStyle = useMemo(
       () => ({
-        minHeight: `${minHeight}px`,
+        height: `${computedHeight}px`,
         maxHeight: `${maxHeight}px`,
         lineHeight: `${LINE_HEIGHT}px`,
         tabSize: 2,
@@ -86,9 +90,9 @@ export const JsonTextarea = memo(
         outline: 'none',
         border: 'none',
         background: 'transparent',
-        resize: 'vertical' as const,
+        resize: 'none' as const,
       }),
-      [minHeight, maxHeight, showLineNumbers, maskText]
+      [computedHeight, maxHeight, showLineNumbers, maskText]
     )
 
     return (

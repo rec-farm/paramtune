@@ -49,9 +49,11 @@ export default async function ComparePage() {
 
   return (
     <div className="space-y-6 mx-auto max-w-6xl px-2 md:px-0">
-      <header className="space-y-1">
-        <h1 className="text-2xl font-bold tracking-tight">Compare Schemas</h1>
-        <p className="text-sm text-muted-foreground">
+      <header className="space-y-2">
+        <h1 className="text-2xl font-display font-bold tracking-widest uppercase">
+          COMPARE_SCHEMAS
+        </h1>
+        <p className="text-xs text-gray-500 font-fragmented uppercase tracking-wider">
           Compare schemas across different platforms and versions to see what changed
         </p>
       </header>

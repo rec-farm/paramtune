@@ -32,6 +32,20 @@ export function getTheme(themeName: 'light' | 'dark'): SyntaxHighlightTheme {
   return themeName === 'light' ? LIGHT_THEME : DARK_THEME
 }
 
+/**
+ * Escapes HTML special characters in a string to prevent XSS.
+ * We only escape &, <, and > because escaping quotes would break
+ * the regex patterns used for syntax highlighting.
+ */
+function escapeHtml(text: string): string {
+  const map: Record<string, string> = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+  }
+  return text.replace(/[&<>]/g, (m) => map[m])
+}
+
 // Determine theme name from theme object for cache key optimization
 function getThemeName(theme: SyntaxHighlightTheme): 'light' | 'dark' {
   return theme === LIGHT_THEME ? 'light' : 'dark'
@@ -86,7 +100,8 @@ export function highlightJsonLine(
     highlightCommas = true,
   } = options
 
-  let highlighted = line
+  // Escape HTML characters before adding any highlight spans to prevent XSS
+  let highlighted = escapeHtml(line)
 
   // Apply highlighting in order of specificity - VALUES FIRST, then KEYS
   // 1. Highlight string values FIRST (most specific pattern)

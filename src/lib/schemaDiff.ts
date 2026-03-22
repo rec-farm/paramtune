@@ -127,44 +127,6 @@ export function getValueDisplay(value: unknown): string {
 }
 
 /**
- * Detect array changes with more granularity
- * Returns whether arrays differ and how
- */
-function compareArrays(
-  oldArr: unknown[],
-  newArr: unknown[]
-): {
-  changed: boolean
-  itemsAdded: number
-  itemsRemoved: number
-} {
-  const oldLen = oldArr.length
-  const newLen = newArr.length
-
-  // Quick check: if lengths differ, definitely changed
-  if (oldLen !== newLen) {
-    return {
-      changed: true,
-      itemsAdded: Math.max(0, newLen - oldLen),
-      itemsRemoved: Math.max(0, oldLen - newLen),
-    }
-  }
-
-  // Check each item
-  for (let i = 0; i < oldLen; i++) {
-    if (JSON.stringify(oldArr[i]) !== JSON.stringify(newArr[i])) {
-      return {
-        changed: true,
-        itemsAdded: 0,
-        itemsRemoved: 0,
-      }
-    }
-  }
-
-  return { changed: false, itemsAdded: 0, itemsRemoved: 0 }
-}
-
-/**
  * Main diff calculation function
  */
 export function calculateDiff(

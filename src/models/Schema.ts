@@ -443,16 +443,18 @@ export async function validateSchemaContent(
   }
 
   const platforms = await getCachedPlatforms()
-  const errors: string[] = []
-  for (const dependency of dependencies) {
-    const error = await Effect.runPromise(
-      resolveDependenciesEffect([dependency], platforms).pipe(
-        Effect.as(null),
-        Effect.catchAll((e) => Effect.succeed(e.message))
+  const results = await Promise.all(
+    dependencies.map((dependency) =>
+      Effect.runPromise(
+        resolveDependenciesEffect([dependency], platforms).pipe(
+          Effect.as(null),
+          Effect.catchAll((e) => Effect.succeed(e.message))
+        )
       )
     )
-    if (error) errors.push(error)
-  }
+  )
+
+  const errors = results.filter((error) => error !== null) as string[]
 
   return { valid: errors.length === 0, errors }
 }

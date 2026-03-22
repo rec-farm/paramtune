@@ -8,6 +8,22 @@ type ApiResponseInit = {
 
 const NO_STORE = { 'Cache-Control': 'no-store' } as const
 
+function createErrorResponse(error: unknown, fallbackMessage: string) {
+  const message = error instanceof Error ? error.message : fallbackMessage
+  console.error(message, error)
+  return Effect.succeed(
+    NextResponse.json(
+      {
+        error:
+          process.env.NODE_ENV === 'development'
+            ? message
+            : 'Internal Server Error',
+      },
+      { status: 500 }
+    )
+  )
+}
+
 /**
  * Runs an Effect pipeline and converts the result to a NextResponse.
  * Replaces the repetitive try/catch + conditional error message pattern
@@ -25,38 +41,8 @@ export function handleApi<A>(
           headers: { ...NO_STORE, ...init?.headers },
         })
       ),
-      Effect.catchAllDefect((error) => {
-        const message =
-          error instanceof Error ? error.message : 'Unknown error'
-        console.error(message, error)
-        return Effect.succeed(
-          NextResponse.json(
-            {
-              error:
-                process.env.NODE_ENV === 'development'
-                  ? message
-                  : 'Internal Server Error',
-            },
-            { status: 500 }
-          )
-        )
-      }),
-      Effect.catchAll((error) => {
-        const message =
-          error instanceof Error ? error.message : String(error)
-        console.error(message, error)
-        return Effect.succeed(
-          NextResponse.json(
-            {
-              error:
-                process.env.NODE_ENV === 'development'
-                  ? message
-                  : 'Internal Server Error',
-            },
-            { status: 500 }
-          )
-        )
-      })
+      Effect.catchAllDefect((error) => createErrorResponse(error, 'Unknown error')),
+      Effect.catchAll((error) => createErrorResponse(error, String(error)))
     )
   )
 }
@@ -102,22 +88,7 @@ export function handleApiWithFailures<A>(
               )
             )
       ),
-      Effect.catchAllDefect((error) => {
-        const message =
-          error instanceof Error ? error.message : 'Unknown error'
-        console.error(message, error)
-        return Effect.succeed(
-          NextResponse.json(
-            {
-              error:
-                process.env.NODE_ENV === 'development'
-                  ? message
-                  : 'Internal Server Error',
-            },
-            { status: 500 }
-          )
-        )
-      })
+      Effect.catchAllDefect((error) => createErrorResponse(error, 'Unknown error'))
     )
   )
 }

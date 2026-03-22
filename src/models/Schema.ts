@@ -127,16 +127,18 @@ function deepMerge(
 // ── Effect-based internals ───────────────────────────────────────────────────
 
 const resolveDependenciesEffect = (
-  dependencies: string[]
+  dependencies: string[],
+  platforms?: Platform[]
 ): Effect.Effect<
   ResolvedDependency[],
   MissingPlatformError | VersionNotFoundError
 > =>
   Effect.gen(function* () {
-    const platforms = yield* Effect.promise(() => getPlatforms())
+    const resolvedPlatforms =
+      platforms ?? (yield* Effect.promise(() => getPlatforms()))
 
     function findPlatform(name: string): Platform | undefined {
-      return platforms.find((p) => p.name === name)
+      return resolvedPlatforms.find((p) => p.name === name)
     }
 
     function resolveVersion(
@@ -208,15 +210,21 @@ const getLatestSchemaContentEffect = (
 
 const processNodeWithExtendsEffect = (
   node: unknown,
-  visited: Set<string>
+  visited: Set<string>,
+  platforms?: Platform[]
 ): Effect.Effect<
   unknown,
   MissingPlatformError | VersionNotFoundError | CircularDependencyError
 > =>
   Effect.gen(function* () {
+    const resolvedPlatforms =
+      platforms ?? (yield* Effect.promise(() => getPlatforms()))
+
     if (Array.isArray(node)) {
       return yield* Effect.all(
-        node.map((item) => processNodeWithExtendsEffect(item, visited))
+        node.map((item) =>
+          processNodeWithExtendsEffect(item, visited, resolvedPlatforms)
+        )
       )
     }
 
@@ -235,7 +243,7 @@ const processNodeWithExtendsEffect = (
       }
       visited.add(key)
 
-      const deps = yield* resolveDependenciesEffect([ref])
+      const deps = yield* resolveDependenciesEffect([ref], resolvedPlatforms)
       const concrete = deps[0]
       const baseContent = yield* getLatestSchemaContentEffect(
         concrete.platform,
@@ -243,14 +251,16 @@ const processNodeWithExtendsEffect = (
       )
       const processedBase = (yield* processNodeWithExtendsEffect(
         baseContent,
-        visited
+        visited,
+        resolvedPlatforms
       )) as Record<string, unknown>
 
       const override = { ...node }
       delete override['@extends']
       const processedOverride = (yield* processNodeWithExtendsEffect(
         override,
-        visited
+        visited,
+        resolvedPlatforms
       )) as Record<string, unknown>
 
       return deepMerge(processedBase, processedOverride)
@@ -258,7 +268,7 @@ const processNodeWithExtendsEffect = (
 
     const entries = yield* Effect.all(
       Object.entries(node).map(([k, v]) =>
-        processNodeWithExtendsEffect(v, visited).pipe(
+        processNodeWithExtendsEffect(v, visited, resolvedPlatforms).pipe(
           Effect.map((processed) => [k, processed] as const)
         )
       )
@@ -270,19 +280,24 @@ const saveSchemaEffect = (
   platform: string,
   version: string,
   content: Record<string, unknown>,
-  author?: Author
+  author?: Author,
+  platforms?: Platform[]
 ): Effect.Effect<void, SchemaError> =>
   Effect.gen(function* () {
     if (!isPlainObject(content)) {
       return yield* new InvalidContentError()
     }
 
+    const resolvedPlatforms =
+      platforms ?? (yield* Effect.promise(() => getPlatforms()))
+
     const dependencies = findDependenciesInContent(content)
-    yield* resolveDependenciesEffect(dependencies)
+    yield* resolveDependenciesEffect(dependencies, resolvedPlatforms)
 
     const output = (yield* processNodeWithExtendsEffect(
       content,
-      new Set()
+      new Set(),
+      resolvedPlatforms
     )) as Record<string, unknown>
 
     yield* redisCall(() =>
@@ -293,7 +308,10 @@ const saveSchemaEffect = (
       )
     )
 
-    const resolved = yield* resolveDependenciesEffect(dependencies)
+    const resolved = yield* resolveDependenciesEffect(
+      dependencies,
+      resolvedPlatforms
+    )
     const selfId = `${platform}/${version}`
 
     for (const dep of resolved) {
@@ -305,15 +323,24 @@ const saveSchemaEffect = (
       )
     }
 
-    yield* cascadeDependentsEffect(platform, version, new Set([selfId]))
+    yield* cascadeDependentsEffect(
+      platform,
+      version,
+      new Set([selfId]),
+      resolvedPlatforms
+    )
   })
 
 const cascadeDependentsEffect = (
   platform: string,
   version: string,
-  visited: Set<string>
+  visited: Set<string>,
+  platforms?: Platform[]
 ): Effect.Effect<void, SchemaError> =>
   Effect.gen(function* () {
+    const resolvedPlatforms =
+      platforms ?? (yield* Effect.promise(() => getPlatforms()))
+
     const dependentsKey = `schemas:dependents:${platform}:${version}`
     const dependents = yield* redisCall(() => redis.smembers(dependentsKey))
 
@@ -326,8 +353,19 @@ const cascadeDependentsEffect = (
         depVersion
       )) as Schema
       if (latest && latest.content) {
-        yield* saveSchemaEffect(depPlatform, depVersion, latest.content)
-        yield* cascadeDependentsEffect(depPlatform, depVersion, visited)
+        yield* saveSchemaEffect(
+          depPlatform,
+          depVersion,
+          latest.content,
+          undefined,
+          resolvedPlatforms
+        )
+        yield* cascadeDependentsEffect(
+          depPlatform,
+          depVersion,
+          visited,
+          resolvedPlatforms
+        )
       }
     }
   })
@@ -356,9 +394,14 @@ export async function previewJsonOutput(content: Record<string, unknown>) {
   'use server'
   return Effect.runPromise(
     Effect.gen(function* () {
+      const platforms = yield* Effect.promise(() => getPlatforms())
       const dependencies = findDependenciesInContent(content)
-      yield* resolveDependenciesEffect(dependencies)
-      const output = yield* processNodeWithExtendsEffect(content, new Set())
+      yield* resolveDependenciesEffect(dependencies, platforms)
+      const output = yield* processNodeWithExtendsEffect(
+        content,
+        new Set(),
+        platforms
+      )
       return JSON.stringify(output)
     })
   )
@@ -378,10 +421,11 @@ export async function validateSchemaContent(
     return { valid: true, errors: [] }
   }
 
+  const platforms = await getPlatforms()
   const errors: string[] = []
   for (const dependency of dependencies) {
     const error = await Effect.runPromise(
-      resolveDependenciesEffect([dependency]).pipe(
+      resolveDependenciesEffect([dependency], platforms).pipe(
         Effect.as(null),
         Effect.catchAll((e) => Effect.succeed(e.message))
       )

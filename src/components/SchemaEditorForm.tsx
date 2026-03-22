@@ -121,11 +121,10 @@ export default function SchemaEditorForm({
             <Button
               type="submit"
               variant="primary"
-              size="sm"
-              className="h-8"
+              className="clip-brutalist font-display font-bold text-[10px] tracking-wider px-6 py-3 h-auto"
               disabled={!isValid || isPending}
             >
-              {isPending ? 'Validating...' : 'Save'}
+              {isPending ? 'VALIDATING...' : 'COMMIT_CHANGES'}
             </Button>
           </div>
         )}

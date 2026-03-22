@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import Badge from '@/components/ui/Badge'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
@@ -59,33 +59,38 @@ export default function PlatformsList({
   platforms,
   searchQuery,
 }: PlatformsListProps) {
-  const [filteredPlatforms, setFilteredPlatforms] =
-    useState<Platform[]>(platforms)
   const pathname = usePathname()
   const [open, setOpen] = useState<Record<string, boolean>>({})
 
-  useEffect(() => {
-    const filtered = platforms.filter(
-      (platform) =>
-        platform.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        (platform.versions &&
-          platform.versions.some((version) =>
-            version.toLowerCase().includes(searchQuery.toLowerCase())
-          ))
-    )
-    setFilteredPlatforms(filtered)
-  }, [platforms, searchQuery])
+  const filteredPlatforms = useMemo(
+    () =>
+      platforms.filter(
+        (platform) =>
+          platform.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (platform.versions &&
+            platform.versions.some((version) =>
+              version.toLowerCase().includes(searchQuery.toLowerCase())
+            ))
+      ),
+    [platforms, searchQuery]
+  )
 
-  // Expand active platform by default
-  useEffect(() => {
+  // Expand active platform by default (store prev in state per React docs)
+  const [prevPathname, setPrevPathname] = useState(pathname)
+  const [prevFiltered, setPrevFiltered] = useState(filteredPlatforms)
+  if (prevPathname !== pathname || prevFiltered !== filteredPlatforms) {
+    setPrevPathname(pathname)
+    setPrevFiltered(filteredPlatforms)
     const active: Record<string, boolean> = {}
     filteredPlatforms.forEach((p) => {
       const href = `/dashboard/${encodeURIComponent(p.name)}`
       const isActive = pathname === href || pathname.startsWith(`${href}/`)
       if (isActive) active[p.name] = true
     })
-    setOpen((prev) => ({ ...active, ...prev }))
-  }, [filteredPlatforms, pathname])
+    if (Object.keys(active).length > 0) {
+      setOpen((prev) => ({ ...active, ...prev }))
+    }
+  }
 
   if (filteredPlatforms.length === 0) {
     return (

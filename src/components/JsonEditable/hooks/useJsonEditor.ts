@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 
 export interface JsonEditorState {
   data: Record<string, unknown>
@@ -43,20 +43,20 @@ export function useJsonEditor({
     errorMessage: '',
   })
 
-  // Update editor when defaultValue changes
-  useEffect(() => {
+  // Update editor when defaultValue changes (store prev in state per React docs)
+  const [prevDefaultValue, setPrevDefaultValue] = useState(defaultValue)
+  if (prevDefaultValue !== defaultValue) {
+    setPrevDefaultValue(defaultValue)
     const newInitial = safeParseJson(defaultValue)
     const newJsonText = JSON.stringify(newInitial, null, 2)
-
     setState({
       data: newInitial,
       jsonText: newJsonText,
       isValid: true,
       errorMessage: '',
     })
-
     onValidationChange?.(true)
-  }, [defaultValue, onValidationChange])
+  }
 
   const setJsonText = useCallback(
     (value: string) => {

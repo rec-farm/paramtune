@@ -181,11 +181,17 @@ export default function Sidebar({ platforms }: SidebarProps) {
         </div>
       </div>
 
-      {/* Footer with subtle gradient */}
-      <div className="p-3 border-t border-sidebar-border/50 bg-gradient-to-t from-sidebar/50 to-transparent">
-        <div className="text-[9px] text-sidebar-foreground/50 text-center font-fragmented uppercase tracking-widest">
-          SYSTEM_CORE_V1.0
+      {/* Footer with progress bar */}
+      <div className="p-3 border-t border-sidebar-border/50 bg-gradient-to-t from-sidebar/50 to-transparent space-y-2">
+        <div className="h-1 w-full bg-zinc-800 relative">
+          <div
+            className="absolute inset-0 bg-primary transition-all duration-500"
+            style={{ width: `${Math.min(100, platforms.length > 0 ? Math.max(15, (platforms.reduce((sum, p) => sum + p.versions.length, 0) / Math.max(1, platforms.length * 5)) * 100) : 0)}%` }}
+          />
         </div>
+        <p className="text-[8px] text-sidebar-foreground/50 font-fragmented uppercase tracking-widest">
+          CONFIGS_LOADED: {platforms.reduce((sum, p) => sum + p.versions.length, 0)} {/* // */} {platforms.length} PLATFORMS
+        </p>
       </div>
     </div>
   )

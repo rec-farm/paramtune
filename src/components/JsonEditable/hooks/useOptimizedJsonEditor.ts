@@ -140,11 +140,12 @@ export function useOptimizedJsonEditor({
     onValidationChange?.(true)
   }, [defaultValue, onValidationChange])
 
-  // Update editor when defaultValue changes
-  useEffect(() => {
+  // Update editor when defaultValue changes (store prev in state per React docs)
+  const [prevDefaultValue, setPrevDefaultValue] = useState(defaultValue)
+  if (prevDefaultValue !== defaultValue) {
+    setPrevDefaultValue(defaultValue)
     const newInitial = safeParseJson(defaultValue)
     const newJsonText = JSON.stringify(newInitial, null, 2)
-
     setState({
       data: newInitial,
       jsonText: newJsonText,
@@ -154,10 +155,14 @@ export function useOptimizedJsonEditor({
       issues: [],
       isValidating: false,
     })
-
-    lastValidJsonRef.current = newJsonText
+    // lastValidJsonRef will be updated in an effect below
     onValidationChange?.(true)
-  }, [defaultValue, onValidationChange])
+  }
+
+  // Keep lastValidJsonRef in sync when defaultValue changes
+  useEffect(() => {
+    lastValidJsonRef.current = JSON.stringify(safeParseJson(defaultValue), null, 2)
+  }, [defaultValue])
 
   // Cleanup timeout on unmount
   useEffect(() => {

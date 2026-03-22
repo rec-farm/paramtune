@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { headers } from 'next/headers'
 import { GitCompare } from 'lucide-react'
 
+import { createHash } from 'crypto'
 import { auth } from '@/lib/auth'
 import PageTitle from '@/components/PageTitle'
 import SchemaTabs from '@/components/SchemaTabs'
@@ -34,6 +35,10 @@ export default async function Page({
   const user = session?.user
 
   const schema = await getSchema(platformName, versionName)
+  const contentHash = createHash('sha256')
+    .update(JSON.stringify(schema?.content || {}))
+    .digest('hex')
+  const shortHash = `0x${contentHash.slice(0, 3).toUpperCase()}...${contentHash.slice(-3).toUpperCase()}`
   const history = await getSchemaHistoryWithTimestamps(
     platformName,
     versionName
@@ -93,6 +98,8 @@ export default async function Page({
           </div>
         </div>
         <div className="text-[10px] text-gray-500 font-fragmented uppercase tracking-wider flex items-center gap-3">
+          <span>HASH: {shortHash}</span>
+          <span className="w-1 h-1 bg-primary/40 rounded-full" />
           <span>{history.length} {history.length === 1 ? 'version' : 'versions'}</span>
           <span className="w-1 h-1 bg-primary/40 rounded-full" />
           <span>{(schema as any)?.dependencies?.length ?? 0} {(schema as any)?.dependencies?.length === 1 ? 'dep' : 'deps'}</span>

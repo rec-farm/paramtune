@@ -137,15 +137,15 @@ export function useThrottledCallback<T extends (...args: any[]) => any>(
   callback: T,
   delay: number = 100
 ): T {
-  const lastRun = useRef(Date.now())
+  const lastRun = useRef(0)
 
   return useCallback(
-    ((...args: Parameters<T>) => {
+    (...args: Parameters<T>) => {
       if (Date.now() - lastRun.current >= delay) {
         callback(...args)
         lastRun.current = Date.now()
       }
-    }) as T,
+    },
     [callback, delay]
-  )
+  ) as T
 }

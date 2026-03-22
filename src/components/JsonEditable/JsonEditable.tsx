@@ -308,7 +308,7 @@ const JsonEditable = memo(function JsonEditable({
 
       {/* JSON Editor */}
       <div className="space-y-2">
-        <div className={`relative overflow-hidden border border-primary/30 ${theme === 'light' ? 'bg-gray-100' : 'bg-black/50'}`}>
+        <div className={`relative overflow-hidden border border-primary/30 ${theme === 'light' ? 'bg-gray-100' : 'bg-zinc-950/50'}`}>
           <JsonTextarea
             ref={textareaRef}
             value={state.jsonText}
@@ -427,6 +427,16 @@ const JsonEditable = memo(function JsonEditable({
               theme={theme}
             />
           )}
+
+          {/* Status bar — mirrors MockDashboard footer */}
+          <div className="relative z-30 border-t border-primary/10 px-6 py-3 flex justify-between font-fragmented text-[11px]">
+            <span className={state.isValidating ? 'animate-pulse text-primary' : state.isValid ? 'text-primary' : 'text-red-500'}>
+              {state.isValidating ? 'VALIDATING...' : state.isValid ? 'SCHEMA_VALID' : 'SCHEMA_INVALID'}
+            </span>
+            <span className="text-gray-800">
+              {lineCount} LINES | {new Blob([state.jsonText]).size} B // UTF-8 // JSON_TYPE
+            </span>
+          </div>
         </div>
 
         <ErrorDisplay errorMessage={state.errorMessage} issues={state.issues} />

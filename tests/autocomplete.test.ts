@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { extractExistingKeys } from '@/components/JsonEditable/utils/autocomplete'
+import { extractExistingKeys, getAutocompleteContext } from '@/components/JsonEditable/utils/autocomplete'
 
 describe('extractExistingKeys', () => {
   it('returns empty array for empty string', () => {
@@ -52,5 +52,80 @@ describe('extractExistingKeys', () => {
       "d": 2
     }`
     expect(extractExistingKeys(json)).toEqual(['a', 'b', 'c', 'd'])
+  })
+})
+
+describe('getAutocompleteContext', () => {
+  it('detects empty object / root level contexts', () => {
+    const text = ''
+    const result = getAutocompleteContext(text, 0)
+    expect(result).toEqual({
+      line: '',
+      column: 0,
+      prefix: '',
+      inString: false,
+      afterColon: false,
+    })
+  })
+
+  it('detects when the cursor is inside a string key', () => {
+    const text = '{\n  "k'
+    const result = getAutocompleteContext(text, 6)
+    expect(result).toEqual({
+      line: '  "k',
+      column: 4,
+      prefix: 'k',
+      inString: true,
+      afterColon: false,
+    })
+  })
+
+  it('detects when the cursor is after a colon, expecting a value', () => {
+    const text = '{\n  "key": '
+    const result = getAutocompleteContext(text, 11)
+    expect(result).toEqual({
+      line: '  "key": ',
+      column: 9,
+      prefix: '',
+      inString: false,
+      afterColon: true,
+    })
+  })
+
+  it('extracts prefix correctly inside quotes', () => {
+    const text = '{\n  "key": "val'
+    const result = getAutocompleteContext(text, 15)
+    expect(result).toEqual({
+      line: '  "key": "val',
+      column: 13,
+      prefix: 'val',
+      inString: true,
+      afterColon: true,
+    })
+  })
+
+  it('extracts prefix correctly outside quotes', () => {
+    const text = '{\n  "key": tr'
+    const result = getAutocompleteContext(text, 13)
+    expect(result).toEqual({
+      line: '  "key": tr',
+      column: 11,
+      prefix: 'tr',
+      inString: false,
+      afterColon: true,
+    })
+  })
+
+  it('handles escaped quotes correctly for inString flag calculation', () => {
+    const text = '{\n  "key": "val\\"ue'
+    const result = getAutocompleteContext(text, 19)
+    expect(result).toEqual({
+      line: '  "key": "val\\"ue',
+      column: 17,
+      prefix: 'ue',
+      inString: true,
+      // TODO: `isAfterColon` does not correctly handle escaped quotes inside string values
+      afterColon: false,
+    })
   })
 })

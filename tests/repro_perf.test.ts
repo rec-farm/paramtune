@@ -1,12 +1,12 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest'
 
-const mockRedis = {
+const mockRedis = vi.hoisted(() => ({
   zrevrangebyscore: vi.fn(),
   zadd: vi.fn(),
   sadd: vi.fn(),
   smembers: vi.fn(),
   scan: vi.fn(),
-}
+}))
 
 vi.mock('@/connections/redis', () => ({
   default: mockRedis,

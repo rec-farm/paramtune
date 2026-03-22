@@ -156,8 +156,8 @@ describe('calculateDiff', () => {
 
 describe('diffSchemas', () => {
   it('compares two schemas by content', () => {
-    const schemaA = { content: { key: 'a' } } as Schema
-    const schemaB = { content: { key: 'b' } } as Schema
+    const schemaA = { content: { key: 'a' } } as unknown as Schema
+    const schemaB = { content: { key: 'b' } } as unknown as Schema
     const result = diffSchemas(schemaA, schemaB)
     expect(result.summary.modified).toBe(1)
   })

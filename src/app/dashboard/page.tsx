@@ -1,7 +1,7 @@
 import Badge from '@/components/ui/Badge'
 import Card from '@/components/ui/Card'
 import CreatePlatformForm from '@/components/CreatePlatformForm'
-import { getPlatforms, savePlatform } from '@/models/Platform'
+import { getPlatforms, savePlatform, type Platform } from '@/models/Platform'
 import { revalidatePath } from 'next/cache'
 import Link from 'next/link'
 
@@ -53,7 +53,7 @@ export default async function Page() {
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {platforms.map((platform: any) => {
+            {platforms.map((platform: Platform) => {
               const latestVersion =
                 platform.versions?.[platform.versions.length - 1]
               const href = `/dashboard/${encodeURIComponent(platform.name)}`

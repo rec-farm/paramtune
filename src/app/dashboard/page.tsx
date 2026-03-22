@@ -14,7 +14,6 @@ export default async function Page() {
     'use server'
 
     const platformName = formData.get('platformName') as string
-    console.log('Server action received:', platformName)
 
     if (!platformName || platformName.trim() === '') {
       throw new Error('Platform name is required')
@@ -25,7 +24,6 @@ export default async function Page() {
         name: platformName.trim(),
         versions: [],
       })
-      console.log('Platform saved successfully:', platformName.trim())
       revalidatePath('/dashboard')
     } catch (error) {
       console.error('Error saving platform:', error)

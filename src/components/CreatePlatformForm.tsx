@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Button from '@/components/ui/Button'
+import { Loader2 } from 'lucide-react'
 import Input from '@/components/ui/Input'
 
 type Props = {
@@ -70,7 +71,7 @@ export default function CreatePlatformForm({ action }: Props) {
           htmlFor="platformName"
           className="text-sm font-medium text-foreground"
         >
-          Platform Name
+          Platform Name <span className="text-red-500">*</span>
         </label>
         <Input
           ref={inputRef}
@@ -82,8 +83,11 @@ export default function CreatePlatformForm({ action }: Props) {
           value={name}
           onChange={(e) => setName(e.target.value)}
           onBlur={() => setTouched(true)}
+          required
+          aria-required="true"
           aria-invalid={touched && !isValid}
           aria-describedby="platformName-help platformName-error"
+          error={touched && !isValid}
         />
         <p id="platformName-help" className="text-xs text-muted-foreground">
           Use letters, numbers, and dashes. Example: ios, android, web
@@ -99,19 +103,23 @@ export default function CreatePlatformForm({ action }: Props) {
         className="w-auto"
         disabled={!isValid || submitting}
       >
-        <svg
-          className="w-4 h-4 mr-2"
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M12 4v16m8-8H4"
-          />
-        </svg>
+        {submitting ? (
+          <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+        ) : (
+          <svg
+            className="w-4 h-4 mr-2"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M12 4v16m8-8H4"
+            />
+          </svg>
+        )}
         {submitting ? 'Creating…' : 'Create Platform'}
       </Button>
       {message && (

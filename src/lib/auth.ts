@@ -10,8 +10,8 @@ export const auth = betterAuth({
   database: db,
   socialProviders: {
     google: {
-      clientId: process.env.GOOGLE_CLIENT_ID || 'fake-client-id',
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET || 'fake-client-secret',
+      clientId: process.env.GOOGLE_CLIENT_ID!,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET!,
     },
   },
   emailAndPassword: isDev ? { enabled: true } : undefined,

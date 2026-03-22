@@ -9,17 +9,25 @@ const mockRedis = {
 }
 
 vi.mock('@/connections/redis', () => ({
-  default: mockRedis,
+  default: {
+    zrevrangebyscore: vi.fn(),
+    zadd: vi.fn(),
+    sadd: vi.fn(),
+    smembers: vi.fn(),
+    scan: vi.fn(),
+  },
 }))
 
 import { validateSchemaContent, previewJsonOutput } from '@/models/Schema'
 import * as PlatformModels from '@/models/Platform'
 
+import redis from '@/connections/redis'
+
 describe('Performance Baseline', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    mockRedis.scan.mockResolvedValue(['0', ['platforms:p1']])
-    mockRedis.zrevrangebyscore.mockResolvedValue([JSON.stringify({ name: 'p1', versions: ['1.0.0'] })])
+    vi.mocked(redis.scan).mockResolvedValue(['0', ['platforms:p1']])
+    vi.mocked(redis.zrevrangebyscore).mockResolvedValue([JSON.stringify({ name: 'p1', versions: ['1.0.0'] })])
   })
 
   it('measures getPlatforms calls in validateSchemaContent', async () => {
@@ -56,7 +64,7 @@ describe('Performance Baseline', () => {
     // Mock getSchemaEffect for p1/1.0.0 to return something that also has @extends
     // Actually previewJsonOutput calls processNodeWithExtendsEffect
 
-    mockRedis.zrevrangebyscore.mockImplementation((key) => {
+    vi.mocked(redis.zrevrangebyscore).mockImplementation((key) => {
         if (key === 'platforms:p1') {
             return Promise.resolve([JSON.stringify({ name: 'p1', versions: ['1.0.0'] })])
         }

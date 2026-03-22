@@ -12,10 +12,11 @@ vi.mock('@/connections/redis', () => ({
   default: mockRedis,
 }))
 
-import { getSchema, saveSchema, getSchemaHistoryWithTimestamps } from '@/models/Schema'
+import { clearPlatformsCache,  getSchema, saveSchema, getSchemaHistoryWithTimestamps } from '@/models/Schema'
 import { getPlatform, getPlatforms, savePlatform } from '@/models/Platform'
 
 beforeEach(() => {
+  clearPlatformsCache();
   vi.clearAllMocks()
   mockRedis.scan.mockResolvedValue(['0', []])
   mockRedis.smembers.mockResolvedValue([])

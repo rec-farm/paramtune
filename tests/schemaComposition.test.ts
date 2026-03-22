@@ -12,13 +12,14 @@ vi.mock('@/connections/redis', () => ({
   default: mockRedis,
 }))
 
-import {
+import { clearPlatformsCache,
   previewJsonOutput,
   saveSchema,
   validateSchemaContent,
 } from '@/models/Schema'
 
 beforeEach(() => {
+  clearPlatformsCache();
   vi.clearAllMocks()
   mockRedis.scan.mockResolvedValue(['0', []])
   mockRedis.smembers.mockResolvedValue([])

@@ -40,9 +40,7 @@ export default function CreatePlatformForm({ action }: Props) {
         // Build FormData and call server action
         const formData = new FormData()
         formData.set('platformName', name.trim())
-        console.log('Submitting platform:', name.trim())
         await action(formData)
-        console.log('Platform created successfully')
         setName('')
         setTouched(false)
         setMessage('Platform created')

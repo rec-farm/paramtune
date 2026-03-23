@@ -11,6 +11,10 @@ describe('extractExistingKeys', () => {
     expect(extractExistingKeys('[]')).toEqual([])
   })
 
+  it('returns empty array for plain text with no keys', () => {
+    expect(extractExistingKeys('just some plain text without any keys')).toEqual([])
+  })
+
   it('extracts unique keys from JSON string', () => {
     const json = `{
       "name": "test",

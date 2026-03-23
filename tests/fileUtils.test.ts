@@ -1,5 +1,44 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
-import { downloadAsJson } from '@/lib/fileUtils'
+import { downloadAsJson, copyToClipboard } from '@/lib/fileUtils'
+
+describe('copyToClipboard', () => {
+  let mockWriteText: ReturnType<typeof vi.fn>
+
+  beforeEach(() => {
+    mockWriteText = vi.fn().mockResolvedValue(undefined)
+
+    // Mock global navigator
+    Object.assign(navigator, {
+      clipboard: {
+        writeText: mockWriteText,
+      },
+    })
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+    // @ts-ignore
+    delete navigator.clipboard
+  })
+
+  it('copies text to clipboard', async () => {
+    const text = 'test text'
+
+    await copyToClipboard(text)
+
+    expect(mockWriteText).toHaveBeenCalledWith(text)
+  })
+
+  it('logs and re-throws errors', async () => {
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const error = new Error('Clipboard write failed')
+
+    mockWriteText.mockRejectedValue(error)
+
+    await expect(copyToClipboard('text')).rejects.toThrow(error)
+    expect(consoleErrorSpy).toHaveBeenCalledWith('Failed to copy to clipboard:', error)
+  })
+})
 
 describe('downloadAsJson', () => {
   let mockCreateObjectURL: ReturnType<typeof vi.fn>
@@ -7,6 +46,7 @@ describe('downloadAsJson', () => {
   let mockCreateElement: ReturnType<typeof vi.fn>
   let mockAppendChild: ReturnType<typeof vi.fn>
   let mockAnchor: any
+  let mockBlob: ReturnType<typeof vi.fn>
 
   beforeEach(() => {
     mockCreateObjectURL = vi.fn().mockReturnValue('mock-url')
@@ -18,12 +58,8 @@ describe('downloadAsJson', () => {
       revokeObjectURL: mockRevokeObjectURL,
     } as any
 
-    // Mock global Blob as a class constructor
-    globalThis.Blob = class BlobMock {
-      constructor() {}
-    } as any
-    // spy on the constructor by tracking instantiation parameters in the original function
-    vi.spyOn(globalThis, 'Blob')
+    mockBlob = vi.fn()
+    globalThis.Blob = mockBlob as any
 
     mockAnchor = {
       href: '',
@@ -64,7 +100,7 @@ describe('downloadAsJson', () => {
     downloadAsJson(content, filename)
 
     // Check Blob creation
-    expect(globalThis.Blob).toHaveBeenCalledWith([content], {
+    expect(mockBlob).toHaveBeenCalledWith([content], {
       type: 'application/json',
     })
 
@@ -94,11 +130,9 @@ describe('downloadAsJson', () => {
     const error = new Error('Blob creation failed')
 
     // Create a constructor that throws
-    globalThis.Blob = class ThrowingBlobMock {
-      constructor() {
-        throw error
-      }
-    } as any
+    globalThis.Blob = vi.fn().mockImplementation(function() {
+      throw error
+    }) as any
 
     expect(() => downloadAsJson('content')).toThrow(error)
     expect(consoleErrorSpy).toHaveBeenCalledWith('Download failed:', error)

@@ -7,6 +7,27 @@ import { getPlatforms } from './Platform'
 import type { Platform } from './Platform'
 import { diffSchemas, type DiffResult } from '@/lib/schemaDiff'
 
+
+let cachedPlatforms: Platform[] | null = null
+let cachedPlatformsTime = 0
+const PLATFORMS_CACHE_TTL = 5000 // 5 seconds
+
+async function getCachedPlatforms(): Promise<Platform[]> {
+  const now = Date.now()
+  if (cachedPlatforms && now - cachedPlatformsTime < PLATFORMS_CACHE_TTL) {
+    return cachedPlatforms
+  }
+  const platforms = await getPlatforms()
+  cachedPlatforms = platforms
+  cachedPlatformsTime = now
+  return platforms
+}
+
+
+export function clearPlatformsCache() {
+  cachedPlatforms = null
+  cachedPlatformsTime = 0
+}
 // ── Error types ──────────────────────────────────────────────────────────────
 
 export class MissingPlatformError extends Data.TaggedError(
@@ -135,7 +156,7 @@ const resolveDependenciesEffect = (
 > =>
   Effect.gen(function* () {
     const resolvedPlatforms =
-      platforms ?? (yield* Effect.promise(() => getPlatforms()))
+      platforms ?? (yield* Effect.promise(() => getCachedPlatforms()))
 
     function findPlatform(name: string): Platform | undefined {
       return resolvedPlatforms.find((p) => p.name === name)
@@ -218,7 +239,7 @@ const processNodeWithExtendsEffect = (
 > =>
   Effect.gen(function* () {
     const resolvedPlatforms =
-      platforms ?? (yield* Effect.promise(() => getPlatforms()))
+      platforms ?? (yield* Effect.promise(() => getCachedPlatforms()))
 
     if (Array.isArray(node)) {
       return yield* Effect.all(
@@ -289,7 +310,7 @@ const saveSchemaEffect = (
     }
 
     const resolvedPlatforms =
-      platforms ?? (yield* Effect.promise(() => getPlatforms()))
+      platforms ?? (yield* Effect.promise(() => getCachedPlatforms()))
 
     const dependencies = findDependenciesInContent(content)
     yield* resolveDependenciesEffect(dependencies, resolvedPlatforms)
@@ -339,7 +360,7 @@ const cascadeDependentsEffect = (
 ): Effect.Effect<void, SchemaError> =>
   Effect.gen(function* () {
     const resolvedPlatforms =
-      platforms ?? (yield* Effect.promise(() => getPlatforms()))
+      platforms ?? (yield* Effect.promise(() => getCachedPlatforms()))
 
     const dependentsKey = `schemas:dependents:${platform}:${version}`
     const dependents = yield* redisCall(() => redis.smembers(dependentsKey))
@@ -394,7 +415,7 @@ export async function previewJsonOutput(content: Record<string, unknown>) {
   'use server'
   return Effect.runPromise(
     Effect.gen(function* () {
-      const platforms = yield* Effect.promise(() => getPlatforms())
+      const platforms = yield* Effect.promise(() => getCachedPlatforms())
       const dependencies = findDependenciesInContent(content)
       yield* resolveDependenciesEffect(dependencies, platforms)
       const output = yield* processNodeWithExtendsEffect(
@@ -421,7 +442,7 @@ export async function validateSchemaContent(
     return { valid: true, errors: [] }
   }
 
-  const platforms = await getPlatforms()
+  const platforms = await getCachedPlatforms()
   const errors: string[] = []
   for (const dependency of dependencies) {
     const error = await Effect.runPromise(

@@ -12,7 +12,7 @@ vi.mock('@/connections/redis', () => ({
   default: mockRedis,
 }))
 
-import {
+import { clearPlatformsCache,
   compareSchemas,
   getSchema,
   getSchemaHistoryWithTimestamps,
@@ -22,6 +22,7 @@ import {
 } from '@/models/Schema'
 
 beforeEach(() => {
+  clearPlatformsCache();
   vi.clearAllMocks()
   // Default: no platforms found by scan
   mockRedis.scan.mockResolvedValue(['0', []])

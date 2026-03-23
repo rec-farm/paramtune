@@ -18,13 +18,14 @@ vi.mock('@/connections/redis', () => ({
   },
 }))
 
-import { validateSchemaContent, previewJsonOutput } from '@/models/Schema'
+import { clearPlatformsCache,  validateSchemaContent, previewJsonOutput } from '@/models/Schema'
 import * as PlatformModels from '@/models/Platform'
 
 import redis from '@/connections/redis'
 
 describe('Performance Baseline', () => {
   beforeEach(() => {
+  clearPlatformsCache();
     vi.clearAllMocks()
     vi.mocked(redis.scan).mockResolvedValue(['0', ['platforms:p1']])
     vi.mocked(redis.zrevrangebyscore).mockResolvedValue([JSON.stringify({ name: 'p1', versions: ['1.0.0'] })])

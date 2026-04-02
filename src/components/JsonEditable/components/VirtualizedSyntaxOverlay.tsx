@@ -1,6 +1,7 @@
 'use client'
 
 import { memo, useMemo, useState, useEffect, useRef } from 'react'
+import DOMPurify from 'dompurify'
 import { highlightVisibleLines, getTheme } from '../utils/optimizedSyntaxHighlighter'
 
 interface SyntaxHighlightOverlayProps {
@@ -13,6 +14,12 @@ interface SyntaxHighlightOverlayProps {
 
 // Debounce delay for syntax highlighting (ms)
 const HIGHLIGHT_DEBOUNCE_MS = 50
+
+// Only allow span tags with class attributes for syntax highlighting
+const SANITIZE_CONFIG = {
+  ALLOWED_TAGS: ['span'],
+  ALLOWED_ATTR: ['class'],
+} as const
 
 export const SyntaxHighlightOverlay = memo(function SyntaxHighlightOverlay({
   visibleLines,
@@ -42,7 +49,8 @@ export const SyntaxHighlightOverlay = memo(function SyntaxHighlightOverlay({
 
   const highlightedContent = useMemo(() => {
     const themeConfig = getTheme(theme)
-    return highlightVisibleLines(debouncedLines, {}, themeConfig)
+    const rawHtml = highlightVisibleLines(debouncedLines, {}, themeConfig)
+    return DOMPurify.sanitize(rawHtml, SANITIZE_CONFIG)
   }, [debouncedLines, theme])
 
   const overlayStyle = useMemo(

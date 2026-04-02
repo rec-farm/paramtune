@@ -47,6 +47,27 @@ export function handleApi<A>(
   )
 }
 
+const VALID_NAME_REGEX = /^[a-zA-Z0-9_.-]+$/
+const MAX_NAME_LENGTH = 128
+
+/**
+ * Validates a platform or version name from URL parameters.
+ */
+export function validateName(name: string, label: string) {
+  return Effect.gen(function* () {
+    if (!name || name.length > MAX_NAME_LENGTH) {
+      return yield* failWith(`Invalid ${label}: must be 1-${MAX_NAME_LENGTH} characters`, 400)
+    }
+    if (!VALID_NAME_REGEX.test(name)) {
+      return yield* failWith(
+        `Invalid ${label}: only alphanumeric characters, underscores, hyphens, and dots are allowed`,
+        400,
+      )
+    }
+    return name
+  })
+}
+
 /**
  * Creates an Effect that fails with a JSON error response.
  * Use for validation errors, not-found, etc.

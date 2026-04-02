@@ -2,6 +2,8 @@ import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 import { getSessionCookie } from 'better-auth/cookies'
 
+let corsWarningLogged = false
+
 export const config = {
   matcher: ['/api/:path*', '/dashboard/:path*'],
 }
@@ -19,8 +21,13 @@ export function proxy(request: NextRequest) {
   }
 
   // API route CORS and security headers handling
+  if (process.env.NODE_ENV === 'production' && !process.env.CORS_ORIGIN && !corsWarningLogged) {
+    console.warn('CORS_ORIGIN is not set — defaulting to same-origin. Set CORS_ORIGIN to allow cross-origin requests.')
+    corsWarningLogged = true
+  }
+
   const origin = request.headers.get('origin') || ''
-  const allowedOrigin = process.env.CORS_ORIGIN || '*'
+  const allowedOrigin = process.env.CORS_ORIGIN || (process.env.NODE_ENV === 'production' ? request.nextUrl.origin : '*')
 
   const isPreflight = request.method === 'OPTIONS'
   const response = isPreflight ? new NextResponse(null, { status: 204 }) : NextResponse.next()

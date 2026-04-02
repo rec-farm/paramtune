@@ -2,7 +2,7 @@ import { Effect } from 'effect'
 
 import { getPlatform, savePlatform } from '@/models/Platform'
 import { getVersions } from '@/models/Version'
-import { handleApi, handleApiWithFailures, failWith } from '@/lib/apiHandler'
+import { handleApiWithFailures, failWith, validateName } from '@/lib/apiHandler'
 import { auth } from '@/lib/auth'
 import { logAudit } from '@/lib/auditLog'
 
@@ -13,10 +13,11 @@ export function GET(
   _request: Request,
   { params }: { params: Promise<{ platform: string }> }
 ) {
-  return handleApi(
+  return handleApiWithFailures(
     Effect.gen(function* () {
       const { platform } = yield* Effect.promise(() => params)
       const platformName = decodeURIComponent(platform)
+      yield* validateName(platformName, 'platform name')
       return yield* Effect.promise(() => getVersions(platformName))
     })
   )
@@ -30,6 +31,7 @@ export function POST(
     Effect.gen(function* () {
       const { platform } = yield* Effect.promise(() => params)
       const platformName = decodeURIComponent(platform)
+      yield* validateName(platformName, 'platform name')
       const body = yield* Effect.tryPromise({
         try: () => request.json(),
         catch: () => 'parse-error' as const,
@@ -39,6 +41,7 @@ export function POST(
       if (!version) {
         return yield* failWith('Missing "version" in body', 400)
       }
+      yield* validateName(version, 'version name')
 
       const current = yield* Effect.promise(() => getPlatform(platformName))
       const nextVersions = Array.from(

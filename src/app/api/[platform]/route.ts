@@ -1,7 +1,7 @@
 import { Effect } from 'effect'
 
 import { getPlatform, savePlatform } from '@/models/Platform'
-import { handleApiWithFailures, failWith } from '@/lib/apiHandler'
+import { handleApiWithFailures, failWith, validateName } from '@/lib/apiHandler'
 import { auth } from '@/lib/auth'
 import { logAudit } from '@/lib/auditLog'
 
@@ -16,6 +16,7 @@ export function GET(
     Effect.gen(function* () {
       const { platform } = yield* Effect.promise(() => params)
       const platformName = decodeURIComponent(platform)
+      yield* validateName(platformName, 'platform name')
       const data = yield* Effect.promise(() => getPlatform(platformName))
 
       if (!data) {

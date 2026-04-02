@@ -38,12 +38,16 @@ export function proxy(request: NextRequest) {
   )
   response.headers.set('Access-Control-Max-Age', '86400')
 
-  // Minimal security headers (avoid CSP to not disrupt Next dev features)
+  // Security headers
   response.headers.set('X-Content-Type-Options', 'nosniff')
   response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
   response.headers.set('X-Frame-Options', 'SAMEORIGIN')
   if (process.env.NODE_ENV === 'production') {
     response.headers.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload')
+    response.headers.set(
+      'Content-Security-Policy',
+      "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'",
+    )
   }
 
   return response

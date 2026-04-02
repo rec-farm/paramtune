@@ -49,10 +49,31 @@ const getPlatformsEffect: Effect.Effect<Platform[]> = Effect.gen(function* () {
     )
   } while (cursor !== '0')
 
-  const results = yield* Effect.all(
-    platforms.map((id) => getPlatformEffect(id))
-  )
-  return results.filter((p): p is Platform => Boolean(p))
+  if (platforms.length === 0) {
+    return []
+  }
+
+  const pipeline = redis.pipeline()
+  platforms.forEach((id) => {
+    pipeline.zrevrangebyscore(`platforms:${id}`, '+inf', '-inf', 'LIMIT', 0, 1)
+  })
+
+  const results = yield* redisCall(() => pipeline.exec())
+
+  if (!results) {
+    return []
+  }
+
+  const parsedPlatforms = results
+    .map(([err, result]) => {
+      if (err || !result || !Array.isArray(result) || result.length === 0) {
+        return null
+      }
+      return JSON.parse(result[0] as string) as Platform
+    })
+    .filter((p): p is Platform => Boolean(p))
+
+  return parsedPlatforms
 })
 
 const savePlatformEffect = (

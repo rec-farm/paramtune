@@ -1,6 +1,7 @@
 import type { NextRequest } from 'next/server'
 import { NextResponse } from 'next/server'
 import { getSessionCookie } from 'better-auth/cookies'
+import { checkRateLimit } from '@/lib/rateLimit'
 
 let corsWarningLogged = false
 
@@ -18,6 +19,23 @@ export function proxy(request: NextRequest) {
     }
     // Has session cookie, allow access (Server Component will validate)
     return NextResponse.next()
+  }
+
+  // Rate limiting for API routes
+  const ip =
+    request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
+    request.headers.get('x-real-ip') ||
+    '127.0.0.1'
+  const isAuthRoute = request.nextUrl.pathname.startsWith('/api/auth')
+  const { allowed, retryAfter } = checkRateLimit(ip, isAuthRoute ? 'auth' : 'api')
+  if (!allowed) {
+    return NextResponse.json(
+      { error: 'Too many requests' },
+      {
+        status: 429,
+        headers: { 'Retry-After': String(retryAfter) },
+      },
+    )
   }
 
   // API route CORS and security headers handling

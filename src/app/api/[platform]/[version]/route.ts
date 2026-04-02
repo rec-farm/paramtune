@@ -1,17 +1,18 @@
 import { Effect } from 'effect'
 
 import { getVersion, getVersions } from '@/models/Version'
-import { handleApiWithFailures, failWith, validateName } from '@/lib/apiHandler'
+import { handleApiWithFailures, failWith, validateName, requireSession } from '@/lib/apiHandler'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
 export function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ platform: string; version: string }> }
 ) {
   return handleApiWithFailures(
     Effect.gen(function* () {
+      yield* requireSession(request)
       const { platform, version } = yield* Effect.promise(() => params)
       const platformName = decodeURIComponent(platform)
       const versionName = decodeURIComponent(version)

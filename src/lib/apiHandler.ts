@@ -1,5 +1,6 @@
 import { Effect } from 'effect'
 import { NextResponse } from 'next/server'
+import { auth } from '@/lib/auth'
 
 type ApiResponseInit = {
   status?: number
@@ -77,6 +78,21 @@ export const failWith = (
   status: number
 ): Effect.Effect<never, NextResponse> =>
   Effect.fail(NextResponse.json({ error }, { status }))
+
+/**
+ * Validates the user session and returns it, or fails with 401.
+ */
+export function requireSession(request: Request) {
+  return Effect.gen(function* () {
+    const session = yield* Effect.promise(() =>
+      auth.api.getSession({ headers: request.headers })
+    )
+    if (!session) {
+      return yield* failWith('Unauthorized', 401)
+    }
+    return session
+  })
+}
 
 /**
  * Runs an API handler that may short-circuit with a NextResponse error.

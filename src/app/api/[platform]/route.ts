@@ -1,7 +1,7 @@
 import { Effect } from 'effect'
 
 import { getPlatform, savePlatform } from '@/models/Platform'
-import { handleApiWithFailures, failWith, validateName } from '@/lib/apiHandler'
+import { handleApiWithFailures, failWith, validateName, requireSession } from '@/lib/apiHandler'
 import { auth } from '@/lib/auth'
 import { logAudit } from '@/lib/auditLog'
 
@@ -9,11 +9,12 @@ export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
 
 export function GET(
-  _request: Request,
+  request: Request,
   { params }: { params: Promise<{ platform: string }> }
 ) {
   return handleApiWithFailures(
     Effect.gen(function* () {
+      yield* requireSession(request)
       const { platform } = yield* Effect.promise(() => params)
       const platformName = decodeURIComponent(platform)
       yield* validateName(platformName, 'platform name')
@@ -34,6 +35,7 @@ export function POST(
 ) {
   return handleApiWithFailures(
     Effect.gen(function* () {
+      yield* requireSession(request)
       const { platform } = yield* Effect.promise(() => params)
       const platformName = decodeURIComponent(platform)
       const body = yield* Effect.tryPromise({

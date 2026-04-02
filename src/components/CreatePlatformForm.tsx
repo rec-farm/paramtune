@@ -24,7 +24,7 @@ export default function CreatePlatformForm({ action }: Props) {
 
   useEffect(() => {
     setMessage(null)
-  }, [name])
+  }, [name, setMessage])
 
   const onSubmit = useCallback(
     async (e: React.FormEvent<HTMLFormElement>) => {

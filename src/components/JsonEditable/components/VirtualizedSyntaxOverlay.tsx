@@ -17,9 +17,9 @@ const HIGHLIGHT_DEBOUNCE_MS = 50
 
 // Only allow span tags with class attributes for syntax highlighting
 const SANITIZE_CONFIG = {
-  ALLOWED_TAGS: ['span'],
-  ALLOWED_ATTR: ['class'],
-} as const
+  ALLOWED_TAGS: ['span'] as string[],
+  ALLOWED_ATTR: ['class'] as string[],
+}
 
 export const SyntaxHighlightOverlay = memo(function SyntaxHighlightOverlay({
   visibleLines,

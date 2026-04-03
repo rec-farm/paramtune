@@ -2,17 +2,21 @@ Paramtune is a Next.js application for managing platform schemas and versioned f
 
 ## Overview
 
-- **Next.js 15** (App Router), **React 19**, **TypeScript 5.9**
+- **Next.js 16** (App Router), **React 19**, **TypeScript 5.9**
 - **Tailwind CSS 4** for styling with shadcn/ui components
-- **Redis** (via ioredis) for persistence and caching
+- **Redis** (via ioredis) for schema and platform persistence
+- **SQLite** (via better-sqlite3) for authentication data
 - **JSON schema composition** with `@extends` and semver-aware dependency resolution
-- **Real-time JSON editing** with live preview and validation
+- **Authentication** via better-auth (Google OAuth in production, email/password in development)
+- **Real-time JSON editing** with live preview, validation, and schema diffing
+- **Audit logging** for all schema and platform changes
+- **Rate limiting** on API and auth routes
 - **Dashboard UI** for managing platforms, versions, and schemas
 
 ## Requirements
 
-- Node.js 20–22 (LTS recommended)
-- pnpm 9.x
+- Node.js 20+ (LTS recommended)
+- pnpm 10.x
 - Redis accessible locally or through a cloud provider
 
 ## Quick Start
@@ -35,7 +39,7 @@ pnpm install
 pnpm dev
 ```
 
-Open http://localhost:3000
+In development, email/password login is enabled with credentials configured in `.env.local` (`DEV_USER_EMAIL` / `DEV_USER_PASSWORD`).
 
 ## Development Commands
 
@@ -44,13 +48,18 @@ Open http://localhost:3000
 - `pnpm start` – run production server locally
 - `pnpm lint` – lint with ESLint
 - `pnpm typecheck` – TypeScript type checking
+- `pnpm test` – run tests with Vitest
+- `pnpm test:watch` – run tests in watch mode
+- `pnpm test:coverage` – run tests with coverage report
 - `pnpm analyze` – bundle analysis with webpack-bundle-analyzer
 
 ## Environment Variables
 
-- `CORS_ORIGIN` – Allowed origin (e.g., http://localhost:3000)
+- `CORS_ORIGIN` – Allowed origin for cross-origin API requests
 - `REDIS_URL` – Full Redis connection URL (preferred)
 - `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD`, `REDIS_DB` – Individual Redis settings when URL is not provided
+- `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` – Google OAuth credentials (production)
+- `DEV_USER_EMAIL`, `DEV_USER_PASSWORD`, `DEV_USER_NAME` – Development login credentials
 
 ## Features
 
@@ -60,17 +69,29 @@ Open http://localhost:3000
 - Semver-aware dependency resolution
 - Real-time preview of resolved schemas
 - Circular dependency detection
+- Schema version diffing and history tracking
+
+### Authentication & Security
+- Google OAuth sign-in (production) with email/password fallback (development)
+- Session-based authentication via better-auth with SQLite storage
+- All API endpoints require authentication
+- Rate limiting on API and auth routes
+- Security headers (CSP, HSTS, X-Frame-Options) via proxy
+- CORS configuration with same-origin default in production
 
 ### Dashboard
 - Platform overview with version management
 - Interactive JSON editor with syntax highlighting
 - Live schema validation and preview
-- Navigation between platforms and versions
+- Schema diff viewer for comparing versions
+- Audit log of platform and schema changes
+- Responsive sidebar navigation
 
-### API Endpoints
-- RESTful API for platform and schema management
-- CORS support via middleware
-- JSON responses with proper error handling
+### API
+- RESTful endpoints for platform and schema management
+- Interactive API documentation at `/api-docs`
+- CORS support via proxy
+- JSON responses with structured error handling
 
 ## Deployment
 
@@ -93,32 +114,28 @@ docker-compose up --build -d
 
 ## Architecture
 
-- `src/models/` – Server-side Redis access and business logic
-- `src/app/` – App Router pages and API routes
-- `src/components/` – Reusable React components
-- `connections/redis.ts` – Redis client configuration
-- `middleware.ts` – CORS and security headers
+- `src/app/` – App Router pages, API routes, and API docs
+- `src/models/` – Server-side Redis access and business logic (Platform, Schema, Version)
+- `src/components/` – React components (editors, navigation, diff viewer, UI primitives)
+- `src/lib/` – Shared utilities (auth, audit logging, rate limiting, schema diffing, validation)
+- `src/actions/` – Server actions for schema validation
+- `src/connections/redis.ts` – Redis client configuration
+- `src/proxy.ts` – Request proxy for CORS, security headers, auth gating, and rate limiting
+- `tests/` – Vitest test suite
+- `docs/` – Extended documentation (API, architecture, deployment, Docker, troubleshooting)
 
-### Key Components
-- **Platform Model** – Platform metadata and version management
-- **Schema Model** – Schema storage, dependency resolution, and cascade updates
-- **JSON Editor** – Interactive schema editing with live preview
-- **Navigation** – Platform and version navigation components
+## Documentation
 
-## API Documentation
-
-See [docs/API.md](docs/API.md) for detailed API endpoint documentation.
-
-## Troubleshooting
-
-- **Redis connection**: Verify `REDIS_URL` or host/port configuration
-- **404 errors**: Ensure platforms and versions exist (create via dashboard)
-- **CORS issues**: Set `CORS_ORIGIN` to exact origin including protocol
-- **Type errors**: Run `pnpm typecheck` for detailed diagnostics
+- [API Reference](docs/API.md)
+- [Architecture](docs/ARCHITECTURE.md)
+- [Deployment Guide](docs/DEPLOYMENT.md)
+- [Docker Setup](docs/DOCKER.md)
+- [Troubleshooting](docs/TROUBLESHOOTING.md)
 
 ## Contributing
 
 1. Follow existing code style and conventions
 2. Run `pnpm lint` and `pnpm typecheck` before committing
-3. Use `@/*` path aliases for imports from `src/`
-4. Mark client components with `'use client'` directive
+3. Run `pnpm test` to verify changes
+4. Use `@/*` path aliases for imports from `src/`
+5. Mark client components with `'use client'` directive

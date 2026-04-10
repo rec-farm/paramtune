@@ -2,6 +2,7 @@
 
 import { memo, useMemo, useState, useEffect, useRef } from 'react'
 import { highlightVisibleLines, getTheme } from '../utils/optimizedSyntaxHighlighter'
+import { sanitizeHtml } from '@/lib/sanitize'
 
 interface SyntaxHighlightOverlayProps {
   visibleLines: string[]
@@ -42,7 +43,8 @@ export const SyntaxHighlightOverlay = memo(function SyntaxHighlightOverlay({
 
   const highlightedContent = useMemo(() => {
     const themeConfig = getTheme(theme)
-    return highlightVisibleLines(debouncedLines, {}, themeConfig)
+    const highlighted = highlightVisibleLines(debouncedLines, {}, themeConfig)
+    return sanitizeHtml(highlighted)
   }, [debouncedLines, theme])
 
   const overlayStyle = useMemo(

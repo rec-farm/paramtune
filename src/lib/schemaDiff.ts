@@ -143,9 +143,12 @@ export function calculateDiff(
     (k) => !ignoreKeys.some((ik) => k === ik || k.startsWith(`${ik}.`))
   )
 
-  const addedKeys = currentKeys.filter((key) => !previousKeys.includes(key))
-  const removedKeys = previousKeys.filter((key) => !currentKeys.includes(key))
-  const commonKeys = currentKeys.filter((key) => previousKeys.includes(key))
+  const currentKeysSet = new Set(currentKeys)
+  const previousKeysSet = new Set(previousKeys)
+
+  const addedKeys = currentKeys.filter((key) => !previousKeysSet.has(key))
+  const removedKeys = previousKeys.filter((key) => !currentKeysSet.has(key))
+  const commonKeys = currentKeys.filter((key) => previousKeysSet.has(key))
 
   const changes: DiffChange[] = []
 

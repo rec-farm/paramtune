@@ -3,7 +3,11 @@ import Badge from '@/components/ui/Badge'
 import Button from '@/components/ui/Button'
 import Card from '@/components/ui/Card'
 import Input from '@/components/ui/Input'
-import { getPlatform, savePlatform } from '@/models/Platform'
+import {
+  getPlatform,
+  savePlatform,
+  MissingPlatformError,
+} from '@/models/Platform'
 import { revalidatePath } from 'next/cache'
 import { Suspense } from 'react'
 
@@ -57,7 +61,7 @@ export default async function Page({
     const platform = await getPlatform(platformName)
 
     if (!platform) {
-      throw new Error(`Platform not found: "${platformName}"`)
+      throw new MissingPlatformError({ platform: platformName })
     }
 
     const versionName = formData.get('versionName') as string

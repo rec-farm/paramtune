@@ -1,6 +1,13 @@
 'use client'
 
 import { createContext, useContext, useState, ReactNode } from 'react'
+import { Data } from 'effect'
+
+export class SidebarContextError extends Data.TaggedError('SidebarContextError')<{}> {
+  get message() {
+    return 'useSidebar must be used within a SidebarProvider'
+  }
+}
 
 type SidebarContextType = {
   isOpen: boolean
@@ -28,7 +35,7 @@ export function SidebarProvider({ children }: { children: ReactNode }) {
 export function useSidebar() {
   const context = useContext(SidebarContext)
   if (context === undefined) {
-    throw new Error('useSidebar must be used within a SidebarProvider')
+    throw new SidebarContextError()
   }
   return context
 }

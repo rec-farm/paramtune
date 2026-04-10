@@ -14,6 +14,7 @@ import {
   getSchema,
   saveSchema,
   getSchemaHistoryWithTimestamps,
+  InvalidContentError,
   type Author,
 } from '@/models/Schema'
 
@@ -54,7 +55,7 @@ export default async function Page({
         unknown
       >
     } catch {
-      throw new Error('Invalid JSON content')
+      throw new InvalidContentError()
     }
 
     // Build author from captured user context

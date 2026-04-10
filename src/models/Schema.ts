@@ -3,7 +3,7 @@ import semver from 'semver'
 
 import redis from '@/connections/redis'
 import { redisCall } from '@/lib/effectRedis'
-import { getPlatforms } from './Platform'
+import { getPlatforms, MissingPlatformError } from './Platform'
 import type { Platform } from './Platform'
 import { diffSchemas, type DiffResult } from '@/lib/schemaDiff'
 
@@ -29,16 +29,6 @@ export function clearPlatformsCache() {
   cachedPlatformsTime = 0
 }
 // ── Error types ──────────────────────────────────────────────────────────────
-
-export class MissingPlatformError extends Data.TaggedError(
-  'MissingPlatformError'
-)<{
-  readonly platform: string
-}> {
-  get message() {
-    return `Missing platform (${this.platform})`
-  }
-}
 
 export class VersionNotFoundError extends Data.TaggedError(
   'VersionNotFoundError'

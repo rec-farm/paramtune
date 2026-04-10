@@ -13,6 +13,24 @@ export class EmptyPlatformIdError extends Data.TaggedError(
   }
 }
 
+export class EmptyPlatformNameError extends Data.TaggedError(
+  'EmptyPlatformNameError'
+)<{}> {
+  get message() {
+    return 'Platform name is required'
+  }
+}
+
+export class MissingPlatformError extends Data.TaggedError(
+  'MissingPlatformError'
+)<{
+  readonly platform: string
+}> {
+  get message() {
+    return `Platform "${this.platform}" not found`
+  }
+}
+
 // ── Types ────────────────────────────────────────────────────────────────────
 
 export type Platform = {

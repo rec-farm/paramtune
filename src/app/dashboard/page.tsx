@@ -1,7 +1,12 @@
 import Badge from '@/components/ui/Badge'
 import Card from '@/components/ui/Card'
 import CreatePlatformForm from '@/components/CreatePlatformForm'
-import { getPlatforms, savePlatform, type Platform } from '@/models/Platform'
+import {
+  getPlatforms,
+  savePlatform,
+  EmptyPlatformNameError,
+  type Platform,
+} from '@/models/Platform'
 import { revalidatePath } from 'next/cache'
 import Link from 'next/link'
 
@@ -16,7 +21,7 @@ export default async function Page() {
     const platformName = formData.get('platformName') as string
 
     if (!platformName || platformName.trim() === '') {
-      throw new Error('Platform name is required')
+      throw new EmptyPlatformNameError()
     }
 
     try {

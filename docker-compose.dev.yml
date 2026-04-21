@@ -26,6 +26,11 @@ services:
       - NODE_ENV=development
       - CORS_ORIGIN=http://localhost:3000
       - REDIS_URL=redis://redis:6379/2
+      - BETTER_AUTH_SECRET=development-only-secret
+      - BETTER_AUTH_URL=http://localhost:3000
+      - DEV_USER_EMAIL=dev@paramtune.local
+      - DEV_USER_PASSWORD=dev-password-123
+      - DEV_USER_NAME=Dev User
     depends_on:
       redis:
         condition: service_healthy

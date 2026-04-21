@@ -1,3 +1,5 @@
+# Paramtune
+
 Paramtune is a Next.js application for managing platform schemas and versioned feature configuration with dependency resolution and Redis persistence.
 
 ## Overview
@@ -58,6 +60,9 @@ In development, email/password login is enabled with credentials configured in `
 - `CORS_ORIGIN` – Allowed origin for cross-origin API requests
 - `REDIS_URL` – Full Redis connection URL (preferred)
 - `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD`, `REDIS_DB` – Individual Redis settings when URL is not provided
+- `BETTER_AUTH_SECRET` – Secret used by better-auth for signing. Generate with `openssl rand -base64 32`
+- `BETTER_AUTH_URL` – Public base URL for auth callbacks, e.g. `https://paramtune.example.com`
+- `BETTER_AUTH_BASE_URL` – Optional alias supported for deployments that use the Better Auth base URL name
 - `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` – Google OAuth credentials (production)
 - `DEV_USER_EMAIL`, `DEV_USER_PASSWORD`, `DEV_USER_NAME` – Development login credentials
 
@@ -109,6 +114,9 @@ In development, email/password login is enabled with credentials configured in `
 docker-compose -f docker-compose.dev.yml up --build
 
 # Production
+export REDIS_PASSWORD="$(openssl rand -base64 24)"
+export BETTER_AUTH_SECRET="$(openssl rand -base64 32)"
+export BETTER_AUTH_URL="http://localhost:3000"
 docker-compose up --build -d
 ```
 
@@ -134,8 +142,22 @@ docker-compose up --build -d
 
 ## Contributing
 
-1. Follow existing code style and conventions
-2. Run `pnpm lint` and `pnpm typecheck` before committing
-3. Run `pnpm test` to verify changes
-4. Use `@/*` path aliases for imports from `src/`
-5. Mark client components with `'use client'` directive
+See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, coding conventions, and pull request expectations.
+
+Before opening a pull request, run:
+
+```bash
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm build
+pnpm audit --audit-level moderate
+```
+
+## Security
+
+Please report vulnerabilities privately using the guidance in [SECURITY.md](SECURITY.md).
+
+## License
+
+Paramtune is released under the [MIT License](LICENSE).

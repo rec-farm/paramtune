@@ -36,6 +36,11 @@ For production deployment:
 git clone <repository-url>
 cd paramtune
 
+# Configure required production secrets
+export REDIS_PASSWORD="$(openssl rand -base64 24)"
+export BETTER_AUTH_SECRET="$(openssl rand -base64 32)"
+export BETTER_AUTH_URL="http://localhost:3000"
+
 # Start production environment
 docker-compose up --build -d
 ```
@@ -56,6 +61,10 @@ The application uses the following environment variables:
 - `REDIS_PORT`: Redis port (default: 6379)
 - `REDIS_PASSWORD`: Redis password (optional)
 - `REDIS_DB`: Redis database number (default: 2)
+- `BETTER_AUTH_SECRET`: Secret used by better-auth for signing sessions
+- `BETTER_AUTH_URL`: Public base URL for auth callbacks
+- `GOOGLE_CLIENT_ID`: Google OAuth client ID
+- `GOOGLE_CLIENT_SECRET`: Google OAuth client secret
 
 ## Docker Compose Files
 
@@ -89,6 +98,8 @@ docker run -d --name redis -p 6379:6379 redis:7-alpine
 docker run -d --name paramtune -p 3000:3000 \
   -e REDIS_URL=redis://host.docker.internal:6379/2 \
   -e CORS_ORIGIN=http://localhost:3000 \
+  -e BETTER_AUTH_SECRET="$(openssl rand -base64 32)" \
+  -e BETTER_AUTH_URL=http://localhost:3000 \
   paramtune
 ```
 
@@ -170,6 +181,10 @@ services:
       - NODE_ENV=production
       - CORS_ORIGIN=https://yourdomain.com
       - REDIS_URL=redis://redis:6379/2
+      - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
+      - BETTER_AUTH_URL=https://yourdomain.com
+      - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
     depends_on:
       redis:
         condition: service_healthy

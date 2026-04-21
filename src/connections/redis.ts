@@ -6,7 +6,10 @@ function createRedisClient(): RedisClient {
   const url = process.env.REDIS_URL
 
   if (url) {
-    return new Redis(url)
+    return new Redis(url, {
+      lazyConnect: true,
+      maxRetriesPerRequest: 1,
+    })
   }
 
   const host = process.env.REDIS_HOST || '127.0.0.1'
@@ -19,6 +22,8 @@ function createRedisClient(): RedisClient {
     port,
     password,
     db,
+    lazyConnect: true,
+    maxRetriesPerRequest: 1,
   })
 }
 
@@ -31,5 +36,15 @@ const redis: RedisClient = global.__paramtune_redis__ ?? createRedisClient()
 if (process.env.NODE_ENV !== 'production') {
   global.__paramtune_redis__ = redis
 }
+
+let redisWarningLogged = false
+redis.on('error', (error) => {
+  if (redisWarningLogged || process.env.NODE_ENV === 'test') {
+    return
+  }
+
+  redisWarningLogged = true
+  console.error(`Redis connection error: ${error.message}`)
+})
 
 export default redis

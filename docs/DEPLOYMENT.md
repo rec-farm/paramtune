@@ -12,6 +12,9 @@
 5. Environment Variables:
    - `CORS_ORIGIN` = your production domain (e.g. https://paramtune.example.com)
    - `REDIS_URL` or host/port/password/db variables
+   - `BETTER_AUTH_SECRET` = a strong random secret (generate with `openssl rand -base64 32`)
+   - `BETTER_AUTH_URL` = your production domain (e.g. https://paramtune.example.com)
+   - `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` = Google OAuth credentials
 6. Click Deploy. Subsequent pushes to `main` will auto-deploy.
 
 ## Project Settings

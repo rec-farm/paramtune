@@ -195,7 +195,7 @@ describe('validateSchemaContent', () => {
       '@extends': 'nonexistent/1.0.0',
     })
     expect(result.valid).toBe(false)
-    expect(result.errors[0]).toContain('Missing platform')
+    expect(result.errors[0]).toContain('Platform "nonexistent" not found')
   })
 })
 

@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { ChevronDown, LogOut } from 'lucide-react'
 import { signOut, useSession } from '@/lib/auth-client'
 import { useState, useRef, useEffect } from 'react'
@@ -37,9 +38,12 @@ export default function UserMenu() {
       >
         {/* Avatar */}
         {user.image ? (
-          <img
+          <Image
             src={user.image}
             alt=""
+            width={28}
+            height={28}
+            unoptimized
             className="h-7 w-7 rounded-full border border-primary/20"
           />
         ) : (

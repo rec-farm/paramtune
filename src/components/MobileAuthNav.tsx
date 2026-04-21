@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { LogOut } from 'lucide-react'
 import { signOut, useSession } from '@/lib/auth-client'
 
@@ -21,9 +22,12 @@ export default function MobileAuthNav() {
     <div className="flex items-center gap-2">
       {/* Avatar */}
       {user.image ? (
-        <img
+        <Image
           src={user.image}
           alt=""
+          width={32}
+          height={32}
+          unoptimized
           className="h-8 w-8 rounded-full border border-primary/20"
         />
       ) : (

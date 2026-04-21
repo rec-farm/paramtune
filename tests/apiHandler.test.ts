@@ -23,16 +23,14 @@ vi.mock('next/server', () => {
 })
 
 describe('apiHandler', () => {
-  let originalEnv: string | undefined
   let consoleErrorSpy: ReturnType<typeof vi.spyOn>
 
   beforeEach(() => {
-    originalEnv = process.env.NODE_ENV
     consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
   })
 
   afterEach(() => {
-    process.env.NODE_ENV = originalEnv
+    vi.unstubAllEnvs()
     consoleErrorSpy.mockRestore()
   })
 
@@ -47,7 +45,7 @@ describe('apiHandler', () => {
     })
 
     it('handles fail(Error) in development', async () => {
-      process.env.NODE_ENV = 'development'
+      vi.stubEnv('NODE_ENV', 'development')
       const effect = Effect.fail(new Error('Dev error message'))
       const response = await handleApi(effect) as any
 
@@ -57,7 +55,7 @@ describe('apiHandler', () => {
     })
 
     it('handles fail(Error) in production', async () => {
-      process.env.NODE_ENV = 'production'
+      vi.stubEnv('NODE_ENV', 'production')
       const effect = Effect.fail(new Error('Secret error message'))
       const response = await handleApi(effect) as any
 
@@ -67,7 +65,7 @@ describe('apiHandler', () => {
     })
 
     it('handles fail(string) in development', async () => {
-      process.env.NODE_ENV = 'development'
+      vi.stubEnv('NODE_ENV', 'development')
       const effect = Effect.fail('String error')
       const response = await handleApi(effect) as any
 
@@ -77,7 +75,7 @@ describe('apiHandler', () => {
     })
 
     it('handles die(Error) in development', async () => {
-      process.env.NODE_ENV = 'development'
+      vi.stubEnv('NODE_ENV', 'development')
       const effect = Effect.die(new Error('Unexpected defect'))
       const response = await handleApi(effect) as any
 
@@ -87,7 +85,7 @@ describe('apiHandler', () => {
     })
 
     it('handles die(Error) in production', async () => {
-      process.env.NODE_ENV = 'production'
+      vi.stubEnv('NODE_ENV', 'production')
       const effect = Effect.die(new Error('Unexpected defect'))
       const response = await handleApi(effect) as any
 
@@ -131,7 +129,7 @@ describe('apiHandler', () => {
     })
 
     it('handles unexpected string failure in development', async () => {
-      process.env.NODE_ENV = 'development'
+      vi.stubEnv('NODE_ENV', 'development')
       const effect = Effect.fail('Unexpected string failure' as any)
       const response = await handleApiWithFailures(effect) as any
 
@@ -140,7 +138,7 @@ describe('apiHandler', () => {
     })
 
     it('handles unexpected string failure in production', async () => {
-      process.env.NODE_ENV = 'production'
+      vi.stubEnv('NODE_ENV', 'production')
       const effect = Effect.fail('Unexpected string failure' as any)
       const response = await handleApiWithFailures(effect) as any
 
@@ -149,7 +147,7 @@ describe('apiHandler', () => {
     })
 
     it('handles die(Error) in development', async () => {
-      process.env.NODE_ENV = 'development'
+      vi.stubEnv('NODE_ENV', 'development')
       const effect = Effect.die(new Error('Fatal error'))
       const response = await handleApiWithFailures(effect) as any
 
@@ -159,7 +157,7 @@ describe('apiHandler', () => {
     })
 
     it('handles die(Error) in production', async () => {
-      process.env.NODE_ENV = 'production'
+      vi.stubEnv('NODE_ENV', 'production')
       const effect = Effect.die(new Error('Fatal error'))
       const response = await handleApiWithFailures(effect) as any
 

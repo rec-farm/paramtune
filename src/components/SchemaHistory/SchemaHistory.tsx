@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
+import Image from 'next/image'
 import { formatDistanceToNow } from 'date-fns'
 import Card from '@/components/ui/Card'
 import Badge from '@/components/ui/Badge'
@@ -135,9 +136,12 @@ export default function SchemaHistory({
                       {entry.author ? (
                         <div className="flex items-center gap-1.5">
                           {entry.author.image ? (
-                            <img
+                            <Image
                               src={entry.author.image}
                               alt=""
+                              width={16}
+                              height={16}
+                              unoptimized
                               className="h-4 w-4 rounded-full"
                             />
                           ) : (
@@ -196,9 +200,12 @@ export default function SchemaHistory({
                   {selectedEntry.author ? (
                     <div className="flex items-center gap-1.5">
                       {selectedEntry.author.image ? (
-                        <img
+                        <Image
                           src={selectedEntry.author.image}
                           alt=""
+                          width={20}
+                          height={20}
+                          unoptimized
                           className="h-5 w-5 rounded-full"
                         />
                       ) : (

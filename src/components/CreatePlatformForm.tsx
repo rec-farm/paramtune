@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useMemo, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Button from '@/components/ui/Button'
 import { Loader2 } from 'lucide-react'
@@ -21,10 +21,6 @@ export default function CreatePlatformForm({ action }: Props) {
   const isValid = useMemo(() => {
     return name.trim().length >= 2
   }, [name])
-
-  useEffect(() => {
-    setMessage(null)
-  }, [name, setMessage])
 
   const onSubmit = useCallback(
     async (e: React.FormEvent<HTMLFormElement>) => {
@@ -79,7 +75,10 @@ export default function CreatePlatformForm({ action }: Props) {
           placeholder="Enter platform name (e.g., iOS, Android, Web)"
           className="max-w-md"
           value={name}
-          onChange={(e) => setName(e.target.value)}
+          onChange={(e) => {
+            setName(e.target.value)
+            setMessage(null)
+          }}
           onBlur={() => setTouched(true)}
           required
           aria-required="true"

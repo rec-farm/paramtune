@@ -1,6 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 
 vi.mock('@/connections/redis', () => {
+  const zrevrangebyscore = vi.fn()
+
   return {
     default: {
       get: vi.fn(),
@@ -8,11 +10,32 @@ vi.mock('@/connections/redis', () => {
       del: vi.fn(),
       scan: vi.fn(),
       smembers: vi.fn(),
-      zrevrangebyscore: vi.fn(),
+      zrevrangebyscore,
       zadd: vi.fn(),
       sadd: vi.fn(),
-      mget: vi.fn()
-    }
+      mget: vi.fn(),
+      pipeline: vi.fn(() => {
+        const commands: unknown[][] = []
+
+        return {
+          zrevrangebyscore(...args: unknown[]) {
+            commands.push(args)
+            return this
+          },
+          exec: async () =>
+            Promise.all(
+              commands.map(async (args) => {
+                try {
+                  const result = await zrevrangebyscore(...args)
+                  return [null, result]
+                } catch (error) {
+                  return [error, null]
+                }
+              })
+            ),
+        }
+      }),
+    },
   }
 })
 
@@ -26,21 +49,24 @@ beforeEach(() => {
 
   const mockRedis = redis as any
   mockRedis.scan.mockImplementation(async () => {
-    return ['0', [
-      'platforms:platform1',
-      'platforms:platform2',
-      'platforms:platform3',
-      'platforms:platform4',
-      'platforms:platform5'
-    ]]
-  });
+    return [
+      '0',
+      [
+        'platforms:platform1',
+        'platforms:platform2',
+        'platforms:platform3',
+        'platforms:platform4',
+        'platforms:platform5',
+      ],
+    ]
+  })
 
   mockRedis.mget.mockImplementation(async (keys: string[]) => {
     return keys.map((key) => {
       const name = key.split(':')[1]
       return JSON.stringify({ name, versions: ['1.0.0'] })
     })
-  });
+  })
 
   mockRedis.zrevrangebyscore.mockImplementation(async (key: string) => {
     const name = key.split(':')[1]
@@ -56,7 +82,7 @@ describe('validateSchemaContent Performance', () => {
       'platform2/1.0.0',
       'platform3/1.0.0',
       'platform4/1.0.0',
-      'platform5/1.0.0'
+      'platform5/1.0.0',
     ]
 
     const content: Record<string, unknown> = {}
@@ -68,28 +94,26 @@ describe('validateSchemaContent Performance', () => {
     const mockRedis = redis as any
     mockRedis.scan.mockImplementation(async () => {
       await delay(50)
-      return ['0', [
-        'platforms:platform1',
-        'platforms:platform2',
-        'platforms:platform3',
-        'platforms:platform4',
-        'platforms:platform5'
-      ]]
+      return [
+        '0',
+        [
+          'platforms:platform1',
+          'platforms:platform2',
+          'platforms:platform3',
+          'platforms:platform4',
+          'platforms:platform5',
+        ],
+      ]
     })
 
-    // Add delays for other redis operations if any
     const originalZrevrange = mockRedis.zrevrangebyscore.getMockImplementation()
     mockRedis.zrevrangebyscore.mockImplementation(async (key: string) => {
-        await delay(50)
-        return originalZrevrange(key)
+      await delay(50)
+      return originalZrevrange(key)
     })
 
-    const start = performance.now()
     const result = await validateSchemaContent(content)
-    const end = performance.now()
 
-    console.log(`Execution time: ${end - start} ms`)
-    console.log('Valid:', result.valid, 'Errors:', result.errors)
     expect(result.valid).toBe(true)
   })
 })

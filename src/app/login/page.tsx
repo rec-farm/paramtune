@@ -1,6 +1,7 @@
 'use client'
 
 import { Suspense, useState } from 'react'
+import Image from 'next/image'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { signIn, signOut, useSession } from '@/lib/auth-client'
 
@@ -88,9 +89,12 @@ function LoginContent() {
             {/* User info */}
             <div className="text-center py-6 border-y border-primary/20">
               {session.user.image && (
-                <img
+                <Image
                   src={session.user.image}
                   alt="Profile"
+                  width={64}
+                  height={64}
+                  unoptimized
                   className="w-16 h-16 mx-auto mb-4 border-2 border-primary/30"
                 />
               )}

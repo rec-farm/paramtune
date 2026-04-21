@@ -84,7 +84,7 @@ export default function Home() {
               </div>
               <div className="flex items-center gap-4 self-end">
                 <Link
-                  href="https://github.com"
+                  href="https://github.com/RodrigoEspinosa/paramtune"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="border-2 border-primary/50 text-primary px-10 py-5 font-display font-bold text-sm tracking-widest hover:bg-primary hover:text-black transition-all"

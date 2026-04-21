@@ -1,0 +1,37 @@
+name: Bug Report
+description: Report a reproducible problem in Paramtune.
+title: "bug: "
+labels:
+  - bug
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What happened?
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to Reproduce
+      description: List the smallest set of steps that reproduces the issue.
+      placeholder: |
+        1. Start the app with ...
+        2. Visit ...
+        3. Click ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected Behavior
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: OS, Node.js version, pnpm version, deployment target, and browser if relevant.
+    validations:
+      required: true

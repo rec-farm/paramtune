@@ -47,6 +47,7 @@ docker-compose up --build -d
 
 This will:
 - Start a Redis instance with persistent data storage
+- Mount a persistent SQLite volume for authentication data
 - Build and run the optimized Next.js application
 - Run in detached mode (`-d` flag)
 
@@ -63,6 +64,7 @@ The application uses the following environment variables:
 - `REDIS_DB`: Redis database number (default: 2)
 - `BETTER_AUTH_SECRET`: Secret used by better-auth for signing sessions
 - `BETTER_AUTH_URL`: Public base URL for auth callbacks
+- `AUTH_DB_PATH`: SQLite database path for auth data (default: `/app/data/auth.db` in Docker)
 - `GOOGLE_CLIENT_ID`: Google OAuth client ID
 - `GOOGLE_CLIENT_SECRET`: Google OAuth client secret
 
@@ -72,7 +74,7 @@ The application uses the following environment variables:
 - Uses optimized multi-stage Dockerfile
 - Runs production build of Next.js
 - Includes health checks
-- Persistent Redis data storage
+- Persistent Redis and auth database storage
 
 ### `docker-compose.dev.yml` (Development)
 - Uses development Dockerfile
@@ -95,9 +97,12 @@ docker build -t paramtune .
 docker run -d --name redis -p 6379:6379 redis:7-alpine
 
 # Run ParamTune
+docker volume create paramtune_auth_data
 docker run -d --name paramtune -p 3000:3000 \
+  -v paramtune_auth_data:/app/data \
   -e REDIS_URL=redis://host.docker.internal:6379/2 \
   -e CORS_ORIGIN=http://localhost:3000 \
+  -e AUTH_DB_PATH=/app/data/auth.db \
   -e BETTER_AUTH_SECRET="$(openssl rand -base64 32)" \
   -e BETTER_AUTH_URL=http://localhost:3000 \
   paramtune
@@ -105,7 +110,8 @@ docker run -d --name paramtune -p 3000:3000 \
 
 ## Volumes
 
-- `redis_data`: Persistent storage for Redis data (production only)
+- `redis_data`: Persistent storage for Redis data
+- `auth_data`: Persistent storage for SQLite authentication data
 
 ## Ports
 
@@ -149,13 +155,11 @@ docker system prune -f
 2. **Resource Limits**: Consider adding resource limits to docker-compose
 3. **SSL/TLS**: Configure reverse proxy (nginx/traefik) for HTTPS
 4. **Monitoring**: Add health checks and monitoring
-5. **Backups**: Implement Redis data backup strategy
+5. **Backups**: Implement Redis and auth database backup strategy
 
 ## Example Production docker-compose with Resource Limits
 
 ```yaml
-version: '3.8'
-
 services:
   redis:
     image: redis:7-alpine
@@ -181,10 +185,13 @@ services:
       - NODE_ENV=production
       - CORS_ORIGIN=https://yourdomain.com
       - REDIS_URL=redis://redis:6379/2
+      - AUTH_DB_PATH=/app/data/auth.db
       - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET}
       - BETTER_AUTH_URL=https://yourdomain.com
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+    volumes:
+      - auth_data:/app/data
     depends_on:
       redis:
         condition: service_healthy
@@ -198,4 +205,5 @@ services:
 
 volumes:
   redis_data:
+  auth_data:
 ```

@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # Redis service for caching and data storage
   redis:
@@ -26,10 +24,13 @@ services:
       - NODE_ENV=production
       - CORS_ORIGIN=http://localhost:3000
       - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379/2
+      - AUTH_DB_PATH=/app/data/auth.db
       - BETTER_AUTH_SECRET=${BETTER_AUTH_SECRET:?BETTER_AUTH_SECRET must be set}
       - BETTER_AUTH_URL=${BETTER_AUTH_URL:-http://localhost:3000}
       - GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID:-}
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET:-}
+    volumes:
+      - auth_data:/app/data
     depends_on:
       redis:
         condition: service_healthy
@@ -37,3 +38,4 @@ services:
 
 volumes:
   redis_data:
+  auth_data:

@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # Redis service for development
   redis:
@@ -26,6 +24,7 @@ services:
       - NODE_ENV=development
       - CORS_ORIGIN=http://localhost:3000
       - REDIS_URL=redis://redis:6379/2
+      - AUTH_DB_PATH=/app/data/auth.db
       - BETTER_AUTH_SECRET=development-only-secret
       - BETTER_AUTH_URL=http://localhost:3000
       - DEV_USER_EMAIL=dev@paramtune.local
@@ -38,8 +37,10 @@ services:
       - .:/app
       - /app/node_modules
       - /app/.next
+      - auth_data:/app/data
     restart: unless-stopped
-    command: pnpm dev
+    command: pnpm dev -- --hostname 0.0.0.0
 
 volumes:
   redis_data:
+  auth_data:

@@ -34,6 +34,9 @@ Thumbs.db
 # Logs
 *.log
 
+# Local auth database
+data/*.db
+
 # Testing
 coverage
 .nyc_output

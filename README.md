@@ -35,7 +35,13 @@ cp .env.local.example .env.local
 pnpm install
 ```
 
-3) Start development server
+3) Start Redis
+
+```bash
+docker-compose -f docker-compose.dev.yml up redis
+```
+
+4) Start development server
 
 ```bash
 pnpm dev
@@ -46,6 +52,7 @@ In development, email/password login is enabled with credentials configured in `
 ## Development Commands
 
 - `pnpm dev` – start development server with hot reload
+- `pnpm dev:portless` – start development server through a globally installed `portless`
 - `pnpm build` – production build
 - `pnpm start` – run production server locally
 - `pnpm lint` – lint with ESLint
@@ -63,6 +70,7 @@ In development, email/password login is enabled with credentials configured in `
 - `BETTER_AUTH_SECRET` – Secret used by better-auth for signing. Generate with `openssl rand -base64 32`
 - `BETTER_AUTH_URL` – Public base URL for auth callbacks, e.g. `https://paramtune.example.com`
 - `BETTER_AUTH_BASE_URL` – Optional alias supported for deployments that use the Better Auth base URL name
+- `AUTH_DB_PATH` – SQLite database path for auth data. Defaults to `./data/auth.db`
 - `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` – Google OAuth credentials (production)
 - `DEV_USER_EMAIL`, `DEV_USER_PASSWORD`, `DEV_USER_NAME` – Development login credentials
 
@@ -100,14 +108,7 @@ In development, email/password login is enabled with credentials configured in `
 
 ## Deployment
 
-### Vercel (Recommended)
-
-1) Push to GitHub/GitLab repository
-2) Import project in Vercel (Next.js framework)
-3) Configure environment variables in Vercel dashboard
-4) Deploy – automatic on pushes to main branch
-
-### Docker
+### Docker (Recommended for self-hosting)
 
 ```bash
 # Development
@@ -119,6 +120,10 @@ export BETTER_AUTH_SECRET="$(openssl rand -base64 32)"
 export BETTER_AUTH_URL="http://localhost:3000"
 docker-compose up --build -d
 ```
+
+### Vercel
+
+Vercel works for previews and deployments that replace the local SQLite auth database with a persistent auth store. The default `better-sqlite3` auth database is file-based and should be deployed on infrastructure with a writable persistent volume.
 
 ## Architecture
 

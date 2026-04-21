@@ -13,12 +13,13 @@
   },
   "homepage": "https://github.com/RodrigoEspinosa/paramtune#readme",
   "scripts": {
-    "dev": "portless paramtune next dev",
+    "dev": "next dev",
+    "dev:portless": "portless paramtune next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "analyze": "ANALYZE=true next build",
+    "analyze": "ANALYZE=true next build --webpack",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage"
@@ -41,6 +42,7 @@
     "tailwindcss-animate": "^1.0.7"
   },
   "devDependencies": {
+    "@next/bundle-analyzer": "^16.2.4",
     "@tailwindcss/postcss": "^4.1.17",
     "@types/better-sqlite3": "^7.6.13",
     "@types/node": "^24.10.1",

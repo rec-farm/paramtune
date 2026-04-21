@@ -37,9 +37,9 @@ RUN adduser --system --uid 1001 nextjs
 
 COPY --from=builder /app/public ./public
 
-# Set the correct permission for prerender cache
-RUN mkdir .next
-RUN chown nextjs:nodejs .next
+# Set the correct permissions for prerender cache and SQLite auth storage
+RUN mkdir -p .next data
+RUN chown nextjs:nodejs .next data
 
 # Automatically leverage output traces to reduce image size
 # https://nextjs.org/docs/advanced-features/output-file-tracing
@@ -51,6 +51,7 @@ USER nextjs
 EXPOSE 3000
 
 ENV PORT=3000
+ENV AUTH_DB_PATH=/app/data/auth.db
 # set hostname to localhost
 ENV HOSTNAME="0.0.0.0"
 

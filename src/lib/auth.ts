@@ -2,8 +2,12 @@ import { betterAuth } from 'better-auth'
 import { nextCookies } from 'better-auth/next-js'
 import Database from 'better-sqlite3'
 import { createHash } from 'crypto'
+import { mkdirSync } from 'fs'
+import { dirname } from 'path'
 
-const db = new Database('./data/auth.db')
+const authDbPath = process.env.AUTH_DB_PATH || './data/auth.db'
+mkdirSync(dirname(authDbPath), { recursive: true })
+const db = new Database(authDbPath)
 
 const isDev = process.env.NODE_ENV === 'development'
 const isTest = process.env.NODE_ENV === 'test'

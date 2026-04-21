@@ -18,6 +18,12 @@
 # misc
 .DS_Store
 *.pem
+.claude/
+.planning/
+.playwright-mcp/
+.pnpm-store/
+.sisyphus/
+bun.lock
 
 # debug
 npm-debug.log*

@@ -2,7 +2,6 @@ import { Effect } from 'effect'
 
 import { getPlatform, savePlatform } from '@/models/Platform'
 import { handleApiWithFailures, failWith, validateName, requireSession } from '@/lib/apiHandler'
-import { auth } from '@/lib/auth'
 import { logAudit } from '@/lib/auditLog'
 
 export const dynamic = 'force-dynamic'
@@ -35,7 +34,7 @@ export function POST(
 ) {
   return handleApiWithFailures(
     Effect.gen(function* () {
-      yield* requireSession(request)
+      const session = yield* requireSession(request)
       const { platform } = yield* Effect.promise(() => params)
       const platformName = decodeURIComponent(platform)
       const body = yield* Effect.tryPromise({
@@ -51,15 +50,12 @@ export function POST(
         savePlatform(platformName, body as Record<string, unknown>)
       )
 
-      const session = yield* Effect.promise(() =>
-        auth.api.getSession({ headers: request.headers })
-      )
       yield* Effect.promise(() =>
         logAudit({
           action: 'update',
           platform: platformName,
-          userEmail: session?.user?.email || 'unknown',
-          userId: session?.user?.id || 'unknown',
+          userEmail: session.user?.email || 'unknown',
+          userId: session.user?.id || 'unknown',
         })
       )
 

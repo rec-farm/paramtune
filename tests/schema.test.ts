@@ -1,54 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-const mockRedis = vi.hoisted(() => {
-  const zrevrangebyscore = vi.fn()
-  const zadd = vi.fn()
-  const sadd = vi.fn()
-  const smembers = vi.fn()
-  const scan = vi.fn()
-
-
-
-  const pipeline = vi.fn(function() {
-    const pipelineCommands: { command: string; args: any[] }[] = []
-    return {
-
-    zrevrangebyscore: function(...args: any[]) {
-      pipelineCommands.push({ command: 'zrevrangebyscore', args })
-      return this
-    },
-    exec: async function() {
-      const results = await Promise.all(
-        pipelineCommands.map(async (cmd) => {
-          if (cmd.command === 'zrevrangebyscore') {
-            try {
-              const res = await zrevrangebyscore(...cmd.args)
-              return [null, res]
-            } catch (err) {
-              return [err, null]
-            }
-          }
-          return [new Error('Command not mocked in pipeline'), null]
-        })
-      )
-      pipelineCommands.length = 0
-      return results
-    },
-  }})
-
-  return {
-    zrevrangebyscore,
-    zadd,
-    sadd,
-    smembers,
-    scan,
-    pipeline,
-  }
-})
-
-vi.mock('@/connections/redis', () => ({
-  default: mockRedis,
-}))
+vi.mock('@/connections/redis')
+import mockRedis from '@/connections/__mocks__/redis'
 
 import { clearPlatformsCache,
   compareSchemas,

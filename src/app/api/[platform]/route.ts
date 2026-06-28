@@ -38,6 +38,7 @@ export function POST(
       yield* requireSession(request)
       const { platform } = yield* Effect.promise(() => params)
       const platformName = decodeURIComponent(platform)
+      yield* validateName(platformName, 'platform name')
       const body = yield* Effect.tryPromise({
         try: () => request.json(),
         catch: () => 'parse-error' as const,

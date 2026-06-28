@@ -303,7 +303,7 @@ const saveSchemaEffect = (
       platforms ?? (yield* Effect.promise(() => getCachedPlatforms()))
 
     const dependencies = findDependenciesInContent(content)
-    yield* resolveDependenciesEffect(dependencies, resolvedPlatforms)
+    const resolved = yield* resolveDependenciesEffect(dependencies, resolvedPlatforms)
 
     const output = (yield* processNodeWithExtendsEffect(
       content,
@@ -319,10 +319,6 @@ const saveSchemaEffect = (
       )
     )
 
-    const resolved = yield* resolveDependenciesEffect(
-      dependencies,
-      resolvedPlatforms
-    )
     const selfId = `${platform}/${version}`
 
     for (const dep of resolved) {

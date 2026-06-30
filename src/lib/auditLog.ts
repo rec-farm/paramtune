@@ -20,8 +20,11 @@ export async function logAudit(entry: Omit<AuditEntry, 'timestamp'>) {
     timestamp: new Date().toISOString(),
   }
 
-  await redis.lpush(AUDIT_LOG_KEY, JSON.stringify(auditEntry))
-  await redis.ltrim(AUDIT_LOG_KEY, 0, MAX_AUDIT_ENTRIES - 1)
+  await redis
+    .pipeline()
+    .lpush(AUDIT_LOG_KEY, JSON.stringify(auditEntry))
+    .ltrim(AUDIT_LOG_KEY, 0, MAX_AUDIT_ENTRIES - 1)
+    .exec()
 }
 
 export async function getAuditLog(limit = 50): Promise<AuditEntry[]> {

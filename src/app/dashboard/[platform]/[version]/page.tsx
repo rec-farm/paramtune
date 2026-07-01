@@ -103,7 +103,7 @@ export default async function Page({
           <span className="w-1 h-1 bg-primary/40 rounded-full" />
           <span>{history.length} {history.length === 1 ? 'version' : 'versions'}</span>
           <span className="w-1 h-1 bg-primary/40 rounded-full" />
-          <span>{(schema as any)?.dependencies?.length ?? 0} {(schema as any)?.dependencies?.length === 1 ? 'dep' : 'deps'}</span>
+          <span>{schema?.dependencies?.length ?? 0} {schema?.dependencies?.length === 1 ? 'dep' : 'deps'}</span>
           <span className="w-1 h-1 bg-primary/40 rounded-full" />
           <span>{history[0]?.timestamp
             ? new Date(history[0].timestamp).toLocaleDateString()
@@ -117,8 +117,8 @@ export default async function Page({
             defaultValue={JSON.stringify(schema?.content || {}, null, 2)}
             updateSchema={updateSchema}
             restoreVersion={restoreVersion}
-            history={history as any}
-            currentSchema={schema as any}
+            history={history}
+            currentSchema={schema}
           />
         </div>
       </Suspense>

@@ -1,6 +1,6 @@
 import { Effect } from 'effect'
 
-import { getVersion, getVersions } from '@/models/Version'
+import { getVersion } from '@/models/Version'
 import { handleApiWithFailures, failWith, validateName, requireSession } from '@/lib/apiHandler'
 
 export const dynamic = 'force-dynamic'
@@ -17,11 +17,6 @@ export function GET(
       const platformName = decodeURIComponent(platform)
       const versionName = decodeURIComponent(version)
       yield* validateName(platformName, 'platform name')
-
-      if (version === 'versions') {
-        return yield* Effect.promise(() => getVersions(platformName))
-      }
-
       yield* validateName(versionName, 'version name')
       const data = yield* Effect.promise(() =>
         getVersion(platformName, versionName)

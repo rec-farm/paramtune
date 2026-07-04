@@ -6,6 +6,7 @@ import { redisCall } from '@/lib/effectRedis'
 import { getPlatforms, MissingPlatformError } from './Platform'
 import type { Platform } from './Platform'
 import { diffSchemas, type DiffResult } from '@/lib/schemaDiff'
+import { sortVersionsDescending } from '@/lib/versionUtils'
 
 
 let cachedPlatforms: Platform[] | null = null
@@ -157,7 +158,7 @@ const resolveDependenciesEffect = (
       requested: string
     ): string | null {
       if (requested === 'latest') {
-        const sorted = [...(platform.versions || [])].sort(semver.rcompare)
+        const sorted = sortVersionsDescending(platform.versions || [])
         return sorted[0] ?? null
       }
       if (/[~^*><=|]/.test(requested)) {

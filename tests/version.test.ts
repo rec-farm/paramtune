@@ -62,11 +62,11 @@ describe('getVersion', () => {
     )
   })
 
-  it('returns empty content when version does not exist', async () => {
+  it('returns null when version does not exist', async () => {
     mockRedis.zrevrangebyscore.mockResolvedValue([])
 
     const result = await getVersion('ios', '99.0.0')
-    expect(result).toEqual({ content: '' })
+    expect(result).toBeNull()
   })
 })
 

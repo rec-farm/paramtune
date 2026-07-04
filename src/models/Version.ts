@@ -22,7 +22,7 @@ const getVersionsEffect = (
 const getVersionEffect = (
   platform: string,
   id: string
-): Effect.Effect<Version | { content: string }> =>
+): Effect.Effect<Version | null> =>
   redisCall(() =>
     redis.zrevrangebyscore(
       `schemas:${platform}:${id}`,
@@ -33,9 +33,7 @@ const getVersionEffect = (
       1
     )
   ).pipe(
-    Effect.map(([version]) =>
-      version ? (JSON.parse(version) as Version) : { content: '' }
-    )
+    Effect.map(([version]) => (version ? (JSON.parse(version) as Version) : null))
   )
 
 const saveVersionEffect = (
@@ -58,7 +56,10 @@ export async function getVersions(platformId: string) {
   return Effect.runPromise(getVersionsEffect(platformId))
 }
 
-export async function getVersion(platform: string, id: string) {
+export async function getVersion(
+  platform: string,
+  id: string
+): Promise<Version | null> {
   'use server'
   return Effect.runPromise(getVersionEffect(platform, id))
 }

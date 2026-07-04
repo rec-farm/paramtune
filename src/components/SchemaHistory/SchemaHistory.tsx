@@ -11,13 +11,11 @@ import type { SchemaHistoryEntry } from '@/models/Schema'
 
 interface SchemaHistoryProps {
   history: Array<SchemaHistoryEntry & { timestamp: number }>
-  currentSchema?: SchemaHistoryEntry
   onRestore?: (content: Record<string, unknown>) => Promise<void>
 }
 
 export default function SchemaHistory({
   history,
-  currentSchema,
   onRestore,
 }: SchemaHistoryProps) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)

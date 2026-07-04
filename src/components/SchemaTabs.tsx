@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react'
 import dynamic from 'next/dynamic'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
+import type { Schema, SchemaHistoryEntry } from '@/models/Schema'
 
 const SchemaEditorForm = dynamic(
   () => import('@/components/SchemaEditorForm'),
@@ -27,15 +28,8 @@ type SchemaTabsProps = {
   defaultValue: string
   updateSchema: (formData: FormData) => Promise<void>
   restoreVersion: (content: Record<string, unknown>) => Promise<void>
-  history: Array<{
-    timestamp: number
-    content: Record<string, unknown>
-    dependencies: string[]
-  }>
-  currentSchema?: {
-    content: Record<string, unknown>
-    output?: Record<string, unknown>
-  }
+  history: Array<SchemaHistoryEntry & { timestamp: number }>
+  currentSchema?: Schema | Record<string, never>
 }
 
 const TABS = ['Editor', 'Preview', 'History'] as const
@@ -51,7 +45,7 @@ export default function SchemaTabs({
   const [active, setActive] = useState<TabKey>('Editor')
   const historyCount = history?.length ?? 0
   const previewCount = useMemo(
-    () => Object.keys((currentSchema?.output as any) || {}).length,
+    () => Object.keys(currentSchema?.output || {}).length,
     [currentSchema]
   )
 
@@ -113,7 +107,7 @@ export default function SchemaTabs({
           >
             <JsonOutput
               title=""
-              content={(currentSchema?.output as any) || {}}
+              content={currentSchema?.output || {}}
             />
           </Card>
           <Card title="CONFIG_GUIDE" className="p-4">
@@ -180,8 +174,7 @@ export default function SchemaTabs({
       {active === 'History' && (
         <div className="space-y-4">
           <SchemaHistory
-            history={history as any}
-            currentSchema={currentSchema as any}
+            history={history}
             onRestore={restoreVersion}
           />
         </div>

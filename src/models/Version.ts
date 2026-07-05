@@ -36,19 +36,6 @@ const getVersionEffect = (
     Effect.map(([version]) => (version ? (JSON.parse(version) as Version) : null))
   )
 
-const saveVersionEffect = (
-  platform: string,
-  id: string,
-  data: Record<string, unknown>
-): Effect.Effect<void> =>
-  redisCall(() =>
-    redis.zadd(
-      `${platform}:versions:${id}`,
-      Date.now(),
-      JSON.stringify(data)
-    )
-  ).pipe(Effect.asVoid)
-
 // ── Public API (server actions) ──────────────────────────────────────────────
 
 export async function getVersions(platformId: string) {
@@ -62,13 +49,4 @@ export async function getVersion(
 ): Promise<Version | null> {
   'use server'
   return Effect.runPromise(getVersionEffect(platform, id))
-}
-
-export async function saveVersion(
-  platform: string,
-  id: string,
-  data: Record<string, unknown>
-) {
-  'use server'
-  return Effect.runPromise(saveVersionEffect(platform, id, data))
 }

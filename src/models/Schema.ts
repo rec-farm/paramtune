@@ -501,10 +501,7 @@ export async function compareSchemas(
       Effect.map(([schemaA, schemaB]) => {
         const contentA = (schemaA as Schema)?.content ?? {}
         const contentB = (schemaB as Schema)?.content ?? {}
-        return diffSchemas(
-          { content: contentA } as Schema,
-          { content: contentB } as Schema
-        )
+        return diffSchemas({ content: contentA }, { content: contentB })
       })
     )
   )

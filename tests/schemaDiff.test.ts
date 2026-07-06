@@ -8,7 +8,6 @@ import {
   getNestedValue,
   getValueDisplay,
 } from '@/lib/schemaDiff'
-import type { Schema } from '@/models/Schema'
 
 describe('getNestedKeys', () => {
   it('returns top-level keys for a flat object', () => {
@@ -156,18 +155,14 @@ describe('calculateDiff', () => {
 
 describe('diffSchemas', () => {
   it('compares two schemas by content', () => {
-    const schemaA = { content: { key: 'a' } } as unknown as Schema
-    const schemaB = { content: { key: 'b' } } as unknown as Schema
+    const schemaA = { content: { key: 'a' } }
+    const schemaB = { content: { key: 'b' } }
     const result = diffSchemas(schemaA, schemaB)
     expect(result.summary.modified).toBe(1)
   })
 
   it('returns no changes for identical schemas', () => {
-    const schema = {
-      content: { key: 'same' },
-      dependencies: [],
-      output: {},
-    } as Schema
+    const schema = { content: { key: 'same' } }
     const result = diffSchemas(schema, schema)
     expect(result.summary.total).toBe(0)
   })

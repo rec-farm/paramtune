@@ -131,6 +131,20 @@ describe('deep nesting composition', () => {
     const output = JSON.parse(result)
     expect(output).toEqual({ feature: true })
   })
+
+  it('resolves a diamond composition where two sibling fields extend the same base', async () => {
+    setupPlatforms({ base: ['1.0.0'] })
+    setupSchemaContent('base/1.0.0', { shared: 1 })
+
+    const result = await previewJsonOutput({
+      fieldA: { '@extends': 'base/1.0.0', a: 1 },
+      fieldB: { '@extends': 'base/1.0.0', b: 2 },
+    })
+
+    const output = JSON.parse(result)
+    expect(output.fieldA).toEqual({ shared: 1, a: 1 })
+    expect(output.fieldB).toEqual({ shared: 1, b: 2 })
+  })
 })
 
 describe('circular dependency detection', () => {

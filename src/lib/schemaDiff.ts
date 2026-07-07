@@ -239,6 +239,9 @@ import type { Schema } from '@/models/Schema'
 /**
  * Compare two Schema objects by their content
  */
-export function diffSchemas(schemaA: Schema, schemaB: Schema): DiffResult {
+export function diffSchemas(
+  schemaA: Pick<Schema, 'content'>,
+  schemaB: Pick<Schema, 'content'>
+): DiffResult {
   return calculateDiff(schemaA.content, schemaB.content)
 }

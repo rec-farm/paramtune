@@ -8,6 +8,7 @@ import {
   savePlatform,
   MissingPlatformError,
 } from '@/models/Platform'
+import { isValidVersion } from '@/lib/versionUtils'
 import { revalidatePath } from 'next/cache'
 import { Suspense } from 'react'
 
@@ -65,6 +66,11 @@ export default async function Page({
     }
 
     const versionName = formData.get('versionName') as string
+    if (!isValidVersion(versionName)) {
+      throw new Error(
+        `Invalid version "${versionName}": must be a valid semantic version (e.g. 1.2.3)`
+      )
+    }
     await savePlatform(platform.name, {
       name: platform.name,
       versions: [...(platform.versions || []), versionName],

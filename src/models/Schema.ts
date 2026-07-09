@@ -253,7 +253,10 @@ const processNodeWithExtendsEffect = (
       if (visited.has(key)) {
         return yield* new CircularDependencyError({ ref: key })
       }
-      visited.add(key)
+      // A fresh copy (rather than mutating `visited` in place) keeps cycle
+      // detection scoped to this node's own ancestry chain, so sibling
+      // fields extending the same base don't get flagged as circular.
+      const childVisited = new Set(visited).add(key)
 
       const deps = yield* resolveDependenciesEffect([ref], resolvedPlatforms)
       const concrete = deps[0]
@@ -263,7 +266,7 @@ const processNodeWithExtendsEffect = (
       )
       const processedBase = (yield* processNodeWithExtendsEffect(
         baseContent,
-        visited,
+        childVisited,
         resolvedPlatforms
       )) as Record<string, unknown>
 
@@ -271,7 +274,7 @@ const processNodeWithExtendsEffect = (
       delete override['@extends']
       const processedOverride = (yield* processNodeWithExtendsEffect(
         override,
-        visited,
+        childVisited,
         resolvedPlatforms
       )) as Record<string, unknown>
 

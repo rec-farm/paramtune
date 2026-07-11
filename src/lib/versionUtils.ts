@@ -20,3 +20,17 @@ export function sortVersionsDescending(versions: string[]): string[] {
 export function isValidVersion(version: string): boolean {
   return semver.valid(version) !== null
 }
+
+/**
+ * Checks whether a value is an array of valid semantic version strings.
+ * Used to validate the "versions" field of a platform payload before it's
+ * persisted, since a malformed value (e.g. a non-array or an entry that
+ * isn't valid semver) breaks sortVersionsDescending and @extends resolution
+ * the same way a single invalid version does.
+ */
+export function isValidVersionsList(versions: unknown): versions is string[] {
+  return (
+    Array.isArray(versions) &&
+    versions.every((v) => typeof v === 'string' && isValidVersion(v))
+  )
+}

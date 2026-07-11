@@ -3,6 +3,7 @@ import { Effect } from 'effect'
 import { getPlatform, savePlatform } from '@/models/Platform'
 import { handleApiWithFailures, failWith, validateName, requireSession } from '@/lib/apiHandler'
 import { logAudit } from '@/lib/auditLog'
+import { isValidVersionsList } from '@/lib/versionUtils'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -47,8 +48,16 @@ export function POST(
         return yield* failWith('Invalid JSON body', 400)
       }
 
+      const versions = (body as Record<string, unknown>).versions ?? []
+      if (!isValidVersionsList(versions)) {
+        return yield* failWith(
+          'Invalid "versions": must be an array of valid semantic version strings',
+          400
+        )
+      }
+
       yield* Effect.promise(() =>
-        savePlatform(platformName, body as Record<string, unknown>)
+        savePlatform(platformName, { name: platformName, versions })
       )
 
       yield* Effect.promise(() =>

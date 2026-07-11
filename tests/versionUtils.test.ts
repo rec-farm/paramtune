@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest'
 
-import { isValidVersion, sortVersionsDescending } from '@/lib/versionUtils'
+import {
+  isValidVersion,
+  isValidVersionsList,
+  sortVersionsDescending,
+} from '@/lib/versionUtils'
 
 describe('sortVersionsDescending', () => {
   it('sorts semver versions in descending order', () => {
@@ -73,5 +77,30 @@ describe('isValidVersion', () => {
   it('rejects non-numeric or empty strings', () => {
     expect(isValidVersion('abc')).toBe(false)
     expect(isValidVersion('')).toBe(false)
+  })
+})
+
+describe('isValidVersionsList', () => {
+  it('accepts an array of valid semver strings', () => {
+    expect(isValidVersionsList(['1.0.0', '2.1.3-beta.1'])).toBe(true)
+  })
+
+  it('accepts an empty array', () => {
+    expect(isValidVersionsList([])).toBe(true)
+  })
+
+  it('rejects a non-array value', () => {
+    expect(isValidVersionsList('1.0.0')).toBe(false)
+    expect(isValidVersionsList(null)).toBe(false)
+    expect(isValidVersionsList(undefined)).toBe(false)
+    expect(isValidVersionsList({ length: 0 })).toBe(false)
+  })
+
+  it('rejects an array containing a non-semver entry', () => {
+    expect(isValidVersionsList(['1.0.0', 'latest'])).toBe(false)
+  })
+
+  it('rejects an array containing a non-string entry', () => {
+    expect(isValidVersionsList(['1.0.0', 42])).toBe(false)
   })
 })

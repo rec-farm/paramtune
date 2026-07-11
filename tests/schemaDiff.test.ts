@@ -151,6 +151,25 @@ describe('calculateDiff', () => {
     expect(result.summary.removed).toBe(0)
     expect(result.summary.modified).toBe(0)
   })
+
+  it('does not flag a nested object as modified when only key order differs', () => {
+    const result = calculateDiff(
+      { config: { theme: 'dark', size: 'lg' } },
+      { config: { size: 'lg', theme: 'dark' } }
+    )
+    expect(result.summary.modified).toBe(0)
+    expect(result.summary.total).toBe(0)
+  })
+
+  it('still detects a real change inside a reordered nested object', () => {
+    const result = calculateDiff(
+      { config: { theme: 'light', size: 'lg' } },
+      { config: { size: 'lg', theme: 'dark' } }
+    )
+    expect(result.byType.modified.some((c) => c.path === 'config.theme')).toBe(
+      true
+    )
+  })
 })
 
 describe('diffSchemas', () => {

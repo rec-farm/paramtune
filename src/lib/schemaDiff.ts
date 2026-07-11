@@ -116,6 +116,25 @@ export function formatPath(path: string): string {
 }
 
 /**
+ * Recursively sort object keys so structurally-equal values with different
+ * key insertion order serialize identically.
+ */
+function canonicalize(value: unknown): unknown {
+  if (Array.isArray(value)) {
+    return value.map(canonicalize)
+  }
+  if (value !== null && typeof value === 'object') {
+    const sortedKeys = Object.keys(value as Record<string, unknown>).sort()
+    const result: Record<string, unknown> = {}
+    for (const key of sortedKeys) {
+      result[key] = canonicalize((value as Record<string, unknown>)[key])
+    }
+    return result
+  }
+  return value
+}
+
+/**
  * Get a human-readable display string for a value
  */
 export function getValueDisplay(value: unknown): string {
@@ -189,7 +208,10 @@ export function calculateDiff(
           to: currentType,
         },
       })
-    } else if (JSON.stringify(currentValue) !== JSON.stringify(previousValue)) {
+    } else if (
+      JSON.stringify(canonicalize(currentValue)) !==
+      JSON.stringify(canonicalize(previousValue))
+    ) {
       // Value changed but type is the same
       changes.push({
         path,

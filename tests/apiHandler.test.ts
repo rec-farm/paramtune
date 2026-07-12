@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { Effect } from 'effect'
 import { NextResponse } from 'next/server'
-import { handleApi, failWith, handleApiWithFailures, validateName } from '@/lib/apiHandler'
+import { handleApi, failWith, handleApiWithFailures, validateName, parseJsonBody } from '@/lib/apiHandler'
 
 vi.mock('next/server', () => {
   class MockNextResponse {
@@ -190,6 +190,24 @@ describe('apiHandler', () => {
         const response = result.left as any
         expect(response._body.error).toContain('version name')
       }
+    })
+  })
+
+  describe('parseJsonBody', () => {
+    it('resolves the parsed body on valid JSON', async () => {
+      const request = { json: async () => ({ version: '1.0.0' }) } as unknown as Request
+      const result = await Effect.runPromise(parseJsonBody(request))
+      expect(result).toEqual({ version: '1.0.0' })
+    })
+
+    it('resolves to null when the body is not valid JSON', async () => {
+      const request = {
+        json: async () => {
+          throw new SyntaxError('Unexpected token')
+        },
+      } as unknown as Request
+      const result = await Effect.runPromise(parseJsonBody(request))
+      expect(result).toBeNull()
     })
   })
 

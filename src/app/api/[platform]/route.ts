@@ -1,7 +1,13 @@
 import { Effect } from 'effect'
 
 import { getPlatform, savePlatform } from '@/models/Platform'
-import { handleApiWithFailures, failWith, validateName, requireSession } from '@/lib/apiHandler'
+import {
+  handleApiWithFailures,
+  failWith,
+  validateName,
+  requireSession,
+  parseJsonBody,
+} from '@/lib/apiHandler'
 import { logAudit } from '@/lib/auditLog'
 import { isValidVersionsList } from '@/lib/versionUtils'
 
@@ -39,10 +45,7 @@ export function POST(
       const { platform } = yield* Effect.promise(() => params)
       const platformName = decodeURIComponent(platform)
       yield* validateName(platformName, 'platform name')
-      const body = yield* Effect.tryPromise({
-        try: () => request.json(),
-        catch: () => 'parse-error' as const,
-      }).pipe(Effect.catchAll(() => Effect.succeed(null)))
+      const body = yield* parseJsonBody(request)
 
       if (!body || typeof body !== 'object') {
         return yield* failWith('Invalid JSON body', 400)

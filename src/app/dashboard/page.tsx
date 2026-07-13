@@ -7,6 +7,7 @@ import {
   EmptyPlatformNameError,
   type Platform,
 } from '@/models/Platform'
+import { isValidName, MAX_NAME_LENGTH } from '@/lib/apiHandler'
 import { revalidatePath } from 'next/cache'
 import Link from 'next/link'
 
@@ -19,14 +20,21 @@ export default async function Page() {
     'use server'
 
     const platformName = formData.get('platformName') as string
+    const trimmedName = platformName?.trim() ?? ''
 
-    if (!platformName || platformName.trim() === '') {
+    if (!trimmedName) {
       throw new EmptyPlatformNameError()
     }
 
+    if (!isValidName(trimmedName)) {
+      throw new Error(
+        `Invalid platform name "${trimmedName}": only alphanumeric characters, underscores, hyphens, and dots are allowed (max ${MAX_NAME_LENGTH} characters)`
+      )
+    }
+
     try {
-      await savePlatform(platformName.trim(), {
-        name: platformName.trim(),
+      await savePlatform(trimmedName, {
+        name: trimmedName,
         versions: [],
       })
       revalidatePath('/dashboard')

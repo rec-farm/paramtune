@@ -48,8 +48,18 @@ export function handleApi<A>(
   )
 }
 
-const VALID_NAME_REGEX = /^[a-zA-Z0-9_.-]+$/
-const MAX_NAME_LENGTH = 128
+export const VALID_NAME_REGEX = /^[a-zA-Z0-9_.-]+$/
+export const MAX_NAME_LENGTH = 128
+
+/**
+ * Checks whether a platform or version name matches the format API routes
+ * enforce via validateName below: 1-MAX_NAME_LENGTH characters, alphanumeric
+ * plus underscores/hyphens/dots. Exported for callers (e.g. the dashboard's
+ * server actions) that need a plain boolean check instead of an Effect.
+ */
+export function isValidName(name: string): boolean {
+  return name.length > 0 && name.length <= MAX_NAME_LENGTH && VALID_NAME_REGEX.test(name)
+}
 
 /**
  * Validates a platform or version name from URL parameters.

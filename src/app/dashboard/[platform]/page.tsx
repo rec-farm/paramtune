@@ -8,7 +8,7 @@ import {
   savePlatform,
   MissingPlatformError,
 } from '@/models/Platform'
-import { isValidVersion } from '@/lib/versionUtils'
+import { addVersion, isValidVersion } from '@/lib/versionUtils'
 import { revalidatePath } from 'next/cache'
 import { Suspense } from 'react'
 
@@ -73,7 +73,7 @@ export default async function Page({
     }
     await savePlatform(platform.name, {
       name: platform.name,
-      versions: [...(platform.versions || []), versionName],
+      versions: addVersion(platform.versions, versionName),
     })
 
     revalidatePath(`/dashboard/${encodeURIComponent(platform.name)}`)

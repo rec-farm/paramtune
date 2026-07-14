@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  addVersion,
   isValidVersion,
   isValidVersionsList,
   sortVersionsDescending,
@@ -102,5 +103,30 @@ describe('isValidVersionsList', () => {
 
   it('rejects an array containing a non-string entry', () => {
     expect(isValidVersionsList(['1.0.0', 42])).toBe(false)
+  })
+})
+
+describe('addVersion', () => {
+  it('appends a version to an existing list', () => {
+    expect(addVersion(['1.0.0'], '2.0.0')).toEqual(['1.0.0', '2.0.0'])
+  })
+
+  it('starts a new list when none exists', () => {
+    expect(addVersion(undefined, '1.0.0')).toEqual(['1.0.0'])
+  })
+
+  it('deduplicates when the version already exists', () => {
+    // Regression guard: the dashboard "Add Version" action used to push the
+    // submitted version unconditionally, so resubmitting an existing version
+    // persisted a duplicate entry (duplicate React list key, duplicate
+    // sortVersionsDescending/semver-range entries), unlike the API route's
+    // equivalent, which already deduplicated.
+    expect(addVersion(['1.0.0', '2.0.0'], '1.0.0')).toEqual(['1.0.0', '2.0.0'])
+  })
+
+  it('does not mutate the original array', () => {
+    const versions = ['1.0.0']
+    addVersion(versions, '2.0.0')
+    expect(versions).toEqual(['1.0.0'])
   })
 })

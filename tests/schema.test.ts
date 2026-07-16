@@ -5,6 +5,7 @@ import mockRedis from '@/connections/__mocks__/redis'
 
 import { clearPlatformsCache,
   compareSchemas,
+  compareSchemasWithContent,
   getSchema,
   getSchemaHistoryWithTimestamps,
   previewJsonOutput,
@@ -286,6 +287,55 @@ describe('compareSchemas', () => {
     expect(result.summary.modified).toBe(1) // key changed
     expect(result.summary.added).toBe(1) // added
     expect(result.summary.removed).toBe(1) // removed
+  })
+})
+
+describe('compareSchemasWithContent', () => {
+  it('returns the diff and both schemas\' content from a single fetch per schema', async () => {
+    const schemaA = {
+      content: { key: 'old', removed: true },
+      dependencies: [],
+      output: {},
+    }
+    const schemaB = {
+      content: { key: 'new', added: true },
+      dependencies: [],
+      output: {},
+    }
+
+    mockRedis.zrevrangebyscore.mockImplementation(
+      (key: string) => {
+        if (key === 'schemas:platA:1.0.0') {
+          return Promise.resolve([JSON.stringify(schemaA)])
+        }
+        if (key === 'schemas:platB:1.0.0') {
+          return Promise.resolve([JSON.stringify(schemaB)])
+        }
+        return Promise.resolve([])
+      }
+    )
+
+    const result = await compareSchemasWithContent('platA', '1.0.0', 'platB', '1.0.0')
+
+    expect(result.schemaAContent).toEqual(schemaA.content)
+    expect(result.schemaBContent).toEqual(schemaB.content)
+    expect(result.diffResult.summary.modified).toBe(1)
+    expect(result.diffResult.summary.added).toBe(1)
+    expect(result.diffResult.summary.removed).toBe(1)
+
+    // Regression guard: the dashboard compare page used to call compareSchemas
+    // (2 reads) and then getSchema for each side again (2 more reads) to
+    // recover content compareSchemas had already fetched internally.
+    expect(mockRedis.zrevrangebyscore).toHaveBeenCalledTimes(2)
+  })
+
+  it('defaults to empty content when a schema does not exist', async () => {
+    mockRedis.zrevrangebyscore.mockResolvedValue([])
+
+    const result = await compareSchemasWithContent('missingA', '1.0.0', 'missingB', '1.0.0')
+
+    expect(result.schemaAContent).toEqual({})
+    expect(result.schemaBContent).toEqual({})
   })
 })
 

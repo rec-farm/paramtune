@@ -1,8 +1,6 @@
-import { Effect } from 'effect'
-
 import { getPlatforms } from '@/models/Platform'
 import { getPlatform } from '@/models/Platform'
-import { compareSchemas, getSchema, type Schema } from '@/models/Schema'
+import { compareSchemasWithContent } from '@/models/Schema'
 import { type DiffResult } from '@/lib/schemaDiff'
 import CompareForm from './CompareForm'
 
@@ -32,19 +30,7 @@ export default async function ComparePage() {
     versionB: string
   ): Promise<CompareResult> {
     'use server'
-    return Effect.runPromise(
-      Effect.all([
-        Effect.promise(() => compareSchemas(platformA, versionA, platformB, versionB)),
-        Effect.promise(() => getSchema(platformA, versionA)),
-        Effect.promise(() => getSchema(platformB, versionB)),
-      ], { concurrency: 'unbounded' }).pipe(
-        Effect.map(([diffResult, schemaA, schemaB]) => ({
-          diffResult,
-          schemaAContent: (schemaA as Schema)?.content ?? {},
-          schemaBContent: (schemaB as Schema)?.content ?? {},
-        }))
-      )
-    )
+    return compareSchemasWithContent(platformA, versionA, platformB, versionB)
   }
 
   return (

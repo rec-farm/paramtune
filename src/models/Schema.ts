@@ -509,3 +509,41 @@ export async function compareSchemas(
     )
   )
 }
+
+export type SchemaComparison = {
+  diffResult: DiffResult
+  schemaAContent: Record<string, unknown>
+  schemaBContent: Record<string, unknown>
+}
+
+/**
+ * Same comparison as compareSchemas, but also returns both schemas' raw
+ * content. Fetches each schema once via getSchemaEffect instead of making
+ * the dashboard compare page redundantly re-fetch (via getSchema) content
+ * that compareSchemas already read internally to compute the diff.
+ */
+export async function compareSchemasWithContent(
+  platformA: string,
+  versionA: string,
+  platformB: string,
+  versionB: string
+): Promise<SchemaComparison> {
+  'use server'
+
+  return Effect.runPromise(
+    Effect.all([
+      getSchemaEffect(platformA, versionA),
+      getSchemaEffect(platformB, versionB),
+    ]).pipe(
+      Effect.map(([schemaA, schemaB]) => {
+        const schemaAContent = (schemaA as Schema)?.content ?? {}
+        const schemaBContent = (schemaB as Schema)?.content ?? {}
+        return {
+          diffResult: diffSchemas({ content: schemaAContent }, { content: schemaBContent }),
+          schemaAContent,
+          schemaBContent,
+        }
+      })
+    )
+  )
+}

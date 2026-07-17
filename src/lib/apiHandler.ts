@@ -1,6 +1,9 @@
 import { Effect } from 'effect'
 import { NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
+import { VALID_NAME_REGEX, MAX_NAME_LENGTH, isValidName } from '@/lib/nameValidation'
+
+export { VALID_NAME_REGEX, MAX_NAME_LENGTH, isValidName }
 
 type ApiResponseInit = {
   status?: number
@@ -46,19 +49,6 @@ export function handleApi<A>(
       Effect.catchAll((error) => createErrorResponse(error, String(error)))
     )
   )
-}
-
-export const VALID_NAME_REGEX = /^[a-zA-Z0-9_.-]+$/
-export const MAX_NAME_LENGTH = 128
-
-/**
- * Checks whether a platform or version name matches the format API routes
- * enforce via validateName below: 1-MAX_NAME_LENGTH characters, alphanumeric
- * plus underscores/hyphens/dots. Exported for callers (e.g. the dashboard's
- * server actions) that need a plain boolean check instead of an Effect.
- */
-export function isValidName(name: string): boolean {
-  return name.length > 0 && name.length <= MAX_NAME_LENGTH && VALID_NAME_REGEX.test(name)
 }
 
 /**

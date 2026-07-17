@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Button from '@/components/ui/Button'
 import { Loader2 } from 'lucide-react'
 import Input from '@/components/ui/Input'
+import { isValidName } from '@/lib/nameValidation'
 
 type Props = {
   action: (formData: FormData) => Promise<void>
@@ -19,7 +20,8 @@ export default function CreatePlatformForm({ action }: Props) {
   const router = useRouter()
 
   const isValid = useMemo(() => {
-    return name.trim().length >= 2
+    const trimmed = name.trim()
+    return trimmed.length >= 2 && isValidName(trimmed)
   }, [name])
 
   const onSubmit = useCallback(
@@ -87,11 +89,11 @@ export default function CreatePlatformForm({ action }: Props) {
           error={touched && !isValid}
         />
         <p id="platformName-help" className="text-xs text-muted-foreground">
-          Use letters, numbers, and dashes. Example: ios, android, web
+          Use letters, numbers, dots, dashes, and underscores. Example: ios, android, web
         </p>
         {touched && !isValid && (
           <p id="platformName-error" className="text-xs text-destructive">
-            Please enter at least 2 characters
+            Use 2-128 characters: letters, numbers, dots, dashes, and underscores only
           </p>
         )}
       </div>

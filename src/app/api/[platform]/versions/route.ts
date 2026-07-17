@@ -4,7 +4,7 @@ import { getPlatform, savePlatform } from '@/models/Platform'
 import { getVersions } from '@/models/Version'
 import { handleApiWithFailures, failWith, validateName, requireSession } from '@/lib/apiHandler'
 import { logAudit } from '@/lib/auditLog'
-import { isValidVersion } from '@/lib/versionUtils'
+import { addVersion, isValidVersion } from '@/lib/versionUtils'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -52,9 +52,7 @@ export function POST(
       }
 
       const current = yield* Effect.promise(() => getPlatform(platformName))
-      const nextVersions = Array.from(
-        new Set([...(current?.versions || []), version])
-      )
+      const nextVersions = addVersion(current?.versions, version)
       yield* Effect.promise(() =>
         savePlatform(platformName, { name: platformName, versions: nextVersions })
       )

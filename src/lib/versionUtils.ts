@@ -34,3 +34,14 @@ export function isValidVersionsList(versions: unknown): versions is string[] {
     versions.every((v) => typeof v === 'string' && isValidVersion(v))
   )
 }
+
+/**
+ * Appends a version to an existing version list, deduplicating it.
+ * Without dedup, resubmitting an already-existing version persists a
+ * duplicate string, which then renders as a duplicate React list key and
+ * a duplicate entry for every downstream sortVersionsDescending/semver-range
+ * consumer.
+ */
+export function addVersion(versions: string[] | undefined, version: string): string[] {
+  return Array.from(new Set([...(versions || []), version]))
+}

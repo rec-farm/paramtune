@@ -70,6 +70,16 @@ export function validateName(name: string, label: string) {
 }
 
 /**
+ * Parses a request's JSON body, resolving to null if parsing fails.
+ */
+export function parseJsonBody(request: Request) {
+  return Effect.tryPromise({
+    try: () => request.json(),
+    catch: () => 'parse-error' as const,
+  }).pipe(Effect.catchAll(() => Effect.succeed(null)))
+}
+
+/**
  * Creates an Effect that fails with a JSON error response.
  * Use for validation errors, not-found, etc.
  */

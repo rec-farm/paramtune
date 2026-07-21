@@ -20,11 +20,17 @@ export async function logAudit(entry: Omit<AuditEntry, 'timestamp'>) {
     timestamp: new Date().toISOString(),
   }
 
-  await redis
-    .pipeline()
-    .lpush(AUDIT_LOG_KEY, JSON.stringify(auditEntry))
-    .ltrim(AUDIT_LOG_KEY, 0, MAX_AUDIT_ENTRIES - 1)
-    .exec()
+  try {
+    await redis
+      .pipeline()
+      .lpush(AUDIT_LOG_KEY, JSON.stringify(auditEntry))
+      .ltrim(AUDIT_LOG_KEY, 0, MAX_AUDIT_ENTRIES - 1)
+      .exec()
+  } catch (error) {
+    // Audit logging is best-effort: the platform/version write it follows has
+    // already succeeded, so a Redis blip here must not fail the caller's request.
+    console.error('Failed to write audit log entry', error)
+  }
 }
 
 export async function getAuditLog(limit = 50): Promise<AuditEntry[]> {

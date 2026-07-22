@@ -3,10 +3,17 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 vi.mock('@/connections/redis')
 import mockRedis from '@/connections/__mocks__/redis'
 
-import { getPlatform, getPlatforms, savePlatform } from '@/models/Platform'
+import {
+  clearPlatformsCache,
+  getCachedPlatforms,
+  getPlatform,
+  getPlatforms,
+  savePlatform,
+} from '@/models/Platform'
 
 beforeEach(() => {
   vi.clearAllMocks()
+  clearPlatformsCache()
 })
 
 describe('getPlatform', () => {
@@ -118,5 +125,23 @@ describe('savePlatform', () => {
     await expect(savePlatform('   ', {})).rejects.toThrow(
       'Platform ID cannot be empty'
     )
+  })
+})
+
+describe('getCachedPlatforms', () => {
+  it('reflects a platform saved via savePlatform without waiting for the cache TTL to expire', async () => {
+    mockRedis.scan.mockResolvedValueOnce(['0', []])
+    const before = await getCachedPlatforms()
+    expect(before).toEqual([])
+
+    mockRedis.zadd.mockResolvedValue(1)
+    await savePlatform('web', { name: 'web', versions: ['1.0.0'] })
+
+    mockRedis.scan.mockResolvedValueOnce(['0', ['platforms:web']])
+    mockRedis.zrevrangebyscore.mockResolvedValueOnce([
+      JSON.stringify({ name: 'web', versions: ['1.0.0'] }),
+    ])
+    const after = await getCachedPlatforms()
+    expect(after.map((p) => p.name)).toEqual(['web'])
   })
 })

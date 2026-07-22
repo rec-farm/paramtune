@@ -38,6 +38,30 @@ export type Platform = {
   versions: string[]
 }
 
+// ── In-process cache ────────────────────────────────────────────────────────
+// Invalidated on every successful savePlatform() so reads never see a stale
+// list right after a write; a short TTL still limits Redis scans otherwise.
+
+let cachedPlatforms: Platform[] | null = null
+let cachedPlatformsTime = 0
+const PLATFORMS_CACHE_TTL = 5000 // 5 seconds
+
+export async function getCachedPlatforms(): Promise<Platform[]> {
+  const now = Date.now()
+  if (cachedPlatforms && now - cachedPlatformsTime < PLATFORMS_CACHE_TTL) {
+    return cachedPlatforms
+  }
+  const platforms = await getPlatforms()
+  cachedPlatforms = platforms
+  cachedPlatformsTime = now
+  return platforms
+}
+
+export function clearPlatformsCache() {
+  cachedPlatforms = null
+  cachedPlatformsTime = 0
+}
+
 // ── Effect-based internals ───────────────────────────────────────────────────
 
 const getPlatformEffect = (
@@ -125,5 +149,7 @@ export async function savePlatform(
   data: Record<string, unknown>
 ) {
   'use server'
-  return Effect.runPromise(savePlatformEffect(id, data))
+  const result = await Effect.runPromise(savePlatformEffect(id, data))
+  clearPlatformsCache()
+  return result
 }

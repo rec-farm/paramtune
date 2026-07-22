@@ -3,32 +3,17 @@ import semver from 'semver'
 
 import redis from '@/connections/redis'
 import { redisCall } from '@/lib/effectRedis'
-import { getPlatforms, MissingPlatformError } from './Platform'
+import {
+  getCachedPlatforms,
+  clearPlatformsCache,
+  MissingPlatformError,
+} from './Platform'
 import type { Platform } from './Platform'
 import { diffSchemas, type DiffResult } from '@/lib/schemaDiff'
 import { sortVersionsDescending } from '@/lib/versionUtils'
 
+export { clearPlatformsCache }
 
-let cachedPlatforms: Platform[] | null = null
-let cachedPlatformsTime = 0
-const PLATFORMS_CACHE_TTL = 5000 // 5 seconds
-
-async function getCachedPlatforms(): Promise<Platform[]> {
-  const now = Date.now()
-  if (cachedPlatforms && now - cachedPlatformsTime < PLATFORMS_CACHE_TTL) {
-    return cachedPlatforms
-  }
-  const platforms = await getPlatforms()
-  cachedPlatforms = platforms
-  cachedPlatformsTime = now
-  return platforms
-}
-
-
-export function clearPlatformsCache() {
-  cachedPlatforms = null
-  cachedPlatformsTime = 0
-}
 // ── Error types ──────────────────────────────────────────────────────────────
 
 export class VersionNotFoundError extends Data.TaggedError(

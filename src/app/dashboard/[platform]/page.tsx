@@ -1,8 +1,7 @@
 import PageTitle from '@/components/PageTitle'
+import AddVersionForm from '@/components/AddVersionForm'
 import Badge from '@/components/ui/Badge'
-import Button from '@/components/ui/Button'
 import Card from '@/components/ui/Card'
-import Input from '@/components/ui/Input'
 import {
   getPlatform,
   savePlatform,
@@ -99,12 +98,7 @@ export default async function Page({
       </Card>
 
       <Card title="Add Version">
-        <form action={createVersion} className="flex gap-2">
-          <Input type="text" name="versionName" placeholder="Version name" />
-          <Button type="submit" variant="primary">
-            Create
-          </Button>
-        </form>
+        <AddVersionForm action={createVersion} />
       </Card>
     </div>
   )

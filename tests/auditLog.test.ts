@@ -78,4 +78,30 @@ describe('logAudit', () => {
     expect(mockRedis.lpush).toHaveBeenCalledOnce()
     expect(mockRedis.ltrim).toHaveBeenCalledOnce()
   })
+
+  it('does not reject when the Redis pipeline fails, since callers must not fail an already-successful write over best-effort audit logging', async () => {
+    const consoleErrorSpy = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const failingPipeline = {
+      zrevrangebyscore: () => failingPipeline,
+      lpush: () => failingPipeline,
+      ltrim: () => failingPipeline,
+      exec: () => Promise.reject(new Error('Redis connection lost')),
+    }
+    mockRedis.pipeline.mockReturnValueOnce(failingPipeline)
+
+    await expect(
+      logAudit({
+        action: 'create',
+        platform: 'ios',
+        userEmail: 'user@example.com',
+        userId: 'u6',
+      })
+    ).resolves.toBeUndefined()
+
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      'Failed to write audit log entry',
+      expect.any(Error)
+    )
+    consoleErrorSpy.mockRestore()
+  })
 })

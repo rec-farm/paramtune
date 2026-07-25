@@ -9,16 +9,32 @@ export const config = {
   matcher: ['/api/:path*', '/dashboard/:path*'],
 }
 
+// Headers that are safe on any response (HTML pages or JSON APIs alike).
+// Content-Security-Policy is deliberately excluded here: its script-src 'self'
+// has only been vetted against JSON API responses, not against Next.js's
+// dashboard page markup, so it stays scoped to the API branch below.
+function applyBaseSecurityHeaders<T extends NextResponse>(response: T): T {
+  response.headers.set('X-Content-Type-Options', 'nosniff')
+  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
+  response.headers.set('X-Frame-Options', 'SAMEORIGIN')
+  if (process.env.NODE_ENV === 'production') {
+    response.headers.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload')
+  }
+  return response
+}
+
 export function proxy(request: NextRequest) {
   // Dashboard route protection (UX optimization - Server Component validates session for security)
   if (request.nextUrl.pathname.startsWith('/dashboard')) {
     const sessionCookie = getSessionCookie(request)
     if (!sessionCookie) {
       const returnTo = encodeURIComponent(request.nextUrl.pathname + request.nextUrl.search)
-      return NextResponse.redirect(new URL(`/login?returnTo=${returnTo}`, request.url))
+      return applyBaseSecurityHeaders(
+        NextResponse.redirect(new URL(`/login?returnTo=${returnTo}`, request.url)),
+      )
     }
     // Has session cookie, allow access (Server Component will validate)
-    return NextResponse.next()
+    return applyBaseSecurityHeaders(NextResponse.next())
   }
 
   // Rate limiting for API routes
@@ -64,11 +80,8 @@ export function proxy(request: NextRequest) {
   response.headers.set('Access-Control-Max-Age', '86400')
 
   // Security headers
-  response.headers.set('X-Content-Type-Options', 'nosniff')
-  response.headers.set('Referrer-Policy', 'strict-origin-when-cross-origin')
-  response.headers.set('X-Frame-Options', 'SAMEORIGIN')
+  applyBaseSecurityHeaders(response)
   if (process.env.NODE_ENV === 'production') {
-    response.headers.set('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload')
     response.headers.set(
       'Content-Security-Policy',
       "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self'; connect-src 'self'; frame-ancestors 'none'",

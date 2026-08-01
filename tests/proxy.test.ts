@@ -71,6 +71,7 @@ describe('proxy security headers', () => {
   })
 
   it('applies CORS headers to API responses', () => {
+    vi.stubEnv('CORS_ORIGIN', '')
     const request = new NextRequest('http://localhost/api/schemas')
 
     const response = proxy(request)
@@ -80,6 +81,7 @@ describe('proxy security headers', () => {
   })
 
   it('applies CORS and security headers to a rate-limited (429) response', async () => {
+    vi.stubEnv('CORS_ORIGIN', '')
     const { checkRateLimit } = await import('@/lib/rateLimit')
     vi.mocked(checkRateLimit).mockReturnValueOnce({ allowed: false, retryAfter: 42 })
     const request = new NextRequest('http://localhost/api/schemas')

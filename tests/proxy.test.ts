@@ -69,4 +69,30 @@ describe('proxy security headers', () => {
     expect(response.headers.get('X-Content-Type-Options')).toBe('nosniff')
     expect(response.headers.get('Referrer-Policy')).toBe('strict-origin-when-cross-origin')
   })
+
+  it('applies CORS headers to API responses', () => {
+    vi.stubEnv('CORS_ORIGIN', '')
+    const request = new NextRequest('http://localhost/api/schemas')
+
+    const response = proxy(request)
+
+    expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*')
+    expect(response.headers.get('Access-Control-Allow-Methods')).toContain('GET')
+  })
+
+  it('applies CORS and security headers to a rate-limited (429) response', async () => {
+    vi.stubEnv('CORS_ORIGIN', '')
+    const { checkRateLimit } = await import('@/lib/rateLimit')
+    vi.mocked(checkRateLimit).mockReturnValueOnce({ allowed: false, retryAfter: 42 })
+    const request = new NextRequest('http://localhost/api/schemas')
+
+    const response = proxy(request)
+
+    expect(response.status).toBe(429)
+    expect(response.headers.get('Retry-After')).toBe('42')
+    expect(response.headers.get('Access-Control-Allow-Origin')).toBe('*')
+    expect(response.headers.get('X-Frame-Options')).toBe('SAMEORIGIN')
+    expect(response.headers.get('X-Content-Type-Options')).toBe('nosniff')
+    expect(response.headers.get('Referrer-Policy')).toBe('strict-origin-when-cross-origin')
+  })
 })

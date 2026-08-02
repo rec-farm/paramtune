@@ -45,3 +45,16 @@ export function isValidVersionsList(versions: unknown): versions is string[] {
 export function addVersion(versions: string[] | undefined, version: string): string[] {
   return Array.from(new Set([...(versions || []), version]))
 }
+
+/**
+ * Deduplicates a version list, preserving first-occurrence order.
+ * POST /api/[platform] (documented in docs/API.md) lets an external caller
+ * submit the full "versions" array directly, unlike POST /api/[platform]/versions
+ * which already dedupes via addVersion. Without this, a caller resubmitting
+ * an existing version persists a duplicate string, hitting the same
+ * duplicate-React-key / duplicate-sortVersionsDescending-entry bug addVersion
+ * was written to prevent.
+ */
+export function dedupeVersions(versions: string[]): string[] {
+  return Array.from(new Set(versions))
+}

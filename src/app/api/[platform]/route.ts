@@ -9,7 +9,7 @@ import {
   parseJsonBody,
 } from '@/lib/apiHandler'
 import { logAudit } from '@/lib/auditLog'
-import { isValidVersionsList } from '@/lib/versionUtils'
+import { dedupeVersions, isValidVersionsList } from '@/lib/versionUtils'
 
 export const dynamic = 'force-dynamic'
 export const runtime = 'nodejs'
@@ -51,13 +51,14 @@ export function POST(
         return yield* failWith('Invalid JSON body', 400)
       }
 
-      const versions = (body as Record<string, unknown>).versions ?? []
-      if (!isValidVersionsList(versions)) {
+      const rawVersions = (body as Record<string, unknown>).versions ?? []
+      if (!isValidVersionsList(rawVersions)) {
         return yield* failWith(
           'Invalid "versions": must be an array of valid semantic version strings',
           400
         )
       }
+      const versions = dedupeVersions(rawVersions)
 
       yield* Effect.promise(() =>
         savePlatform(platformName, { name: platformName, versions })

@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   addVersion,
+  dedupeVersions,
   isValidVersion,
   isValidVersionsList,
   sortVersionsDescending,
@@ -128,5 +129,32 @@ describe('addVersion', () => {
     const versions = ['1.0.0']
     addVersion(versions, '2.0.0')
     expect(versions).toEqual(['1.0.0'])
+  })
+})
+
+describe('dedupeVersions', () => {
+  it('returns the list unchanged when there are no duplicates', () => {
+    expect(dedupeVersions(['1.0.0', '2.0.0'])).toEqual(['1.0.0', '2.0.0'])
+  })
+
+  it('removes duplicate entries, preserving first-occurrence order', () => {
+    // Regression guard: POST /api/[platform] persists a caller-submitted
+    // "versions" array as-is, unlike POST /api/[platform]/versions (addVersion,
+    // above), which already deduplicates. A duplicate string here hits the
+    // same duplicate-React-key / duplicate-sortVersionsDescending-entry bug.
+    expect(dedupeVersions(['1.0.0', '2.0.0', '1.0.0'])).toEqual([
+      '1.0.0',
+      '2.0.0',
+    ])
+  })
+
+  it('returns an empty array for empty input', () => {
+    expect(dedupeVersions([])).toEqual([])
+  })
+
+  it('does not mutate the original array', () => {
+    const versions = ['1.0.0', '1.0.0']
+    dedupeVersions(versions)
+    expect(versions).toEqual(['1.0.0', '1.0.0'])
   })
 })

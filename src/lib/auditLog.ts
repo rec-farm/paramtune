@@ -32,8 +32,3 @@ export async function logAudit(entry: Omit<AuditEntry, 'timestamp'>) {
     console.error('Failed to write audit log entry', error)
   }
 }
-
-export async function getAuditLog(limit = 50): Promise<AuditEntry[]> {
-  const entries = await redis.lrange(AUDIT_LOG_KEY, 0, limit - 1)
-  return entries.map((e) => JSON.parse(e) as AuditEntry)
-}

@@ -83,7 +83,7 @@ export type SchemaError =
 
 // ── Pure helpers ─────────────────────────────────────────────────────────────
 
-const getKey = (platform: string, version: string) =>
+export const getKey = (platform: string, version: string) =>
   `schemas:${platform}:${version}`
 
 function findDependenciesInContent(

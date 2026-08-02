@@ -3,6 +3,7 @@ import { Effect } from 'effect'
 import redis from '@/connections/redis'
 import { redisCall } from '@/lib/effectRedis'
 import { getPlatform } from './Platform'
+import { getKey } from './Schema'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
@@ -25,7 +26,7 @@ const getVersionEffect = (
 ): Effect.Effect<Version | null> =>
   redisCall(() =>
     redis.zrevrangebyscore(
-      `schemas:${platform}:${id}`,
+      getKey(platform, id),
       '+inf',
       '-inf',
       'LIMIT',

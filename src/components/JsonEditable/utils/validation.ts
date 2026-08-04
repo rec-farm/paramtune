@@ -15,12 +15,45 @@ function getLineColumn(
 }
 
 /**
+ * Replaces the contents of every JSON string literal with spaces, preserving
+ * length and newlines (so match indices and getLineColumn stay valid). A
+ * brace, bracket, or comma that's actually inside a string value (e.g.
+ * `"note": "trap }"`) must not be counted as real JSON structure, or brace
+ * counting and trailing-comma detection below misfire on it.
+ */
+function maskStringLiterals(text: string): string {
+  let result = ''
+  let inString = false
+  let escaped = false
+
+  for (const char of text) {
+    if (inString) {
+      if (escaped) {
+        escaped = false
+      } else if (char === '\\') {
+        escaped = true
+      } else if (char === '"') {
+        inString = false
+      }
+      result += char === '\n' ? '\n' : ' '
+      continue
+    }
+
+    if (char === '"') inString = true
+    result += char
+  }
+
+  return result
+}
+
+/**
  * Detect duplicate keys in JSON text
  * Returns warnings for each duplicate key found
  */
 function detectDuplicateKeys(text: string): ValidationIssue[] {
   const issues: ValidationIssue[] = []
   const keyOccurrences = new Map<string, { count: number; positions: number[] }>()
+  const structuralText = maskStringLiterals(text)
 
   // Match JSON keys - handles nested objects by tracking all key occurrences
   // This regex finds keys at any level: "keyName":
@@ -32,8 +65,10 @@ function detectDuplicateKeys(text: string): ValidationIssue[] {
     const keyWithQuotes = fullMatch.slice(0, fullMatch.lastIndexOf('"') + 1)
     const key = keyWithQuotes.slice(1, -1) // Remove quotes
 
-    // Find which object level this key belongs to by counting braces
-    const textBefore = text.slice(0, match.index)
+    // Find which object level this key belongs to by counting braces.
+    // Braces are counted in structuralText, not text, so a stray "{"/"}"
+    // inside an earlier string value can't shift the computed level.
+    const textBefore = structuralText.slice(0, match.index)
     const openBraces = (textBefore.match(/\{/g) || []).length
     const closeBraces = (textBefore.match(/\}/g) || []).length
     const level = openBraces - closeBraces
@@ -75,13 +110,16 @@ function detectDuplicateKeys(text: string): ValidationIssue[] {
  */
 function detectTrailingCommas(text: string): ValidationIssue[] {
   const issues: ValidationIssue[] = []
+  const structuralText = maskStringLiterals(text)
 
   // Match trailing comma before closing brace or bracket
-  // Handles whitespace and newlines between comma and closing delimiter
+  // Handles whitespace and newlines between comma and closing delimiter.
+  // Scans structuralText, not text, so a literal ",}" inside a string
+  // value (e.g. "msg": "a,}") isn't mistaken for a real trailing comma.
   const trailingCommaRegex = /,\s*([}\]])/g
   let match
 
-  while ((match = trailingCommaRegex.exec(text)) !== null) {
+  while ((match = trailingCommaRegex.exec(structuralText)) !== null) {
     const { line, column } = getLineColumn(text, match.index)
     const closingChar = match[1]
     issues.push({

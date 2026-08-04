@@ -121,6 +121,18 @@ describe('validateJson', () => {
       expect(result.issues).toHaveLength(1)
       expect(result.issues[0].message).toContain('Duplicate key "a"')
     })
+
+    it('still detects a duplicate key when a string value between the two contains a stray brace', () => {
+      // "trap }" is a valid string value that happens to contain a "}"
+      // character. Naively counting braces in the raw text (rather than
+      // ignoring braces inside string literals) shifts the computed nesting
+      // level of the second "a" and silently hides the duplicate.
+      const json = '{"a": "value1", "note": "trap }", "a": "value2"}'
+      const result = validateJson(json)
+      expect(result.isValid).toBe(true)
+      expect(result.issues).toHaveLength(1)
+      expect(result.issues[0].message).toContain('Duplicate key "a"')
+    })
   })
 
   describe('Warnings: Trailing commas', () => {
@@ -138,6 +150,20 @@ describe('validateJson', () => {
       expect(result.isValid).toBe(false)
       expect(result.issues).toHaveLength(1)
       expect(result.issues[0].type).toBe('error')
+    })
+
+    it('does not flag a string value that merely contains ",}" as a trailing comma', () => {
+      const json = '{"msg": "value with ,}", "ok": true}'
+      const result = validateJson(json)
+      expect(result.isValid).toBe(true)
+      expect(result.issues).toHaveLength(0)
+    })
+
+    it('does not flag a string value that merely contains ",]" as a trailing comma', () => {
+      const json = '{"msg": "value with ,]", "list": [1, 2]}'
+      const result = validateJson(json)
+      expect(result.isValid).toBe(true)
+      expect(result.issues).toHaveLength(0)
     })
   })
 })

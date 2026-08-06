@@ -72,6 +72,13 @@ Returns an array of all available versions for the platform.
 ["1.0.0", "1.1.0", "1.2.0"]
 ```
 
+**Error Response (404):**
+```json
+{
+  "error": "Platform not found"
+}
+```
+
 #### POST /api/[platform]/versions
 Adds a new version to the platform.
 

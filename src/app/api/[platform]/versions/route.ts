@@ -1,7 +1,6 @@
 import { Effect } from 'effect'
 
 import { getPlatform, savePlatform } from '@/models/Platform'
-import { getVersions } from '@/models/Version'
 import {
   handleApiWithFailures,
   failWith,
@@ -25,7 +24,13 @@ export function GET(
       const { platform } = yield* Effect.promise(() => params)
       const platformName = decodeURIComponent(platform)
       yield* validateName(platformName, 'platform name')
-      return yield* Effect.promise(() => getVersions(platformName))
+      const data = yield* Effect.promise(() => getPlatform(platformName))
+
+      if (!data) {
+        return yield* failWith('Platform not found', 404)
+      }
+
+      return data.versions
     })
   )
 }

@@ -9,6 +9,17 @@ export function sortVersionsDescending(versions: string[]): string[] {
 }
 
 /**
+ * Returns the newest version in a list by semver order, or undefined if the
+ * list is empty. `addVersion` only ever appends, so a version list is not
+ * guaranteed to already be in semver order (e.g. backfilling an older
+ * version after a newer one already exists) — callers that need "the latest
+ * version" must sort first rather than assume the last or first array entry.
+ */
+export function getLatestVersion(versions: string[] | undefined): string | undefined {
+  return sortVersionsDescending(versions || [])[0]
+}
+
+/**
  * Checks whether a string is a valid semantic version.
  *
  * Version names must be valid semver: they're sorted with `semver.rcompare`

@@ -7,7 +7,11 @@ import {
   savePlatform,
   MissingPlatformError,
 } from '@/models/Platform'
-import { addVersion, isValidVersion } from '@/lib/versionUtils'
+import {
+  addVersion,
+  isValidVersion,
+  sortVersionsDescending,
+} from '@/lib/versionUtils'
 import { revalidatePath } from 'next/cache'
 import { Suspense } from 'react'
 
@@ -85,14 +89,13 @@ export default async function Page({
       <Card title="Versions">
         <Suspense fallback={<div>Loading...</div>}>
           <ul className="flex flex-wrap gap-2">
-            {platform?.versions
-              ?.slice()
-              .reverse()
-              .map((version: string, index) => (
+            {sortVersionsDescending(platform?.versions ?? []).map(
+              (version: string, index) => (
                 <li key={version}>
                   <VersionTag latest={index === 0} version={version} />
                 </li>
-              ))}
+              )
+            )}
           </ul>
         </Suspense>
       </Card>

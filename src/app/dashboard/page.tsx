@@ -8,6 +8,7 @@ import {
   type Platform,
 } from '@/models/Platform'
 import { isValidName, MAX_NAME_LENGTH } from '@/lib/apiHandler'
+import { getLatestVersion } from '@/lib/versionUtils'
 import { revalidatePath } from 'next/cache'
 import Link from 'next/link'
 
@@ -67,8 +68,7 @@ export default async function Page() {
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {platforms.map((platform: Platform) => {
-              const latestVersion =
-                platform.versions?.[platform.versions.length - 1]
+              const latestVersion = getLatestVersion(platform.versions)
               const href = `/dashboard/${encodeURIComponent(platform.name)}`
               return (
                 <Link

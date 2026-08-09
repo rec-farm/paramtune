@@ -2,7 +2,6 @@
 export { default as JsonEditable } from './JsonEditable'
 
 // Hooks
-export { useJsonEditor } from './hooks/useJsonEditor'
 export { useOptimizedJsonEditor } from './hooks/useOptimizedJsonEditor'
 export { useTextareaRef } from './hooks/useTextareaRef'
 export { useAutocomplete } from './hooks/useAutocomplete'
@@ -22,9 +21,6 @@ export {
 
 // Types
 export type {
-  JsonEditorState,
-  JsonEditorActions,
-  UseJsonEditorOptions,
   UseTextareaRefReturn,
   ValidationStatusProps,
   ActionButtonsProps,

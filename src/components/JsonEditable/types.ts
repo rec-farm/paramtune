@@ -23,27 +23,6 @@ export interface JsonEditableProps {
   showHeader?: boolean
 }
 
-export interface JsonEditorState {
-  data: Record<string, unknown>
-  jsonText: string
-  isValid: boolean
-  errorMessage: string
-}
-
-export interface JsonEditorActions {
-  setJsonText: (text: string) => void
-  formatJson: () => void
-  resetToDefault: () => void
-  copyToClipboard: () => Promise<void>
-  downloadAsFile: (filename?: string) => void
-}
-
-export interface UseJsonEditorOptions {
-  defaultValue?: string
-  onValidationChange?: (isValid: boolean) => void
-  autoFormat?: boolean
-}
-
 export interface UseTextareaRefReturn {
   textareaRef: React.RefObject<HTMLTextAreaElement>
   setCursorPosition: (position: number) => void

@@ -193,6 +193,58 @@ describe('cascade update behavior', () => {
     expect(savedKeys).toContain('schemas:child:1.0.0')
   })
 
+  it('preserves the dependent\'s own author when cascading a re-save', async () => {
+    // Regression guard: cascadeDependentsEffect used to re-save each
+    // dependent with author hardcoded to undefined, so a cascade-triggered
+    // update wiped out who last actually edited that dependent schema.
+    const childAuthor = { id: 'user-1', name: 'Child Author' }
+
+    mockRedis.scan.mockResolvedValue(['0', ['platforms:base']])
+    mockRedis.zrevrangebyscore.mockImplementation((key: string) => {
+      if (key === 'platforms:base') {
+        return Promise.resolve([
+          JSON.stringify({ name: 'base', versions: ['1.0.0'] }),
+        ])
+      }
+      if (key === 'schemas:base:1.0.0') {
+        return Promise.resolve([
+          JSON.stringify({
+            content: { baseVal: 'updated' },
+            dependencies: [],
+            output: { baseVal: 'updated' },
+          }),
+        ])
+      }
+      if (key === 'schemas:child:1.0.0') {
+        return Promise.resolve([
+          JSON.stringify({
+            content: { '@extends': 'base/1.0.0', childVal: true },
+            dependencies: ['base/1.0.0'],
+            output: { baseVal: 'old', childVal: true },
+            author: childAuthor,
+          }),
+        ])
+      }
+      return Promise.resolve([])
+    })
+
+    mockRedis.smembers.mockImplementation((key: string) => {
+      if (key === 'schemas:dependents:base:1.0.0') {
+        return Promise.resolve(['child/1.0.0'])
+      }
+      return Promise.resolve([])
+    })
+
+    await saveSchema('base', '1.0.0', { baseVal: 'updated' })
+
+    const childSaveCall = mockRedis.zadd.mock.calls.find(
+      (call: unknown[]) => call[0] === 'schemas:child:1.0.0'
+    ) as [string, number, string]
+    expect(childSaveCall).toBeDefined()
+    const savedChild = JSON.parse(childSaveCall[2])
+    expect(savedChild.author).toEqual(childAuthor)
+  })
+
   it('does not cascade infinitely with visited tracking', async () => {
     mockRedis.scan.mockResolvedValue(['0', []])
     mockRedis.zadd.mockResolvedValue(1)

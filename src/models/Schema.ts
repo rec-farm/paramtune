@@ -353,7 +353,7 @@ const cascadeDependentsEffect = (
           depPlatform,
           depVersion,
           latest.content,
-          undefined,
+          latest.author,
           resolvedPlatforms
         )
         yield* cascadeDependentsEffect(

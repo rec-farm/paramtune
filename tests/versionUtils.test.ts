@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   addVersion,
   dedupeVersions,
+  getLatestVersion,
   isValidVersion,
   isValidVersionsList,
   sortVersionsDescending,
@@ -50,6 +51,29 @@ describe('sortVersionsDescending', () => {
     expect(() => sortVersionsDescending(['1.0.0', 'latest'])).toThrow(
       /Invalid Version/
     )
+  })
+})
+
+describe('getLatestVersion', () => {
+  it('returns the highest semver version regardless of array order', () => {
+    // Regression guard: the dashboard pages used to take the last array
+    // entry (or reverse the array) instead of sorting by semver, so a
+    // version list that isn't already in ascending semver order — e.g.
+    // backfilling "0.9.0" after "2.0.0" already exists — reported the wrong
+    // version as "latest".
+    expect(getLatestVersion(['2.0.0', '0.9.0', '1.5.0'])).toBe('2.0.0')
+  })
+
+  it('returns the only version for a single-element list', () => {
+    expect(getLatestVersion(['1.0.0'])).toBe('1.0.0')
+  })
+
+  it('returns undefined for an empty list', () => {
+    expect(getLatestVersion([])).toBeUndefined()
+  })
+
+  it('returns undefined for an undefined list', () => {
+    expect(getLatestVersion(undefined)).toBeUndefined()
   })
 })
 

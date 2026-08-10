@@ -100,6 +100,38 @@ describe('getPlatforms', () => {
     expect(result).toHaveLength(2)
     expect(mockRedis.scan).toHaveBeenCalledTimes(2)
   })
+
+  it('logs and skips platforms whose pipeline command errored, keeping the rest', async () => {
+    mockRedis.scan.mockResolvedValueOnce([
+      '0',
+      ['platforms:ios', 'platforms:android'],
+    ])
+    const consoleErrorSpy = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => {})
+
+    mockRedis.zrevrangebyscore.mockImplementation((key: string) => {
+      if (key === 'platforms:ios') {
+        return Promise.reject(new Error('connection reset'))
+      }
+      if (key === 'platforms:android') {
+        return Promise.resolve([
+          JSON.stringify({ name: 'android', versions: ['2.0.0'] }),
+        ])
+      }
+      return Promise.resolve([])
+    })
+
+    const result = await getPlatforms()
+
+    expect(result).toEqual([{ name: 'android', versions: ['2.0.0'] }])
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      'Failed to fetch platform "ios" from Redis pipeline:',
+      expect.any(Error)
+    )
+
+    consoleErrorSpy.mockRestore()
+  })
 })
 
 describe('savePlatform', () => {

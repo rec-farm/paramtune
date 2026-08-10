@@ -107,8 +107,15 @@ const getPlatformsEffect: Effect.Effect<Platform[]> = Effect.gen(function* () {
   }
 
   const parsedPlatforms = results
-    .map(([err, result]) => {
-      if (err || !result || !Array.isArray(result) || result.length === 0) {
+    .map(([err, result], index) => {
+      if (err) {
+        console.error(
+          `Failed to fetch platform "${platforms[index]}" from Redis pipeline:`,
+          err
+        )
+        return null
+      }
+      if (!result || !Array.isArray(result) || result.length === 0) {
         return null
       }
       return JSON.parse(result[0] as string) as Platform

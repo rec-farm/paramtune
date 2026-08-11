@@ -25,15 +25,26 @@ const mockAuth = vi.hoisted(() => ({
 vi.mock('@/lib/auth', () => ({ auth: mockAuth }))
 
 const mockGetPlatform = vi.hoisted(() => vi.fn())
+const mockSavePlatform = vi.hoisted(() => vi.fn())
 vi.mock('@/models/Platform', () => ({
   getPlatform: mockGetPlatform,
-  savePlatform: vi.fn(),
+  savePlatform: mockSavePlatform,
 }))
 
-import { GET } from '@/app/api/[platform]/versions/route'
+const mockLogAudit = vi.hoisted(() => vi.fn())
+vi.mock('@/lib/auditLog', () => ({ logAudit: mockLogAudit }))
+
+import { GET, POST } from '@/app/api/[platform]/versions/route'
 
 function makeRequest() {
   return { headers: new Headers() } as unknown as Request
+}
+
+function makePostRequest(body: unknown) {
+  return {
+    headers: new Headers(),
+    json: async () => body,
+  } as unknown as Request
 }
 
 describe('GET /api/[platform]/versions', () => {
@@ -65,5 +76,42 @@ describe('GET /api/[platform]/versions', () => {
 
     expect(response._init.status).toBe(200)
     expect(response._body).toEqual(['1.0.0', '2.0.0'])
+  })
+})
+
+describe('POST /api/[platform]/versions', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockAuth.api.getSession.mockResolvedValue({ user: { id: 'u1', email: 'a@b.com' } })
+  })
+
+  it('returns 404 when the platform does not exist', async () => {
+    mockGetPlatform.mockResolvedValue(null)
+
+    const response = (await POST(makePostRequest({ version: '1.0.0' }), {
+      params: Promise.resolve({ platform: 'nonexistent' }),
+    })) as any
+
+    expect(response._init.status).toBe(404)
+    expect(response._body).toEqual({ error: 'Platform not found' })
+    expect(mockSavePlatform).not.toHaveBeenCalled()
+    expect(mockLogAudit).not.toHaveBeenCalled()
+  })
+
+  it('adds the version and returns 201 when the platform exists', async () => {
+    mockGetPlatform.mockResolvedValue({ name: 'ios', versions: ['1.0.0'] })
+    mockSavePlatform.mockResolvedValue(undefined)
+    mockLogAudit.mockResolvedValue(undefined)
+
+    const response = (await POST(makePostRequest({ version: '2.0.0' }), {
+      params: Promise.resolve({ platform: 'ios' }),
+    })) as any
+
+    expect(response._init.status).toBe(201)
+    expect(response._body).toEqual({ ok: true })
+    expect(mockSavePlatform).toHaveBeenCalledWith('ios', {
+      name: 'ios',
+      versions: ['1.0.0', '2.0.0'],
+    })
   })
 })

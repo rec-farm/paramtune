@@ -80,7 +80,8 @@ Returns an array of all available versions for the platform.
 ```
 
 #### POST /api/[platform]/versions
-Adds a new version to the platform.
+Adds a new version to the platform. The platform must already exist (create
+it first with `POST /api/[platform]`).
 
 **Request Body:**
 ```json
@@ -100,6 +101,13 @@ Adds a new version to the platform.
 ```json
 {
   "error": "Missing \"version\" in body"
+}
+```
+
+**Error Response (404):**
+```json
+{
+  "error": "Platform not found"
 }
 ```
 

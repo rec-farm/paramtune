@@ -128,8 +128,15 @@ describe('getAutocompleteContext', () => {
       column: 17,
       prefix: 'ue',
       inString: true,
-      // TODO: `isAfterColon` does not correctly handle escaped quotes inside string values
-      afterColon: false,
+      afterColon: true,
     })
+  })
+
+  it('treats an escaped quote as still inside the value, not a closing quote', () => {
+    // The value string closes only at the final unescaped quote; a bare
+    // escaped quote in the middle must not be read as ending the value.
+    const text = '{\n  "key": "val\\"ue"'
+    const result = getAutocompleteContext(text, 20)
+    expect(result.afterColon).toBe(false)
   })
 })

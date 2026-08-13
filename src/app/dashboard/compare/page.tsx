@@ -2,6 +2,7 @@ import { getPlatforms } from '@/models/Platform'
 import { getPlatform } from '@/models/Platform'
 import { compareSchemasWithContent } from '@/models/Schema'
 import { type DiffResult } from '@/lib/schemaDiff'
+import { sortVersionsDescending } from '@/lib/versionUtils'
 import CompareForm from './CompareForm'
 
 export const dynamic = 'force-dynamic'
@@ -19,7 +20,7 @@ export default async function ComparePage() {
   async function getVersionsAction(platformName: string) {
     'use server'
     const platform = await getPlatform(platformName)
-    return platform?.versions || []
+    return sortVersionsDescending(platform?.versions ?? [])
   }
 
   // Server action to compare schemas and return content

@@ -51,7 +51,11 @@ export function POST(
         return yield* failWith('Invalid JSON body', 400)
       }
 
-      const rawVersions = (body as Record<string, unknown>).versions ?? []
+      const bodyRecord = body as Record<string, unknown>
+      if (!('versions' in bodyRecord)) {
+        return yield* failWith('Missing "versions" in body', 400)
+      }
+      const rawVersions = bodyRecord.versions
       if (!isValidVersionsList(rawVersions)) {
         return yield* failWith(
           'Invalid "versions": must be an array of valid semantic version strings',

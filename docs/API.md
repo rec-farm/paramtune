@@ -83,6 +83,12 @@ Returns an array of all available versions for the platform.
 Adds a new version to the platform. The platform must already exist (create
 it first with `POST /api/[platform]`).
 
+The version must be a valid semantic version. Build metadata is supported, so
+`1.2.3+build.5` and `1.0.0-beta.1+exp.sha.5114f85` are both accepted. Versions
+are limited to 128 characters and may contain only alphanumeric characters,
+dots, hyphens, and plus signs — a value that only becomes valid semver after
+trimming (e.g. `" 1.2.3 "`) is rejected rather than stored as-is.
+
 **Request Body:**
 ```json
 {
@@ -115,6 +121,12 @@ it first with `POST /api/[platform]`).
 
 #### GET /api/[platform]/[version]
 Returns the resolved schema for the specified platform and version.
+
+The `[version]` path segment accepts any version the write endpoints can
+create, including build metadata. In a path segment `+` is a literal, so both
+`/api/ios/1.2.3+build.5` and the percent-encoded `/api/ios/1.2.3%2Bbuild.5`
+resolve to the same version. Note that this does not hold in query strings,
+where `+` means a space and must be sent as `%2B`.
 
 **Response:**
 ```json

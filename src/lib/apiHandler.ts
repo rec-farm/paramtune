@@ -1,9 +1,21 @@
 import { Effect } from 'effect'
 import { NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
-import { VALID_NAME_REGEX, MAX_NAME_LENGTH, isValidName } from '@/lib/nameValidation'
+import {
+  VALID_NAME_REGEX,
+  VALID_VERSION_REGEX,
+  MAX_NAME_LENGTH,
+  isValidName,
+  isValidVersionName,
+} from '@/lib/nameValidation'
 
-export { VALID_NAME_REGEX, MAX_NAME_LENGTH, isValidName }
+export {
+  VALID_NAME_REGEX,
+  VALID_VERSION_REGEX,
+  MAX_NAME_LENGTH,
+  isValidName,
+  isValidVersionName,
+}
 
 type ApiResponseInit = {
   status?: number
@@ -66,6 +78,32 @@ export function validateName(name: string, label: string) {
       )
     }
     return name
+  })
+}
+
+/**
+ * Validates a version name from URL parameters.
+ *
+ * Separate from validateName because versions may carry a semver build-metadata
+ * suffix ("1.2.3+build.5"), and `+` is not in VALID_NAME_REGEX — validating a
+ * version as a generic name rejects versions the write paths accept, leaving
+ * them stored but unreadable. This checks only that the value is a safe key/URL
+ * component, not that it is semver: write paths enforce semver via
+ * isValidVersion, while lookups stay permissive so versions stored before that
+ * rule existed still resolve (to a 404 if absent, rather than a 400).
+ */
+export function validateVersionName(version: string) {
+  return Effect.gen(function* () {
+    if (!version || version.length > MAX_NAME_LENGTH) {
+      return yield* failWith(`Invalid version name: must be 1-${MAX_NAME_LENGTH} characters`, 400)
+    }
+    if (!isValidVersionName(version)) {
+      return yield* failWith(
+        'Invalid version name: only alphanumeric characters, dots, hyphens, and plus signs are allowed',
+        400,
+      )
+    }
+    return version
   })
 }
 

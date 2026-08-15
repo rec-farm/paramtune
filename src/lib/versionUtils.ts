@@ -1,5 +1,7 @@
 import semver from 'semver'
 
+import { isValidVersionName } from '@/lib/nameValidation'
+
 /**
  * Sort version strings in descending order (newest first)
  * Uses the semver package for proper semantic version sorting
@@ -27,9 +29,15 @@ export function getLatestVersion(versions: string[] | undefined): string | undef
  * during `@extends` dependency resolution. A non-semver version string (e.g.
  * "latest", "v1", "1.2") slipping into a platform's version list makes those
  * calls throw at read time, well after the invalid version was created.
+ *
+ * The isValidVersionName guard is not redundant: semver.valid parses leniently
+ * and normalises before answering, so it accepts " 1.2.3 " (returning "1.2.3").
+ * Callers persist the string they were given, not semver's normalised form, so
+ * without this check a padded version would become a Redis key and URL segment
+ * containing spaces that no read path could look up again.
  */
 export function isValidVersion(version: string): boolean {
-  return semver.valid(version) !== null
+  return isValidVersionName(version) && semver.valid(version) !== null
 }
 
 /**

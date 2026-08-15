@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { Effect } from 'effect'
 import { NextResponse } from 'next/server'
-import { handleApi, failWith, handleApiWithFailures, validateName, parseJsonBody } from '@/lib/apiHandler'
+import { handleApi, failWith, handleApiWithFailures, validateName, validateVersionName, parseJsonBody } from '@/lib/apiHandler'
 
 vi.mock('next/server', () => {
   class MockNextResponse {
@@ -189,6 +189,67 @@ describe('apiHandler', () => {
       if (result._tag === 'Left') {
         const response = result.left as any
         expect(response._body.error).toContain('version name')
+      }
+    })
+  })
+
+  describe('validateVersionName', () => {
+    it('accepts a plain semver version', async () => {
+      const result = await Effect.runPromise(Effect.either(validateVersionName('1.2.3')))
+      expect(result._tag).toBe('Right')
+      if (result._tag === 'Right') {
+        expect(result.right).toBe('1.2.3')
+      }
+    })
+
+    it('accepts a version with build metadata that validateName would reject', async () => {
+      const version = '1.2.3+build.5'
+      const rejectedAsName = await Effect.runPromise(
+        Effect.either(validateName(version, 'version name'))
+      )
+      expect(rejectedAsName._tag).toBe('Left')
+
+      const result = await Effect.runPromise(Effect.either(validateVersionName(version)))
+      expect(result._tag).toBe('Right')
+      if (result._tag === 'Right') {
+        expect(result.right).toBe(version)
+      }
+    })
+
+    it('rejects an empty string with 400', async () => {
+      const result = await Effect.runPromise(Effect.either(validateVersionName('')))
+      expect(result._tag).toBe('Left')
+      if (result._tag === 'Left') {
+        const response = result.left as any
+        expect(response._init.status).toBe(400)
+        expect(response._body.error).toContain('characters')
+      }
+    })
+
+    it('rejects a version of 129 characters with 400', async () => {
+      const result = await Effect.runPromise(Effect.either(validateVersionName('a'.repeat(129))))
+      expect(result._tag).toBe('Left')
+      if (result._tag === 'Left') {
+        const response = result.left as any
+        expect(response._init.status).toBe(400)
+      }
+    })
+
+    it('rejects versions containing spaces with 400', async () => {
+      const result = await Effect.runPromise(Effect.either(validateVersionName(' 1.2.3 ')))
+      expect(result._tag).toBe('Left')
+      if (result._tag === 'Left') {
+        const response = result.left as any
+        expect(response._init.status).toBe(400)
+      }
+    })
+
+    it('rejects versions containing slashes (path traversal)', async () => {
+      const result = await Effect.runPromise(Effect.either(validateVersionName('../secret')))
+      expect(result._tag).toBe('Left')
+      if (result._tag === 'Left') {
+        const response = result.left as any
+        expect(response._init.status).toBe(400)
       }
     })
   })

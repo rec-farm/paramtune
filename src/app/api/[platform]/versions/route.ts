@@ -60,7 +60,10 @@ export function POST(
       }
 
       const current = yield* Effect.promise(() => getPlatform(platformName))
-      const nextVersions = addVersion(current?.versions, version)
+      if (!current) {
+        return yield* failWith('Platform not found', 404)
+      }
+      const nextVersions = addVersion(current.versions, version)
       yield* Effect.promise(() =>
         savePlatform(platformName, { name: platformName, versions: nextVersions })
       )

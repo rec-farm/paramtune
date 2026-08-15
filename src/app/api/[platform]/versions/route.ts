@@ -51,7 +51,6 @@ export function POST(
       if (!version) {
         return yield* failWith('Missing "version" in body', 400)
       }
-      yield* validateName(version, 'version name')
       if (!isValidVersion(version)) {
         return yield* failWith(
           `Invalid version "${version}": must be a valid semantic version (e.g. 1.2.3)`,

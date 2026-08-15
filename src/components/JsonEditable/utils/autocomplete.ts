@@ -114,7 +114,29 @@ function isAfterColon(line: string): boolean {
 
   // Check if there's only whitespace after the colon
   const afterColon = line.slice(lastColonIndex + 1)
-  return afterColon.trim().length === 0 || /^\s*"?[^"]*$/.test(afterColon)
+  if (afterColon.trim().length === 0) return true
+
+  // Walk the remainder, treating escaped quotes as literal characters rather
+  // than string delimiters, same as the colon scan above. A bare value (no
+  // quotes at all) or an unterminated string (an odd number of unescaped
+  // quotes) both mean the value is still being typed.
+  let sawQuote = false
+  let stillOpen = false
+  for (let i = 0; i < afterColon.length; i++) {
+    const char = afterColon[i]
+
+    if (char === '\\' && i + 1 < afterColon.length) {
+      i++
+      continue
+    }
+
+    if (char === '"') {
+      sawQuote = true
+      stillOpen = !stillOpen
+    }
+  }
+
+  return !sawQuote || stillOpen
 }
 
 /**

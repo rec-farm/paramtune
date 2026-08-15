@@ -104,6 +104,18 @@ describe('isValidVersion', () => {
     expect(isValidVersion('abc')).toBe(false)
     expect(isValidVersion('')).toBe(false)
   })
+
+  it('rejects whitespace-padded versions that semver would silently trim', () => {
+    // semver.valid(' 1.2.3 ') returns '1.2.3', but callers persist the string
+    // they were handed rather than semver's normalised form — so accepting
+    // this would write a Redis key and URL segment containing spaces.
+    expect(isValidVersion(' 1.2.3 ')).toBe(false)
+    expect(isValidVersion('1.2.3 ')).toBe(false)
+  })
+
+  it('rejects a version longer than the maximum key length', () => {
+    expect(isValidVersion(`1.2.3+${'a'.repeat(128)}`)).toBe(false)
+  })
 })
 
 describe('isValidVersionsList', () => {

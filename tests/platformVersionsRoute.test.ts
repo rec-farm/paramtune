@@ -114,4 +114,57 @@ describe('POST /api/[platform]/versions', () => {
       versions: ['1.0.0', '2.0.0'],
     })
   })
+
+  it('accepts a version with build metadata, which is valid semver', async () => {
+    mockGetPlatform.mockResolvedValue({ name: 'ios', versions: ['1.0.0'] })
+    mockSavePlatform.mockResolvedValue(undefined)
+    mockLogAudit.mockResolvedValue(undefined)
+
+    const response = (await POST(makePostRequest({ version: '1.2.3+build.5' }), {
+      params: Promise.resolve({ platform: 'ios' }),
+    })) as any
+
+    expect(response._init.status).toBe(201)
+    expect(response._body).toEqual({ ok: true })
+    expect(mockSavePlatform).toHaveBeenCalledWith('ios', {
+      name: 'ios',
+      versions: ['1.0.0', '1.2.3+build.5'],
+    })
+  })
+
+  it('rejects a version that is not valid semver', async () => {
+    mockGetPlatform.mockResolvedValue({ name: 'ios', versions: ['1.0.0'] })
+
+    const response = (await POST(makePostRequest({ version: 'not-a-version' }), {
+      params: Promise.resolve({ platform: 'ios' }),
+    })) as any
+
+    expect(response._init.status).toBe(400)
+    expect(mockSavePlatform).not.toHaveBeenCalled()
+  })
+
+  it('rejects a whitespace-padded version instead of storing it verbatim', async () => {
+    // semver.valid(' 1.2.3 ') trims and returns '1.2.3', but the route stores
+    // the raw string — so without a charset guard this would persist a version
+    // whose Redis key and URL contain spaces, which no read path can look up.
+    mockGetPlatform.mockResolvedValue({ name: 'ios', versions: ['1.0.0'] })
+
+    const response = (await POST(makePostRequest({ version: ' 1.2.3 ' }), {
+      params: Promise.resolve({ platform: 'ios' }),
+    })) as any
+
+    expect(response._init.status).toBe(400)
+    expect(mockSavePlatform).not.toHaveBeenCalled()
+  })
+
+  it('rejects a missing version field', async () => {
+    mockGetPlatform.mockResolvedValue({ name: 'ios', versions: ['1.0.0'] })
+
+    const response = (await POST(makePostRequest({}), {
+      params: Promise.resolve({ platform: 'ios' }),
+    })) as any
+
+    expect(response._init.status).toBe(400)
+    expect(response._body).toEqual({ error: 'Missing "version" in body' })
+  })
 })

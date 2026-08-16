@@ -6,6 +6,7 @@ import Badge from '@/components/ui/Badge'
 import {
   type DiffResult,
   type DiffChange,
+  formatPath,
   getValueDisplay,
 } from '@/lib/schemaDiff'
 
@@ -340,7 +341,7 @@ function ChangeRow({ change }: { change: DiffChange }) {
         </span>
         <div className="flex-1 min-w-0">
           <code className={`text-xs font-medium ${textClass}`}>
-            {change.path}
+            {formatPath(change.path)}
           </code>
           {change.typeChange && (
             <span className="ml-2 text-xs text-muted-foreground">

@@ -5,6 +5,7 @@ import Card from '@/components/ui/Card'
 import Badge from '@/components/ui/Badge'
 import {
   calculateDiff,
+  formatPath,
   getNestedValue,
   getValueDisplay,
   type DiffResult,
@@ -72,7 +73,7 @@ export default function SchemaDiff({ current, previous }: SchemaDiffProps) {
                   <span className="text-green-600 font-mono text-xs">+</span>
                   <div className="flex-1 min-w-0">
                     <code className="text-xs font-medium text-green-800">
-                      {change.path}
+                      {formatPath(change.path)}
                     </code>
                     <div className="text-xs text-green-700 mt-1">
                       {getValueDisplay(change.newValue)}
@@ -98,7 +99,7 @@ export default function SchemaDiff({ current, previous }: SchemaDiffProps) {
                   <span className="text-red-600 font-mono text-xs">-</span>
                   <div className="flex-1 min-w-0">
                     <code className="text-xs font-medium text-red-800">
-                      {change.path}
+                      {formatPath(change.path)}
                     </code>
                     <div className="text-xs text-red-700 mt-1">
                       {getValueDisplay(change.oldValue)}
@@ -122,7 +123,7 @@ export default function SchemaDiff({ current, previous }: SchemaDiffProps) {
                   className="p-2 bg-blue-50 rounded border-l-2 border-blue-500"
                 >
                   <code className="text-xs font-medium text-blue-800">
-                    {change.path}
+                    {formatPath(change.path)}
                   </code>
                   {change.typeChange && (
                     <span className="ml-2 text-xs text-blue-500">

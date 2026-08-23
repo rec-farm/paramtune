@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { Effect } from 'effect'
 import { NextResponse } from 'next/server'
-import { handleApi, failWith, handleApiWithFailures, validateName, validateVersionName, parseJsonBody } from '@/lib/apiHandler'
+import { failWith, handleApiWithFailures, validateName, validateVersionName, parseJsonBody } from '@/lib/apiHandler'
 
 vi.mock('next/server', () => {
   class MockNextResponse {
@@ -32,67 +32,6 @@ describe('apiHandler', () => {
   afterEach(() => {
     vi.unstubAllEnvs()
     consoleErrorSpy.mockRestore()
-  })
-
-  describe('handleApi', () => {
-    it('returns successful response', async () => {
-      const effect = Effect.succeed({ data: 'success' })
-      const response = await handleApi(effect, { status: 201, headers: { 'X-Custom': '1' } }) as any
-
-      expect(response._body).toEqual({ data: 'success' })
-      expect(response._init.status).toBe(201)
-      expect(response._init.headers).toEqual({ 'Cache-Control': 'no-store', 'X-Custom': '1' })
-    })
-
-    it('handles fail(Error) in development', async () => {
-      vi.stubEnv('NODE_ENV', 'development')
-      const effect = Effect.fail(new Error('Dev error message'))
-      const response = await handleApi(effect) as any
-
-      expect(response._body).toEqual({ error: 'Dev error message' })
-      expect(response._init.status).toBe(500)
-      expect(consoleErrorSpy).toHaveBeenCalledWith('Dev error message', expect.any(Error))
-    })
-
-    it('handles fail(Error) in production', async () => {
-      vi.stubEnv('NODE_ENV', 'production')
-      const effect = Effect.fail(new Error('Secret error message'))
-      const response = await handleApi(effect) as any
-
-      expect(response._body).toEqual({ error: 'Internal Server Error' })
-      expect(response._init.status).toBe(500)
-      expect(consoleErrorSpy).toHaveBeenCalledWith('Secret error message', expect.any(Error))
-    })
-
-    it('handles fail(string) in development', async () => {
-      vi.stubEnv('NODE_ENV', 'development')
-      const effect = Effect.fail('String error')
-      const response = await handleApi(effect) as any
-
-      expect(response._body).toEqual({ error: 'String error' })
-      expect(response._init.status).toBe(500)
-      expect(consoleErrorSpy).toHaveBeenCalledWith('String error', 'String error')
-    })
-
-    it('handles die(Error) in development', async () => {
-      vi.stubEnv('NODE_ENV', 'development')
-      const effect = Effect.die(new Error('Unexpected defect'))
-      const response = await handleApi(effect) as any
-
-      expect(response._body).toEqual({ error: 'Unexpected defect' })
-      expect(response._init.status).toBe(500)
-      expect(consoleErrorSpy).toHaveBeenCalledWith('Unexpected defect', expect.any(Error))
-    })
-
-    it('handles die(Error) in production', async () => {
-      vi.stubEnv('NODE_ENV', 'production')
-      const effect = Effect.die(new Error('Unexpected defect'))
-      const response = await handleApi(effect) as any
-
-      expect(response._body).toEqual({ error: 'Internal Server Error' })
-      expect(response._init.status).toBe(500)
-      expect(consoleErrorSpy).toHaveBeenCalledWith('Unexpected defect', expect.any(Error))
-    })
   })
 
   describe('failWith', () => {

@@ -41,29 +41,6 @@ function createErrorResponse(error: unknown, fallbackMessage: string) {
 }
 
 /**
- * Runs an Effect pipeline and converts the result to a NextResponse.
- * Replaces the repetitive try/catch + conditional error message pattern
- * across all API routes.
- */
-export function handleApi<A>(
-  effect: Effect.Effect<A, unknown>,
-  init?: ApiResponseInit
-): Promise<NextResponse> {
-  return Effect.runPromise(
-    effect.pipe(
-      Effect.map((data) =>
-        NextResponse.json(data, {
-          status: init?.status ?? 200,
-          headers: { ...NO_STORE, ...init?.headers },
-        })
-      ),
-      Effect.catchAllDefect((error) => createErrorResponse(error, 'Unknown error')),
-      Effect.catchAll((error) => createErrorResponse(error, String(error)))
-    )
-  )
-}
-
-/**
  * Validates a platform or version name from URL parameters.
  */
 export function validateName(name: string, label: string) {

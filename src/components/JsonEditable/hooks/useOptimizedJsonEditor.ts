@@ -38,6 +38,25 @@ function safeParseJson(value?: string): Record<string, unknown> {
   }
 }
 
+/**
+ * Parses and pretty-prints a JSON string for the Format action, or returns
+ * null if it doesn't currently parse. Formats the text itself rather than
+ * relying on a prior parse, since validation is debounced (see setJsonText
+ * below) and a stale parse would silently discard keystrokes made during
+ * the debounce window.
+ */
+export function formatJsonText(
+  text: string
+): { formatted: string; data: Record<string, unknown> } | null {
+  try {
+    const parsed = JSON.parse(text)
+    if (typeof parsed !== 'object' || parsed === null) return null
+    return { formatted: JSON.stringify(parsed, null, 2), data: parsed }
+  } catch {
+    return null
+  }
+}
+
 export function useOptimizedJsonEditor({
   defaultValue,
   onValidationChange,
@@ -110,17 +129,32 @@ export function useOptimizedJsonEditor({
   )
 
   const formatJson = useCallback(() => {
-    if (state.isValid) {
-      const formatted = JSON.stringify(state.data, null, 2)
-      setState((prevState) => ({
-        ...prevState,
-        jsonText: formatted,
-        isDirty: false,
-        issues: [], // Clear warnings after formatting (they're cosmetic)
-      }))
-      lastValidJsonRef.current = formatted
+    // Format what's on screen (state.jsonText), not state.data: data only
+    // updates once the debounced validation in setJsonText fires, so a
+    // format triggered mid-debounce would otherwise overwrite the user's
+    // latest edit with the previous, stale parse.
+    const result = formatJsonText(state.jsonText)
+    if (!result) return
+
+    // A validation for the pre-format text may still be pending; let this
+    // synchronous, already-validated result win instead.
+    if (validationTimeoutRef.current) {
+      clearTimeout(validationTimeoutRef.current)
     }
-  }, [state.isValid, state.data])
+
+    setState((prevState) => ({
+      ...prevState,
+      jsonText: result.formatted,
+      data: result.data,
+      isValid: true,
+      errorMessage: '',
+      isDirty: false,
+      issues: [], // Clear warnings after formatting (they're cosmetic)
+      isValidating: false,
+    }))
+    lastValidJsonRef.current = result.formatted
+    onValidationChange?.(true)
+  }, [state.jsonText, onValidationChange])
 
   const resetToDefault = useCallback(() => {
     const newInitial = safeParseJson(defaultValue)

@@ -349,17 +349,15 @@ const cascadeDependentsEffect = (
         depVersion
       )) as Schema
       if (latest && latest.content) {
+        // saveSchemaEffect already cascades to `dep`'s own dependents at its
+        // end, so no separate recursive call is needed here - adding one
+        // would re-cascade the same subtree a second time, and the
+        // duplication compounds at every level of a longer chain.
         yield* saveSchemaEffect(
           depPlatform,
           depVersion,
           latest.content,
           latest.author,
-          resolvedPlatforms
-        )
-        yield* cascadeDependentsEffect(
-          depPlatform,
-          depVersion,
-          visited,
           resolvedPlatforms
         )
       }

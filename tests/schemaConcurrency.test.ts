@@ -262,4 +262,66 @@ describe('cascade update behavior', () => {
       saveSchema('test', '1.0.0', { value: 'test' })
     ).resolves.not.toThrow()
   })
+
+  it('re-saves each dependent once per chain link, not once per ancestor in the chain', async () => {
+    // Regression guard: cascadeDependentsEffect used to both (a) re-save a
+    // dependent directly, whose own saveSchemaEffect call already cascades to
+    // *its* dependents, and (b) separately recurse into those same dependents
+    // itself. For a chain base <- mid <- leaf, that duplicated work at every
+    // level below the save, so saving `base` re-saved `leaf` twice instead of
+    // once - and the duplication compounds (2^depth) for longer chains.
+    mockRedis.scan.mockResolvedValue([
+      '0',
+      ['platforms:base', 'platforms:mid'],
+    ])
+    mockRedis.zrevrangebyscore.mockImplementation((key: string) => {
+      if (key === 'platforms:base') {
+        return Promise.resolve([
+          JSON.stringify({ name: 'base', versions: ['1.0.0'] }),
+        ])
+      }
+      if (key === 'platforms:mid') {
+        return Promise.resolve([
+          JSON.stringify({ name: 'mid', versions: ['1.0.0'] }),
+        ])
+      }
+      if (key === 'schemas:mid:1.0.0') {
+        return Promise.resolve([
+          JSON.stringify({
+            content: { '@extends': 'base/1.0.0', mid: true },
+            dependencies: ['base/1.0.0'],
+            output: { mid: true },
+          }),
+        ])
+      }
+      if (key === 'schemas:leaf:1.0.0') {
+        return Promise.resolve([
+          JSON.stringify({
+            content: { '@extends': 'mid/1.0.0', leaf: true },
+            dependencies: ['mid/1.0.0'],
+            output: { leaf: true },
+          }),
+        ])
+      }
+      return Promise.resolve([])
+    })
+
+    // base <- mid <- leaf
+    mockRedis.smembers.mockImplementation((key: string) => {
+      if (key === 'schemas:dependents:base:1.0.0') {
+        return Promise.resolve(['mid/1.0.0'])
+      }
+      if (key === 'schemas:dependents:mid:1.0.0') {
+        return Promise.resolve(['leaf/1.0.0'])
+      }
+      return Promise.resolve([])
+    })
+
+    await saveSchema('base', '1.0.0', { baseVal: 'updated' })
+
+    const leafSaveCalls = mockRedis.zadd.mock.calls.filter(
+      (call: unknown[]) => call[0] === 'schemas:leaf:1.0.0'
+    )
+    expect(leafSaveCalls).toHaveLength(1)
+  })
 })

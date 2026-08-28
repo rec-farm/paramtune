@@ -4,12 +4,13 @@ import redis from '@/connections/redis'
 import { redisCall } from '@/lib/effectRedis'
 import { getPlatform } from './Platform'
 import { getKey } from './Schema'
+import type { Schema } from './Schema'
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
-export type Version = {
-  content: string
-}
+// A version is stored as, and returned verbatim from, the same JSON a Schema save
+// writes to Redis (see saveSchemaEffect in Schema.ts) — same shape, different name.
+export type Version = Schema
 
 // ── Effect-based internals ───────────────────────────────────────────────────
 

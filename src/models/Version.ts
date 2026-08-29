@@ -1,7 +1,6 @@
 import { Effect } from 'effect'
 
-import redis from '@/connections/redis'
-import { redisCall } from '@/lib/effectRedis'
+import { getLatestFromSortedSet } from '@/lib/effectRedis'
 import { getPlatform } from './Platform'
 import { getKey } from './Schema'
 
@@ -24,18 +23,7 @@ const getVersionEffect = (
   platform: string,
   id: string
 ): Effect.Effect<Version | null> =>
-  redisCall(() =>
-    redis.zrevrangebyscore(
-      getKey(platform, id),
-      '+inf',
-      '-inf',
-      'LIMIT',
-      0,
-      1
-    )
-  ).pipe(
-    Effect.map(([version]) => (version ? (JSON.parse(version) as Version) : null))
-  )
+  getLatestFromSortedSet<Version>(getKey(platform, id))
 
 // ── Public API (server actions) ──────────────────────────────────────────────
 

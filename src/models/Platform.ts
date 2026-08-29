@@ -1,7 +1,7 @@
 import { Effect, Data } from 'effect'
 
 import redis from '@/connections/redis'
-import { redisCall } from '@/lib/effectRedis'
+import { redisCall, getLatestFromSortedSet } from '@/lib/effectRedis'
 
 // ── Error types ──────────────────────────────────────────────────────────────
 
@@ -64,16 +64,8 @@ export function clearPlatformsCache() {
 
 // ── Effect-based internals ───────────────────────────────────────────────────
 
-const getPlatformEffect = (
-  id: string
-): Effect.Effect<Platform | null> =>
-  redisCall(() =>
-    redis.zrevrangebyscore(`platforms:${id}`, '+inf', '-inf', 'LIMIT', 0, 1)
-  ).pipe(
-    Effect.map(([platform]) =>
-      platform ? (JSON.parse(platform) as Platform) : null
-    )
-  )
+const getPlatformEffect = (id: string): Effect.Effect<Platform | null> =>
+  getLatestFromSortedSet<Platform>(`platforms:${id}`)
 
 const getPlatformsEffect: Effect.Effect<Platform[]> = Effect.gen(function* () {
   const platforms: string[] = []

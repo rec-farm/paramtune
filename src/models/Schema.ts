@@ -2,7 +2,7 @@ import { Effect, Data } from 'effect'
 import semver from 'semver'
 
 import redis from '@/connections/redis'
-import { redisCall } from '@/lib/effectRedis'
+import { redisCall, getLatestFromSortedSet } from '@/lib/effectRedis'
 import {
   getCachedPlatforms,
   clearPlatformsCache,
@@ -184,17 +184,8 @@ const getSchemaEffect = (
   platform: string,
   version: string
 ): Effect.Effect<Schema | Record<string, never>> =>
-  redisCall(() =>
-    redis.zrevrangebyscore(
-      getKey(platform, version),
-      '+inf',
-      '-inf',
-      'LIMIT',
-      0,
-      1
-    )
-  ).pipe(
-    Effect.map(([schema]) => (schema ? (JSON.parse(schema) as Schema) : {}))
+  getLatestFromSortedSet<Schema>(getKey(platform, version)).pipe(
+    Effect.map((schema) => schema ?? {})
   )
 
 const getLatestSchemaContentEffect = (

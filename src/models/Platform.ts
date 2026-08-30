@@ -110,7 +110,15 @@ const getPlatformsEffect: Effect.Effect<Platform[]> = Effect.gen(function* () {
       if (!result || !Array.isArray(result) || result.length === 0) {
         return null
       }
-      return JSON.parse(result[0] as string) as Platform
+      try {
+        return JSON.parse(result[0] as string) as Platform
+      } catch (parseError) {
+        console.error(
+          `Failed to parse platform "${platforms[index]}" data from Redis:`,
+          parseError
+        )
+        return null
+      }
     })
     .filter((p): p is Platform => Boolean(p))
 

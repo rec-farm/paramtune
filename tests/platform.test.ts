@@ -132,6 +132,38 @@ describe('getPlatforms', () => {
 
     consoleErrorSpy.mockRestore()
   })
+
+  it('logs and skips platforms with malformed JSON, keeping the rest', async () => {
+    mockRedis.scan.mockResolvedValueOnce([
+      '0',
+      ['platforms:ios', 'platforms:android'],
+    ])
+    const consoleErrorSpy = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => {})
+
+    mockRedis.zrevrangebyscore.mockImplementation((key: string) => {
+      if (key === 'platforms:ios') {
+        return Promise.resolve(['not valid json'])
+      }
+      if (key === 'platforms:android') {
+        return Promise.resolve([
+          JSON.stringify({ name: 'android', versions: ['2.0.0'] }),
+        ])
+      }
+      return Promise.resolve([])
+    })
+
+    const result = await getPlatforms()
+
+    expect(result).toEqual([{ name: 'android', versions: ['2.0.0'] }])
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      'Failed to parse platform "ios" data from Redis:',
+      expect.any(Error)
+    )
+
+    consoleErrorSpy.mockRestore()
+  })
 })
 
 describe('savePlatform', () => {

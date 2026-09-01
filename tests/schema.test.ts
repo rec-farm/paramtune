@@ -199,6 +199,35 @@ describe('getSchemaHistoryWithTimestamps', () => {
     const result = await getSchemaHistoryWithTimestamps('plat', '1.0.0')
     expect(result).toEqual([])
   })
+
+  it('logs and skips malformed entries, keeping the rest', async () => {
+    const entry = {
+      content: { v: 1 },
+      dependencies: [],
+      output: { v: 1 },
+    }
+    mockRedis.zrevrangebyscore.mockResolvedValue([
+      'not valid json',
+      '2000',
+      JSON.stringify(entry),
+      '1000',
+    ])
+    const consoleErrorSpy = vi
+      .spyOn(console, 'error')
+      .mockImplementation(() => {})
+
+    const result = await getSchemaHistoryWithTimestamps('plat', '1.0.0')
+
+    expect(result).toHaveLength(1)
+    expect(result[0].timestamp).toBe(1000)
+    expect(result[0].content).toEqual({ v: 1 })
+    expect(consoleErrorSpy).toHaveBeenCalledWith(
+      'Failed to parse schema history entry for "schemas:plat:1.0.0":',
+      expect.any(Error)
+    )
+
+    consoleErrorSpy.mockRestore()
+  })
 })
 
 describe('circular dependency detection', () => {

@@ -447,14 +447,21 @@ export async function getSchemaHistoryWithTimestamps(
         for (let i = 0; i < schemasWithScores.length; i += 2) {
           const schema = schemasWithScores[i]
           const timestamp = parseInt(schemasWithScores[i + 1])
-          const parsed = JSON.parse(schema) as Schema
-          result.push({
-            timestamp,
-            content: parsed.content,
-            dependencies: parsed.dependencies,
-            output: parsed.output,
-            author: parsed.author,
-          })
+          try {
+            const parsed = JSON.parse(schema) as Schema
+            result.push({
+              timestamp,
+              content: parsed.content,
+              dependencies: parsed.dependencies,
+              output: parsed.output,
+              author: parsed.author,
+            })
+          } catch (parseError) {
+            console.error(
+              `Failed to parse schema history entry for "${getKey(platform, version)}":`,
+              parseError
+            )
+          }
         }
         return result
       })

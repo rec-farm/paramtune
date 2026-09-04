@@ -5,7 +5,7 @@ import { headers } from 'next/headers'
 import { GitCompare } from 'lucide-react'
 
 import { createHash } from 'crypto'
-import { auth } from '@/lib/auth'
+import { requireDashboardSession } from '@/lib/dashboardAuth'
 import PageTitle from '@/components/PageTitle'
 import SchemaTabs from '@/components/SchemaTabs'
 import Badge from '@/components/ui/Badge'
@@ -20,6 +20,16 @@ import {
 
 export const dynamic = 'force-dynamic'
 
+function authorFromSession(
+  session: Awaited<ReturnType<typeof requireDashboardSession>>
+): Author {
+  return {
+    id: session.user.id,
+    name: session.user.name || 'Unknown',
+    image: session.user.image || undefined,
+  }
+}
+
 export default async function Page({
   params,
 }: {
@@ -29,11 +39,6 @@ export default async function Page({
   const { platform, version } = resolvedParams
   const platformName = decodeURIComponent(platform)
   const versionName = decodeURIComponent(version)
-
-  const session = await auth.api.getSession({
-    headers: await headers()
-  })
-  const user = session?.user
 
   const schema = await getSchema(platformName, versionName)
   const contentHash = createHash('sha256')
@@ -48,6 +53,8 @@ export default async function Page({
   async function updateSchema(formData: FormData) {
     'use server'
 
+    const session = await requireDashboardSession(await headers())
+
     let content: Record<string, unknown>
     try {
       content = JSON.parse(formData.get('content') as string) as Record<
@@ -58,12 +65,7 @@ export default async function Page({
       throw new InvalidContentError()
     }
 
-    // Build author from captured user context
-    const author: Author | undefined = user
-      ? { id: user.id, name: user.name || 'Unknown', image: user.image || undefined }
-      : undefined
-
-    await saveSchema(platformName, versionName, content, author)
+    await saveSchema(platformName, versionName, content, authorFromSession(session))
 
     revalidatePath('/dashboard/[platform]/[version]', 'page')
   }
@@ -71,11 +73,9 @@ export default async function Page({
   async function restoreVersion(content: Record<string, unknown>) {
     'use server'
 
-    const author: Author | undefined = user
-      ? { id: user.id, name: user.name || 'Unknown', image: user.image || undefined }
-      : undefined
+    const session = await requireDashboardSession(await headers())
 
-    await saveSchema(platformName, versionName, content, author)
+    await saveSchema(platformName, versionName, content, authorFromSession(session))
     revalidatePath('/dashboard/[platform]/[version]', 'page')
   }
 

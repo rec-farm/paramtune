@@ -9,7 +9,9 @@ import {
 } from '@/models/Platform'
 import { isValidName, MAX_NAME_LENGTH } from '@/lib/apiHandler'
 import { getLatestVersion } from '@/lib/versionUtils'
+import { requireDashboardSession } from '@/lib/dashboardAuth'
 import { revalidatePath } from 'next/cache'
+import { headers } from 'next/headers'
 import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
@@ -19,6 +21,8 @@ export default async function Page() {
 
   async function createPlatform(formData: FormData) {
     'use server'
+
+    await requireDashboardSession(await headers())
 
     const platformName = formData.get('platformName') as string
     const trimmedName = platformName?.trim() ?? ''

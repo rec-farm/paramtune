@@ -12,7 +12,9 @@ import {
   isValidVersion,
   sortVersionsDescending,
 } from '@/lib/versionUtils'
+import { requireDashboardSession } from '@/lib/dashboardAuth'
 import { revalidatePath } from 'next/cache'
+import { headers } from 'next/headers'
 import { Suspense } from 'react'
 
 export const dynamic = 'force-dynamic'
@@ -59,6 +61,8 @@ export default async function Page({
 
   async function createVersion(formData: FormData) {
     'use server'
+
+    await requireDashboardSession(await headers())
 
     const resolvedParams = await params
     const platformName = decodeURIComponent(resolvedParams.platform)

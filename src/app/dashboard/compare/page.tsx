@@ -3,6 +3,8 @@ import { getPlatform } from '@/models/Platform'
 import { compareSchemasWithContent } from '@/models/Schema'
 import { type DiffResult } from '@/lib/schemaDiff'
 import { sortVersionsDescending } from '@/lib/versionUtils'
+import { requireDashboardSession } from '@/lib/dashboardAuth'
+import { headers } from 'next/headers'
 import CompareForm from './CompareForm'
 
 export const dynamic = 'force-dynamic'
@@ -19,6 +21,7 @@ export default async function ComparePage() {
   // Server action to get versions for a platform
   async function getVersionsAction(platformName: string) {
     'use server'
+    await requireDashboardSession(await headers())
     const platform = await getPlatform(platformName)
     return sortVersionsDescending(platform?.versions ?? [])
   }
@@ -31,6 +34,7 @@ export default async function ComparePage() {
     versionB: string
   ): Promise<CompareResult> {
     'use server'
+    await requireDashboardSession(await headers())
     return compareSchemasWithContent(platformA, versionA, platformB, versionB)
   }
 

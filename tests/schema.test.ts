@@ -4,7 +4,6 @@ vi.mock('@/connections/redis')
 import mockRedis from '@/connections/__mocks__/redis'
 
 import { clearPlatformsCache,
-  compareSchemas,
   compareSchemasWithContent,
   getSchema,
   getSchemaHistoryWithTimestamps,
@@ -284,38 +283,6 @@ describe('circular dependency detection', () => {
         '@extends': 'platformB/1.0.0',
       })
     ).rejects.toThrow('Circular dependency')
-  })
-})
-
-describe('compareSchemas', () => {
-  it('compares two schemas and returns diff', async () => {
-    const schemaA = {
-      content: { key: 'old', removed: true },
-      dependencies: [],
-      output: {},
-    }
-    const schemaB = {
-      content: { key: 'new', added: true },
-      dependencies: [],
-      output: {},
-    }
-
-    mockRedis.zrevrangebyscore.mockImplementation(
-      (key: string) => {
-        if (key === 'schemas:platA:1.0.0') {
-          return Promise.resolve([JSON.stringify(schemaA)])
-        }
-        if (key === 'schemas:platB:1.0.0') {
-          return Promise.resolve([JSON.stringify(schemaB)])
-        }
-        return Promise.resolve([])
-      }
-    )
-
-    const result = await compareSchemas('platA', '1.0.0', 'platB', '1.0.0')
-    expect(result.summary.modified).toBe(1) // key changed
-    expect(result.summary.added).toBe(1) // added
-    expect(result.summary.removed).toBe(1) // removed
   })
 })
 

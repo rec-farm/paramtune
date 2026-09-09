@@ -139,15 +139,19 @@ const savePlatformEffect = (
     )
   })
 
-// ── Public API (server actions) ──────────────────────────────────────────────
+// ── Public API ───────────────────────────────────────────────────────────────
+// Plain server-side functions, not Server Actions: they must stay callable
+// only from already-authenticated code paths (API routes via requireSession,
+// dashboard pages via requireDashboardSession). A `'use server'` directive on
+// any of these would turn it into a standalone, publicly invocable endpoint
+// with none of those checks — see src/lib/dashboardAuth.ts for why that
+// distinction matters here.
 
 export async function getPlatforms(): Promise<Platform[]> {
-  'use server'
   return Effect.runPromise(getPlatformsEffect)
 }
 
 export async function getPlatform(id: string): Promise<Platform | null> {
-  'use server'
   return Effect.runPromise(getPlatformEffect(id))
 }
 
@@ -155,7 +159,6 @@ export async function savePlatform(
   id: string,
   data: Record<string, unknown>
 ) {
-  'use server'
   const result = await Effect.runPromise(savePlatformEffect(id, data))
   clearPlatformsCache()
   return result

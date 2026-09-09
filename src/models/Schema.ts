@@ -355,13 +355,14 @@ const cascadeDependentsEffect = (
     }
   })
 
-// ── Public API (server actions) ──────────────────────────────────────────────
+// ── Public API ───────────────────────────────────────────────────────────────
+// Plain server-side functions, not Server Actions — see the note in
+// src/models/Platform.ts for why a `'use server'` directive doesn't belong here.
 
 export async function getSchema(
   platform: string,
   version: string
 ): Promise<Schema | Record<string, never>> {
-  'use server'
   return Effect.runPromise(getSchemaEffect(platform, version))
 }
 
@@ -371,12 +372,10 @@ export async function saveSchema(
   content: Record<string, unknown>,
   author?: Author
 ) {
-  'use server'
   return Effect.runPromise(saveSchemaEffect(platform, version, content, author))
 }
 
 export async function previewJsonOutput(content: Record<string, unknown>) {
-  'use server'
   return Effect.runPromise(
     Effect.gen(function* () {
       const platforms = yield* Effect.promise(() => getCachedPlatforms())
@@ -395,8 +394,6 @@ export async function previewJsonOutput(content: Record<string, unknown>) {
 export async function validateSchemaContent(
   content: Record<string, unknown>
 ): Promise<SchemaValidationResult> {
-  'use server'
-
   if (!isPlainObject(content)) {
     return { valid: false, errors: ['Schema content must be a JSON object'] }
   }
@@ -428,8 +425,6 @@ export async function getSchemaHistoryWithTimestamps(
   version: string,
   limit: number = 50
 ): Promise<Array<SchemaHistoryEntry & { timestamp: number }>> {
-  'use server'
-
   return Effect.runPromise(
     redisCall(() =>
       redis.zrevrangebyscore(
@@ -485,8 +480,6 @@ export async function compareSchemasWithContent(
   platformB: string,
   versionB: string
 ): Promise<SchemaComparison> {
-  'use server'
-
   return Effect.runPromise(
     Effect.all([
       getSchemaEffect(platformA, versionA),

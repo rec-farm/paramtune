@@ -1,7 +1,7 @@
 'use client'
 
 import { forwardRef, useCallback, useEffect, useRef } from 'react'
-import { cn } from '@/components/ui/utils'
+import { cn } from '@/lib/utils'
 import type { AutocompletePopupProps, AutocompleteSuggestion } from '../types'
 
 // Icons for different suggestion kinds

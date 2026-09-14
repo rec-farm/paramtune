@@ -26,10 +26,11 @@ const getVersionEffect = (
 ): Effect.Effect<Version | null> =>
   getLatestFromSortedSet<Version>(getKey(platform, id))
 
-// ── Public API (server actions) ──────────────────────────────────────────────
+// ── Public API ───────────────────────────────────────────────────────────────
+// Plain server-side functions, not Server Actions — see the note in
+// src/models/Platform.ts for why a `'use server'` directive doesn't belong here.
 
 export async function getVersions(platformId: string) {
-  'use server'
   return Effect.runPromise(getVersionsEffect(platformId))
 }
 
@@ -37,6 +38,5 @@ export async function getVersion(
   platform: string,
   id: string
 ): Promise<Version | null> {
-  'use server'
   return Effect.runPromise(getVersionEffect(platform, id))
 }

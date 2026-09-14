@@ -158,14 +158,6 @@ where `+` means a space and must be sent as `%2B`.
 }
 ```
 
-#### GET /api/schemas/[...slug]
-Legacy endpoint for schema access with flexible routing.
-
-**Patterns:**
-- `/api/schemas` - Returns all platforms
-- `/api/schemas/[platform]` - Returns platform metadata
-- `/api/schemas/[platform]/[version]` - Returns specific schema
-
 ## Schema Features
 
 ### @extends Directive
@@ -201,6 +193,8 @@ Before saving, schemas are validated:
 When a base schema is updated, all schemas that depend on it (via `@extends`) are automatically re-processed. The cascade uses visited-set tracking to prevent infinite loops.
 
 ## Examples
+
+All endpoints require an authenticated better-auth session; the `curl` commands below omit the session cookie for brevity but will receive `401 Unauthorized` without one.
 
 ### Create a Platform
 ```bash
@@ -244,7 +238,7 @@ All endpoints include proper error handling with:
 - CORS configured via `CORS_ORIGIN` environment variable
 - Security headers added via middleware
 - Input validation on all endpoints
-- No authentication required (configure as needed)
+- All endpoints require an authenticated better-auth session; requests without one receive `401 Unauthorized`
 
 ## Caching
 

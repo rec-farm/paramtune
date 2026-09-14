@@ -170,6 +170,33 @@ describe('calculateDiff', () => {
       true
     )
   })
+
+  it('does not flag an array as modified when only key order differs within its object elements', () => {
+    const result = calculateDiff(
+      { items: [{ id: 1, label: 'a' }, { id: 2, label: 'b' }] },
+      { items: [{ label: 'a', id: 1 }, { label: 'b', id: 2 }] }
+    )
+    expect(result.summary.modified).toBe(0)
+    expect(result.summary.total).toBe(0)
+  })
+
+  it('still detects a real change inside a reordered array element', () => {
+    const result = calculateDiff(
+      { items: [{ id: 1, label: 'a' }] },
+      { items: [{ label: 'changed', id: 1 }] }
+    )
+    expect(result.byType.modified.some((c) => c.path === 'items')).toBe(true)
+  })
+
+  it('flags an array as modified when element order itself changes', () => {
+    // Arrays are order-sensitive: unlike object keys, reordering the
+    // elements themselves is a real change, not cosmetic.
+    const result = calculateDiff(
+      { items: [{ id: 1 }, { id: 2 }] },
+      { items: [{ id: 2 }, { id: 1 }] }
+    )
+    expect(result.byType.modified.some((c) => c.path === 'items')).toBe(true)
+  })
 })
 
 describe('diffSchemas', () => {

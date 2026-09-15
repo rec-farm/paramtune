@@ -36,8 +36,8 @@ importers:
         specifier: ^3.4.14
         version: 3.4.14
       effect:
-        specifier: ^3.22.1
-        version: 3.22.1
+        specifier: ^3.22.2
+        version: 3.22.2
       ioredis:
         specifier: ^6.0.0
         version: 6.0.0
@@ -1468,8 +1468,8 @@ packages:
   duplexer@0.1.2:
     resolution: {integrity: sha512-jtD6YG370ZCIi/9GTaJKQxWTZD045+4R4hTk/x1UyoqadyJ9x9CgSi1RlVDQF8U2sxLLSnFkCaMihqljHIWgMg==}
 
-  effect@3.22.1:
-    resolution: {integrity: sha512-TNoXushmPOBAjJlthF5d2QwnX2xBPEtcNJr5XKNKbRLbDvBcOYkXlYDfvGfSA0zriwLFuCll5MDtNMAdZL17PQ==}
+  effect@3.22.2:
+    resolution: {integrity: sha512-fm1CQXCs7GTMwpadZxwU5rnAb2bN6mbQpknq/pXBGCzSKkosNYb9k0wsoL0TfB10rSa5xOEZJjo77u/KLXSANg==}
 
   electron-to-chromium@1.5.396:
     resolution: {integrity: sha512-yHiw2Y3C3H9U6TMbOfoWK/BPreiOPXRfTWPBwQBoZG6/8TB6eOPnsy5oaRYuatR7Fw2SJ4kKforgufeo7fq0EQ==}
@@ -4145,7 +4145,7 @@ snapshots:
 
   duplexer@0.1.2: {}
 
-  effect@3.22.1:
+  effect@3.22.2:
     dependencies:
       '@standard-schema/spec': 1.1.0
       fast-check: 3.23.2

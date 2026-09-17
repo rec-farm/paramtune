@@ -1,7 +1,16 @@
 import { Effect, Data } from 'effect'
 
 import redis from '@/connections/redis'
-import { redisCall, getLatestFromSortedSet } from '@/lib/effectRedis'
+import {
+  redisCall,
+  getLatestFromSortedSet,
+  appendToSortedSet,
+} from '@/lib/effectRedis'
+
+// getPlatform only ever reads the newest entry (getLatestFromSortedSet), so
+// this cap just bounds unbounded growth from repeated saves, matching the
+// same trim Schema.ts applies to its own per-version history.
+const MAX_PLATFORM_HISTORY_ENTRIES = 200
 
 // ── Error types ──────────────────────────────────────────────────────────────
 
@@ -134,8 +143,10 @@ const savePlatformEffect = (
       return yield* new EmptyPlatformIdError()
     }
 
-    yield* redisCall(() =>
-      redis.zadd(`platforms:${id}`, Date.now(), JSON.stringify(data))
+    yield* appendToSortedSet(
+      `platforms:${id}`,
+      JSON.stringify(data),
+      MAX_PLATFORM_HISTORY_ENTRIES
     )
   })
 

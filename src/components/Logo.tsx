@@ -1,6 +1,6 @@
 import React, { forwardRef } from 'react'
 import Link from 'next/link'
-import { cn } from '@/components/ui/utils'
+import { cn } from '@/lib/utils'
 
 export interface LogoProps extends React.HTMLAttributes<HTMLDivElement> {
   asLink?: boolean

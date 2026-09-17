@@ -2,7 +2,11 @@ import { Effect, Data } from 'effect'
 import semver from 'semver'
 
 import redis from '@/connections/redis'
-import { redisCall, getLatestFromSortedSet } from '@/lib/effectRedis'
+import {
+  redisCall,
+  getLatestFromSortedSet,
+  appendToSortedSet,
+} from '@/lib/effectRedis'
 import {
   getCachedPlatforms,
   clearPlatformsCache,
@@ -85,6 +89,11 @@ export type SchemaError =
 
 export const getKey = (platform: string, version: string) =>
   `schemas:${platform}:${version}`
+
+// getSchemaHistoryWithTimestamps defaults to reading the newest 50 entries,
+// so this cap only needs enough headroom above that for callers passing a
+// larger explicit limit - it is not a "how much history to keep" tuning knob.
+const MAX_SCHEMA_HISTORY_ENTRIES = 200
 
 function findDependenciesInContent(
   content: Record<string, unknown>
@@ -291,12 +300,10 @@ const saveSchemaEffect = (
       resolvedPlatforms
     )) as Record<string, unknown>
 
-    yield* redisCall(() =>
-      redis.zadd(
-        getKey(platform, version),
-        Date.now(),
-        JSON.stringify({ dependencies, content, output, author })
-      )
+    yield* appendToSortedSet(
+      getKey(platform, version),
+      JSON.stringify({ dependencies, content, output, author }),
+      MAX_SCHEMA_HISTORY_ENTRIES
     )
 
     const selfId = `${platform}/${version}`
@@ -355,13 +362,14 @@ const cascadeDependentsEffect = (
     }
   })
 
-// ── Public API (server actions) ──────────────────────────────────────────────
+// ── Public API ───────────────────────────────────────────────────────────────
+// Plain server-side functions, not Server Actions — see the note in
+// src/models/Platform.ts for why a `'use server'` directive doesn't belong here.
 
 export async function getSchema(
   platform: string,
   version: string
 ): Promise<Schema | Record<string, never>> {
-  'use server'
   return Effect.runPromise(getSchemaEffect(platform, version))
 }
 
@@ -371,12 +379,10 @@ export async function saveSchema(
   content: Record<string, unknown>,
   author?: Author
 ) {
-  'use server'
   return Effect.runPromise(saveSchemaEffect(platform, version, content, author))
 }
 
 export async function previewJsonOutput(content: Record<string, unknown>) {
-  'use server'
   return Effect.runPromise(
     Effect.gen(function* () {
       const platforms = yield* Effect.promise(() => getCachedPlatforms())
@@ -395,8 +401,6 @@ export async function previewJsonOutput(content: Record<string, unknown>) {
 export async function validateSchemaContent(
   content: Record<string, unknown>
 ): Promise<SchemaValidationResult> {
-  'use server'
-
   if (!isPlainObject(content)) {
     return { valid: false, errors: ['Schema content must be a JSON object'] }
   }
@@ -428,8 +432,6 @@ export async function getSchemaHistoryWithTimestamps(
   version: string,
   limit: number = 50
 ): Promise<Array<SchemaHistoryEntry & { timestamp: number }>> {
-  'use server'
-
   return Effect.runPromise(
     redisCall(() =>
       redis.zrevrangebyscore(
@@ -485,8 +487,6 @@ export async function compareSchemasWithContent(
   platformB: string,
   versionB: string
 ): Promise<SchemaComparison> {
-  'use server'
-
   return Effect.runPromise(
     Effect.all([
       getSchemaEffect(platformA, versionA),

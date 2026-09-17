@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 vi.mock('@/connections/redis')
 import mockRedis from '@/connections/__mocks__/redis'
 
-import { getLatestFromSortedSet } from '@/lib/effectRedis'
+import { getLatestFromSortedSet, appendToSortedSet } from '@/lib/effectRedis'
 
 beforeEach(() => {
   vi.clearAllMocks()
@@ -57,5 +57,49 @@ describe('getLatestFromSortedSet', () => {
     )
 
     consoleErrorSpy.mockRestore()
+  })
+})
+
+describe('appendToSortedSet', () => {
+  it('adds the entry and does not trim when under the cap', async () => {
+    mockRedis.zadd.mockResolvedValue(1)
+    mockRedis.zcard.mockResolvedValue(3)
+
+    await Effect.runPromise(
+      appendToSortedSet('platforms:ios', JSON.stringify({ v: 1 }), 200)
+    )
+
+    expect(mockRedis.zadd).toHaveBeenCalledWith(
+      'platforms:ios',
+      expect.any(Number),
+      JSON.stringify({ v: 1 })
+    )
+    expect(mockRedis.zremrangebyrank).not.toHaveBeenCalled()
+  })
+
+  it('trims exactly the overflow past the cap, oldest first', async () => {
+    mockRedis.zadd.mockResolvedValue(1)
+    mockRedis.zcard.mockResolvedValue(205)
+
+    await Effect.runPromise(
+      appendToSortedSet('platforms:ios', JSON.stringify({ v: 1 }), 200)
+    )
+
+    expect(mockRedis.zremrangebyrank).toHaveBeenCalledWith(
+      'platforms:ios',
+      0,
+      4
+    )
+  })
+
+  it('does not trim when the count lands exactly on the cap', async () => {
+    mockRedis.zadd.mockResolvedValue(1)
+    mockRedis.zcard.mockResolvedValue(200)
+
+    await Effect.runPromise(
+      appendToSortedSet('platforms:ios', JSON.stringify({ v: 1 }), 200)
+    )
+
+    expect(mockRedis.zremrangebyrank).not.toHaveBeenCalled()
   })
 })

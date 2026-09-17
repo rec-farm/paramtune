@@ -2,7 +2,11 @@ import { Effect, Data } from 'effect'
 import semver from 'semver'
 
 import redis from '@/connections/redis'
-import { redisCall, getLatestFromSortedSet } from '@/lib/effectRedis'
+import {
+  redisCall,
+  getLatestFromSortedSet,
+  appendToSortedSet,
+} from '@/lib/effectRedis'
 import {
   getCachedPlatforms,
   clearPlatformsCache,
@@ -85,6 +89,11 @@ export type SchemaError =
 
 export const getKey = (platform: string, version: string) =>
   `schemas:${platform}:${version}`
+
+// getSchemaHistoryWithTimestamps defaults to reading the newest 50 entries,
+// so this cap only needs enough headroom above that for callers passing a
+// larger explicit limit - it is not a "how much history to keep" tuning knob.
+const MAX_SCHEMA_HISTORY_ENTRIES = 200
 
 function findDependenciesInContent(
   content: Record<string, unknown>
@@ -291,12 +300,10 @@ const saveSchemaEffect = (
       resolvedPlatforms
     )) as Record<string, unknown>
 
-    yield* redisCall(() =>
-      redis.zadd(
-        getKey(platform, version),
-        Date.now(),
-        JSON.stringify({ dependencies, content, output, author })
-      )
+    yield* appendToSortedSet(
+      getKey(platform, version),
+      JSON.stringify({ dependencies, content, output, author }),
+      MAX_SCHEMA_HISTORY_ENTRIES
     )
 
     const selfId = `${platform}/${version}`

@@ -2,6 +2,8 @@ import { vi } from 'vitest'
 
 export const zrevrangebyscore = vi.fn()
 export const zadd = vi.fn()
+export const zcard = vi.fn()
+export const zremrangebyrank = vi.fn()
 export const sadd = vi.fn()
 export const smembers = vi.fn()
 export const scan = vi.fn()
@@ -60,5 +62,17 @@ export const pipeline = vi.fn(function () {
   }
 })
 
-const mockRedis = { zrevrangebyscore, zadd, sadd, smembers, scan, lpush, ltrim, lrange, pipeline }
+const mockRedis = {
+  zrevrangebyscore,
+  zadd,
+  zcard,
+  zremrangebyrank,
+  sadd,
+  smembers,
+  scan,
+  lpush,
+  ltrim,
+  lrange,
+  pipeline,
+}
 export default mockRedis

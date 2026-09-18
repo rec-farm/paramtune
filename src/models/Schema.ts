@@ -281,7 +281,14 @@ const saveSchemaEffect = (
   version: string,
   content: Record<string, unknown>,
   author?: Author,
-  platforms?: Platform[]
+  platforms?: Platform[],
+  // Shared across an entire cascade tree (see cascadeDependentsEffect below),
+  // not per-call: a diamond dependency graph (D depends on both B and C,
+  // which both depend on A) reaches D through two separate branches when A is
+  // saved. Without a visited set shared across both branches, each branch
+  // starts fresh and re-saves D, and that duplication compounds at every
+  // level a diamond appears in a longer chain.
+  visited?: Set<string>
 ): Effect.Effect<void, SchemaError> =>
   Effect.gen(function* () {
     if (!isPlainObject(content)) {
@@ -317,10 +324,13 @@ const saveSchemaEffect = (
       )
     }
 
+    const cascadeVisited = visited ?? new Set<string>()
+    cascadeVisited.add(selfId)
+
     yield* cascadeDependentsEffect(
       platform,
       version,
-      new Set([selfId]),
+      cascadeVisited,
       resolvedPlatforms
     )
   })
@@ -350,13 +360,16 @@ const cascadeDependentsEffect = (
         // saveSchemaEffect already cascades to `dep`'s own dependents at its
         // end, so no separate recursive call is needed here - adding one
         // would re-cascade the same subtree a second time, and the
-        // duplication compounds at every level of a longer chain.
+        // duplication compounds at every level of a longer chain. Passing
+        // `visited` through (rather than letting it start a fresh set) is
+        // what keeps that guarantee holding across sibling branches too.
         yield* saveSchemaEffect(
           depPlatform,
           depVersion,
           latest.content,
           latest.author,
-          resolvedPlatforms
+          resolvedPlatforms,
+          visited
         )
       }
     }

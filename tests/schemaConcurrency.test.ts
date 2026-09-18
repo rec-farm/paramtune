@@ -324,4 +324,83 @@ describe('cascade update behavior', () => {
     )
     expect(leafSaveCalls).toHaveLength(1)
   })
+
+  it('does not re-save a dependent reached through two different branches (diamond dependency)', async () => {
+    // Regression guard: cascadeDependentsEffect's visited set used to start
+    // fresh on every saveSchemaEffect call, so it only prevented re-cascading
+    // within a single branch. For a diamond - base <- {mid-a, mid-b} <- leaf,
+    // where leaf depends on both mid-a and mid-b - saving `base` cascades to
+    // leaf once via mid-a's branch and once more via mid-b's branch, even
+    // though both branches originate from the same top-level save.
+    mockRedis.scan.mockResolvedValue([
+      '0',
+      ['platforms:base', 'platforms:mid-a', 'platforms:mid-b'],
+    ])
+    mockRedis.zrevrangebyscore.mockImplementation((key: string) => {
+      if (key === 'platforms:base') {
+        return Promise.resolve([
+          JSON.stringify({ name: 'base', versions: ['1.0.0'] }),
+        ])
+      }
+      if (key === 'platforms:mid-a') {
+        return Promise.resolve([
+          JSON.stringify({ name: 'mid-a', versions: ['1.0.0'] }),
+        ])
+      }
+      if (key === 'platforms:mid-b') {
+        return Promise.resolve([
+          JSON.stringify({ name: 'mid-b', versions: ['1.0.0'] }),
+        ])
+      }
+      if (key === 'schemas:mid-a:1.0.0') {
+        return Promise.resolve([
+          JSON.stringify({
+            content: { '@extends': 'base/1.0.0', midA: true },
+            dependencies: ['base/1.0.0'],
+            output: { midA: true },
+          }),
+        ])
+      }
+      if (key === 'schemas:mid-b:1.0.0') {
+        return Promise.resolve([
+          JSON.stringify({
+            content: { '@extends': 'base/1.0.0', midB: true },
+            dependencies: ['base/1.0.0'],
+            output: { midB: true },
+          }),
+        ])
+      }
+      if (key === 'schemas:leaf:1.0.0') {
+        return Promise.resolve([
+          JSON.stringify({
+            content: { leaf: true },
+            dependencies: ['mid-a/1.0.0', 'mid-b/1.0.0'],
+            output: { leaf: true },
+          }),
+        ])
+      }
+      return Promise.resolve([])
+    })
+
+    // base <- mid-a, base <- mid-b, and leaf depends on both mid-a and mid-b
+    mockRedis.smembers.mockImplementation((key: string) => {
+      if (key === 'schemas:dependents:base:1.0.0') {
+        return Promise.resolve(['mid-a/1.0.0', 'mid-b/1.0.0'])
+      }
+      if (key === 'schemas:dependents:mid-a:1.0.0') {
+        return Promise.resolve(['leaf/1.0.0'])
+      }
+      if (key === 'schemas:dependents:mid-b:1.0.0') {
+        return Promise.resolve(['leaf/1.0.0'])
+      }
+      return Promise.resolve([])
+    })
+
+    await saveSchema('base', '1.0.0', { baseVal: 'updated' })
+
+    const leafSaveCalls = mockRedis.zadd.mock.calls.filter(
+      (call: unknown[]) => call[0] === 'schemas:leaf:1.0.0'
+    )
+    expect(leafSaveCalls).toHaveLength(1)
+  })
 })

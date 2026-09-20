@@ -11,6 +11,7 @@ beforeEach(() => {
   vi.clearAllMocks()
   mockRedis.scan.mockResolvedValue(['0', []])
   mockRedis.smembers.mockResolvedValue([])
+  mockRedis.zrevrangebyscore.mockResolvedValue([])
 })
 
 describe('schema persistence round-trip', () => {

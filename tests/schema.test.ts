@@ -124,6 +124,52 @@ describe('saveSchema', () => {
       'child/1.0.0'
     )
   })
+
+  it('removes stale dependents-set entries when @extends is dropped', async () => {
+    mockRedis.scan.mockResolvedValue(['0', ['platforms:base-platform']])
+    mockRedis.zrevrangebyscore.mockImplementation((key: string) => {
+      if (key === 'platforms:base-platform') {
+        return Promise.resolve([
+          JSON.stringify({ name: 'base-platform', versions: ['1.0.0'] }),
+        ])
+      }
+      if (key === 'schemas:child:1.0.0') {
+        // The previously saved version of this schema still extended
+        // base-platform/1.0.0.
+        return Promise.resolve([
+          JSON.stringify({
+            content: {
+              '@extends': 'base-platform/1.0.0',
+              childKey: 'childValue',
+            },
+            dependencies: ['base-platform/1.0.0'],
+            output: { childKey: 'childValue' },
+          }),
+        ])
+      }
+      if (key === 'schemas:base-platform:1.0.0') {
+        return Promise.resolve([
+          JSON.stringify({
+            content: { baseKey: 'baseValue' },
+            dependencies: [],
+            output: { baseKey: 'baseValue' },
+          }),
+        ])
+      }
+      return Promise.resolve([])
+    })
+    mockRedis.zadd.mockResolvedValue(1)
+    mockRedis.smembers.mockResolvedValue([])
+
+    // The new content drops the @extends reference entirely.
+    await saveSchema('child', '1.0.0', { childKey: 'childValue' })
+
+    expect(mockRedis.srem).toHaveBeenCalledWith(
+      'schemas:dependents:base-platform:1.0.0',
+      'child/1.0.0'
+    )
+    expect(mockRedis.sadd).not.toHaveBeenCalled()
+  })
 })
 
 describe('validateSchemaContent', () => {

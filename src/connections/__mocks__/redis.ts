@@ -5,6 +5,7 @@ export const zadd = vi.fn()
 export const zcard = vi.fn()
 export const zremrangebyrank = vi.fn()
 export const sadd = vi.fn()
+export const srem = vi.fn()
 export const smembers = vi.fn()
 export const scan = vi.fn()
 export const lpush = vi.fn()
@@ -68,6 +69,7 @@ const mockRedis = {
   zcard,
   zremrangebyrank,
   sadd,
+  srem,
   smembers,
   scan,
   lpush,

@@ -11,6 +11,7 @@ beforeEach(() => {
   mockRedis.scan.mockResolvedValue(['0', []])
   mockRedis.smembers.mockResolvedValue([])
   mockRedis.zadd.mockResolvedValue(1)
+  mockRedis.zrevrangebyscore.mockResolvedValue([])
 })
 
 describe('concurrent schema updates', () => {

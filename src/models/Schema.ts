@@ -298,6 +298,13 @@ const saveSchemaEffect = (
     const resolvedPlatforms =
       platforms ?? (yield* Effect.promise(() => getCachedPlatforms()))
 
+    // Read before appending the new entry below, so this reflects the
+    // dependencies this schema had *before* the save being processed here.
+    const previous = (yield* getSchemaEffect(platform, version)) as Schema
+    const previousDependencies = previous?.content
+      ? findDependenciesInContent(previous.content)
+      : []
+
     const dependencies = findDependenciesInContent(content)
     const resolved = yield* resolveDependenciesEffect(dependencies, resolvedPlatforms)
 
@@ -322,6 +329,30 @@ const saveSchemaEffect = (
           selfId
         )
       )
+    }
+
+    // A dependency dropped from @extends never had its dependents-set entry
+    // removed, so it kept growing that set forever and kept re-cascading
+    // saves into this schema whenever the dropped base changed. Resolution
+    // failures here (e.g. the removed ref's platform is now gone entirely)
+    // are swallowed - cleanup is best-effort and must not fail the save.
+    const droppedDependencies = previousDependencies.filter(
+      (dep) => !dependencies.includes(dep)
+    )
+    if (droppedDependencies.length > 0) {
+      const droppedResolved = yield* resolveDependenciesEffect(
+        droppedDependencies,
+        resolvedPlatforms
+      ).pipe(Effect.catchAll(() => Effect.succeed([] as ResolvedDependency[])))
+
+      for (const dep of droppedResolved) {
+        yield* redisCall(() =>
+          redis.srem(
+            `schemas:dependents:${dep.platform}:${dep.version}`,
+            selfId
+          )
+        )
+      }
     }
 
     const cascadeVisited = visited ?? new Set<string>()

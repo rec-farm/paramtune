@@ -194,6 +194,60 @@ describe('cascade update behavior', () => {
     expect(savedKeys).toContain('schemas:child:1.0.0')
   })
 
+  it('does not fail the save when a dependent fails to re-resolve during cascade', async () => {
+    // Regression guard: a resolution failure while cascading to a dependent
+    // (e.g. that dependent's own @extends now points at a platform that no
+    // longer exists) used to propagate all the way up and reject the whole
+    // save - even though the save being processed here had already
+    // committed its own write. Cascading to dependents is best-effort, same
+    // as the dependents-set cleanup a few lines above it.
+    mockRedis.scan.mockResolvedValue(['0', ['platforms:base']])
+    mockRedis.zrevrangebyscore.mockImplementation((key: string) => {
+      if (key === 'platforms:base') {
+        return Promise.resolve([
+          JSON.stringify({ name: 'base', versions: ['1.0.0'] }),
+        ])
+      }
+      if (key === 'schemas:child:1.0.0') {
+        return Promise.resolve([
+          JSON.stringify({
+            content: {
+              '@extends': 'base/1.0.0',
+              childVal: true,
+              // References a platform that no longer exists, so
+              // re-resolving this dependent's own dependencies during the
+              // cascade fails.
+              nested: { '@extends': 'gone/1.0.0' },
+            },
+            dependencies: ['base/1.0.0', 'gone/1.0.0'],
+            output: { childVal: true },
+          }),
+        ])
+      }
+      return Promise.resolve([])
+    })
+
+    // child/1.0.0 depends on base/1.0.0
+    mockRedis.smembers.mockImplementation((key: string) => {
+      if (key === 'schemas:dependents:base:1.0.0') {
+        return Promise.resolve(['child/1.0.0'])
+      }
+      return Promise.resolve([])
+    })
+
+    await expect(
+      saveSchema('base', '1.0.0', { baseVal: 'updated' })
+    ).resolves.not.toThrow()
+
+    // The base save itself must still have committed, even though cascading
+    // to child failed.
+    const savedKeys = mockRedis.zadd.mock.calls.map(
+      (call: unknown[]) => call[0]
+    )
+    expect(savedKeys).toContain('schemas:base:1.0.0')
+    expect(savedKeys).not.toContain('schemas:child:1.0.0')
+  })
+
   it('preserves the dependent\'s own author when cascading a re-save', async () => {
     // Regression guard: cascadeDependentsEffect used to re-save each
     // dependent with author hardcoded to undefined, so a cascade-triggered

@@ -358,11 +358,24 @@ const saveSchemaEffect = (
     const cascadeVisited = visited ?? new Set<string>()
     cascadeVisited.add(selfId)
 
+    // The write above already committed. A dependent that fails to
+    // re-resolve during the cascade (e.g. its own @extends now points at a
+    // version or platform that's been removed) must not fail this save -
+    // cascading is best-effort, same as the dependents-set cleanup above.
     yield* cascadeDependentsEffect(
       platform,
       version,
       cascadeVisited,
       resolvedPlatforms
+    ).pipe(
+      Effect.catchAll((error) =>
+        Effect.sync(() =>
+          console.error(
+            `Failed to cascade update to dependents of "${selfId}":`,
+            error
+          )
+        )
+      )
     )
   })
 

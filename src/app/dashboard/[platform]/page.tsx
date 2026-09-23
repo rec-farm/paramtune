@@ -2,19 +2,10 @@ import PageTitle from '@/components/PageTitle'
 import AddVersionForm from '@/components/AddVersionForm'
 import Badge from '@/components/ui/Badge'
 import Card from '@/components/ui/Card'
-import {
-  getPlatform,
-  savePlatform,
-  MissingPlatformError,
-} from '@/models/Platform'
-import {
-  addVersion,
-  isValidVersion,
-  sortVersionsDescending,
-} from '@/lib/versionUtils'
-import { requireDashboardSession } from '@/lib/dashboardAuth'
+import { getPlatform } from '@/models/Platform'
+import { sortVersionsDescending } from '@/lib/versionUtils'
+import { createPlatformVersion } from '@/actions/createVersion'
 import { revalidatePath } from 'next/cache'
-import { headers } from 'next/headers'
 import { Suspense } from 'react'
 
 export const dynamic = 'force-dynamic'
@@ -62,28 +53,13 @@ export default async function Page({
   async function createVersion(formData: FormData) {
     'use server'
 
-    await requireDashboardSession(await headers())
-
     const resolvedParams = await params
     const platformName = decodeURIComponent(resolvedParams.platform)
-    const platform = await getPlatform(platformName)
-
-    if (!platform) {
-      throw new MissingPlatformError({ platform: platformName })
-    }
-
     const versionName = formData.get('versionName') as string
-    if (!isValidVersion(versionName)) {
-      throw new Error(
-        `Invalid version "${versionName}": must be a valid semantic version (e.g. 1.2.3)`
-      )
-    }
-    await savePlatform(platform.name, {
-      name: platform.name,
-      versions: addVersion(platform.versions, versionName),
-    })
 
-    revalidatePath(`/dashboard/${encodeURIComponent(platform.name)}`)
+    await createPlatformVersion(platformName, versionName)
+
+    revalidatePath(`/dashboard/${encodeURIComponent(platformName)}`)
   }
 
   return (

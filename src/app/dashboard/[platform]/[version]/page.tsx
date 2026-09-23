@@ -1,34 +1,21 @@
 import { revalidatePath } from 'next/cache'
 import { Suspense } from 'react'
 import Link from 'next/link'
-import { headers } from 'next/headers'
 import { GitCompare } from 'lucide-react'
 
 import { createHash } from 'crypto'
-import { requireDashboardSession } from '@/lib/dashboardAuth'
+import { saveSchemaContent } from '@/actions/saveSchema'
 import PageTitle from '@/components/PageTitle'
 import SchemaTabs from '@/components/SchemaTabs'
 import Badge from '@/components/ui/Badge'
 import Button from '@/components/ui/Button'
 import {
   getSchema,
-  saveSchema,
   getSchemaHistoryWithTimestamps,
   InvalidContentError,
-  type Author,
 } from '@/models/Schema'
 
 export const dynamic = 'force-dynamic'
-
-function authorFromSession(
-  session: Awaited<ReturnType<typeof requireDashboardSession>>
-): Author {
-  return {
-    id: session.user.id,
-    name: session.user.name || 'Unknown',
-    image: session.user.image || undefined,
-  }
-}
 
 export default async function Page({
   params,
@@ -53,8 +40,6 @@ export default async function Page({
   async function updateSchema(formData: FormData) {
     'use server'
 
-    const session = await requireDashboardSession(await headers())
-
     let content: Record<string, unknown>
     try {
       content = JSON.parse(formData.get('content') as string) as Record<
@@ -65,7 +50,7 @@ export default async function Page({
       throw new InvalidContentError()
     }
 
-    await saveSchema(platformName, versionName, content, authorFromSession(session))
+    await saveSchemaContent(platformName, versionName, content)
 
     revalidatePath('/dashboard/[platform]/[version]', 'page')
   }
@@ -73,9 +58,7 @@ export default async function Page({
   async function restoreVersion(content: Record<string, unknown>) {
     'use server'
 
-    const session = await requireDashboardSession(await headers())
-
-    await saveSchema(platformName, versionName, content, authorFromSession(session))
+    await saveSchemaContent(platformName, versionName, content)
     revalidatePath('/dashboard/[platform]/[version]', 'page')
   }
 

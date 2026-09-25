@@ -44,6 +44,15 @@ describe('createPlatformVersion action', () => {
     expect(mockLogAudit).not.toHaveBeenCalled()
   })
 
+  it('rejects an invalid platform name, without saving or logging', async () => {
+    await expect(
+      createPlatformVersion('ios/../etc', '1.0.0')
+    ).rejects.toThrow('Invalid platform name')
+    expect(mockGetPlatform).not.toHaveBeenCalled()
+    expect(mockSavePlatform).not.toHaveBeenCalled()
+    expect(mockLogAudit).not.toHaveBeenCalled()
+  })
+
   it('throws when the platform does not exist', async () => {
     mockGetPlatform.mockResolvedValue(null)
 

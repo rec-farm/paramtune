@@ -4,6 +4,7 @@ import { headers } from 'next/headers'
 import { requireDashboardSession } from '@/lib/dashboardAuth'
 import { saveSchema as saveSchemaInternal, type Author } from '@/models/Schema'
 import { logAudit } from '@/lib/auditLog'
+import { isValidName, isValidVersionName } from '@/lib/nameValidation'
 
 export async function saveSchemaContent(
   platform: string,
@@ -11,6 +12,13 @@ export async function saveSchemaContent(
   content: Record<string, unknown>
 ): Promise<void> {
   const session = await requireDashboardSession(await headers())
+
+  if (!isValidName(platform)) {
+    throw new Error(`Invalid platform name "${platform}"`)
+  }
+  if (!isValidVersionName(version)) {
+    throw new Error(`Invalid version name "${version}"`)
+  }
 
   const author: Author = {
     id: session.user.id,

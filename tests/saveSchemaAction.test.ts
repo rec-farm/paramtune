@@ -34,6 +34,30 @@ describe('saveSchemaContent action', () => {
     expect(mockLogAudit).not.toHaveBeenCalled()
   })
 
+  it('rejects an invalid platform name, without saving or logging', async () => {
+    mockAuth.api.getSession.mockResolvedValue({
+      user: { id: 'u1', email: 'a@b.com', name: 'Alice' },
+    })
+
+    await expect(
+      saveSchemaContent('ios/../etc', '1.0.0', { foo: 'bar' })
+    ).rejects.toThrow('Invalid platform name')
+    expect(mockSaveSchema).not.toHaveBeenCalled()
+    expect(mockLogAudit).not.toHaveBeenCalled()
+  })
+
+  it('rejects an invalid version name, without saving or logging', async () => {
+    mockAuth.api.getSession.mockResolvedValue({
+      user: { id: 'u1', email: 'a@b.com', name: 'Alice' },
+    })
+
+    await expect(
+      saveSchemaContent('ios', 'not a version', { foo: 'bar' })
+    ).rejects.toThrow('Invalid version name')
+    expect(mockSaveSchema).not.toHaveBeenCalled()
+    expect(mockLogAudit).not.toHaveBeenCalled()
+  })
+
   it('saves the schema content with the session author when a session exists', async () => {
     mockAuth.api.getSession.mockResolvedValue({
       user: { id: 'u1', email: 'a@b.com', name: 'Alice' },

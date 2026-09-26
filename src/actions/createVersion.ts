@@ -22,7 +22,7 @@ export async function createPlatformVersion(
     throw new MissingPlatformError({ platform })
   }
 
-  if (!isValidVersion(versionName)) {
+  if (typeof versionName !== 'string' || !isValidVersion(versionName)) {
     throw new Error(
       `Invalid version "${versionName}": must be a valid semantic version (e.g. 1.2.3)`
     )

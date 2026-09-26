@@ -71,6 +71,18 @@ describe('createPlatformVersion action', () => {
     expect(mockLogAudit).not.toHaveBeenCalled()
   })
 
+  it('rejects a missing version name instead of throwing a TypeError, without saving or logging', async () => {
+    mockGetPlatform.mockResolvedValue({ name: 'ios', versions: ['1.0.0'] })
+
+    // Mirrors formData.get('versionName') returning null when the field is
+    // absent, which the caller casts to `string` without checking.
+    await expect(
+      createPlatformVersion('ios', null as unknown as string)
+    ).rejects.toThrow('must be a valid semantic version')
+    expect(mockSavePlatform).not.toHaveBeenCalled()
+    expect(mockLogAudit).not.toHaveBeenCalled()
+  })
+
   it('adds the version and records a "create" audit entry', async () => {
     mockGetPlatform.mockResolvedValue({ name: 'ios', versions: ['1.0.0'] })
     mockSavePlatform.mockResolvedValue(undefined)

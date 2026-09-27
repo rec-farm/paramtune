@@ -13,10 +13,10 @@ export async function saveSchemaContent(
 ): Promise<void> {
   const session = await requireDashboardSession(await headers())
 
-  if (!isValidName(platform)) {
+  if (typeof platform !== 'string' || !isValidName(platform)) {
     throw new Error(`Invalid platform name "${platform}"`)
   }
-  if (!isValidVersionName(version)) {
+  if (typeof version !== 'string' || !isValidVersionName(version)) {
     throw new Error(`Invalid version name "${version}"`)
   }
 

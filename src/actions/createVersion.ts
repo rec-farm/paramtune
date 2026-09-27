@@ -13,7 +13,7 @@ export async function createPlatformVersion(
 ): Promise<void> {
   const session = await requireDashboardSession(await headers())
 
-  if (!isValidName(platform)) {
+  if (typeof platform !== 'string' || !isValidName(platform)) {
     throw new Error(`Invalid platform name "${platform}"`)
   }
 

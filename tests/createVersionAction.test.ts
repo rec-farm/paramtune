@@ -53,6 +53,18 @@ describe('createPlatformVersion action', () => {
     expect(mockLogAudit).not.toHaveBeenCalled()
   })
 
+  it('rejects a missing platform name instead of throwing a TypeError, without saving or logging', async () => {
+    // Mirrors formData.get('platform') returning null when the field is
+    // absent, which a direct server-action call can send without the cast
+    // the dashboard page applies.
+    await expect(
+      createPlatformVersion(null as unknown as string, '1.0.0')
+    ).rejects.toThrow('Invalid platform name')
+    expect(mockGetPlatform).not.toHaveBeenCalled()
+    expect(mockSavePlatform).not.toHaveBeenCalled()
+    expect(mockLogAudit).not.toHaveBeenCalled()
+  })
+
   it('throws when the platform does not exist', async () => {
     mockGetPlatform.mockResolvedValue(null)
 

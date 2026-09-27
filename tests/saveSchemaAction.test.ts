@@ -58,6 +58,32 @@ describe('saveSchemaContent action', () => {
     expect(mockLogAudit).not.toHaveBeenCalled()
   })
 
+  it('rejects a missing platform name instead of throwing a TypeError, without saving or logging', async () => {
+    mockAuth.api.getSession.mockResolvedValue({
+      user: { id: 'u1', email: 'a@b.com', name: 'Alice' },
+    })
+
+    // Mirrors a direct server-action call sending a non-string platform,
+    // which a form-derived caller would normally coerce to a string first.
+    await expect(
+      saveSchemaContent(null as unknown as string, '1.0.0', { foo: 'bar' })
+    ).rejects.toThrow('Invalid platform name')
+    expect(mockSaveSchema).not.toHaveBeenCalled()
+    expect(mockLogAudit).not.toHaveBeenCalled()
+  })
+
+  it('rejects a missing version name instead of throwing a TypeError, without saving or logging', async () => {
+    mockAuth.api.getSession.mockResolvedValue({
+      user: { id: 'u1', email: 'a@b.com', name: 'Alice' },
+    })
+
+    await expect(
+      saveSchemaContent('ios', null as unknown as string, { foo: 'bar' })
+    ).rejects.toThrow('Invalid version name')
+    expect(mockSaveSchema).not.toHaveBeenCalled()
+    expect(mockLogAudit).not.toHaveBeenCalled()
+  })
+
   it('saves the schema content with the session author when a session exists', async () => {
     mockAuth.api.getSession.mockResolvedValue({
       user: { id: 'u1', email: 'a@b.com', name: 'Alice' },

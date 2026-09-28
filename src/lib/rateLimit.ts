@@ -5,8 +5,11 @@ type RateLimitEntry = {
 
 const store = new Map<string, RateLimitEntry>()
 
-// Clean up expired entries periodically
-setInterval(() => {
+// Clean up expired entries periodically. Unref the timer so importing this
+// module doesn't by itself keep the process alive (e.g. in scripts or tests
+// that expect to exit once their own work is done); the Edge runtime this
+// also runs under has no Node timer handle, hence the guard.
+const cleanupInterval = setInterval(() => {
   const now = Date.now()
   for (const [key, entry] of store) {
     if (now > entry.resetTime) {
@@ -14,6 +17,9 @@ setInterval(() => {
     }
   }
 }, 60_000)
+if (typeof cleanupInterval.unref === 'function') {
+  cleanupInterval.unref()
+}
 
 type RateLimitConfig = {
   maxRequests: number

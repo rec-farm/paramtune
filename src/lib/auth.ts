@@ -31,6 +31,7 @@ const localBuildSecret = createHash('sha256')
 const baseURL =
   process.env.BETTER_AUTH_URL ||
   process.env.BETTER_AUTH_BASE_URL ||
+  process.env.PORTLESS_URL ||
   (safeLocalFallbacks ? 'http://localhost:3000' : undefined)
 const secret =
   process.env.BETTER_AUTH_SECRET ||

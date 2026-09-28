@@ -43,16 +43,21 @@ docker-compose -f docker-compose.dev.yml up redis
 
 4) Start development server
 
+The dev server runs through [portless](https://github.com/vercel-labs/portless), which serves the app at a stable `paramtune.localhost` URL instead of a port number. Install it globally once (do not add it as a project dependency):
+
 ```bash
+npm install -g portless
 pnpm dev
 ```
+
+If you don't want portless, run `pnpm dev:next` (or `PORTLESS=0 pnpm dev`) to start plain `next dev` on `http://localhost:3000`, and set `BETTER_AUTH_URL` / `CORS_ORIGIN` in `.env.local` to match.
 
 In development, email/password login is enabled with credentials configured in `.env.local` (`DEV_USER_EMAIL` / `DEV_USER_PASSWORD`).
 
 ## Development Commands
 
-- `pnpm dev` – start development server with hot reload
-- `pnpm dev:portless` – start development server through a globally installed `portless`
+- `pnpm dev` – start development server with hot reload through `portless` (`paramtune.localhost`)
+- `pnpm dev:next` – start development server directly on `localhost:3000`, without `portless`
 - `pnpm build` – production build
 - `pnpm start` – run production server locally
 - `pnpm lint` – lint with ESLint

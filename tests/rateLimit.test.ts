@@ -59,3 +59,18 @@ describe('checkRateLimit', () => {
     expect(checkRateLimit(ip, 'api').allowed).toBe(true)
   })
 })
+
+describe('module cleanup timer', () => {
+  it('unrefs the cleanup interval so importing this module does not keep the process alive on its own', async () => {
+    const unref = vi.fn()
+    const setIntervalSpy = vi
+      .spyOn(global, 'setInterval')
+      .mockReturnValue({ unref } as unknown as ReturnType<typeof setInterval>)
+
+    vi.resetModules()
+    await import('@/lib/rateLimit')
+
+    expect(setIntervalSpy).toHaveBeenCalled()
+    expect(unref).toHaveBeenCalled()
+  })
+})

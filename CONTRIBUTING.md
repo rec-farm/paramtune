@@ -23,11 +23,13 @@ Start Redis with Docker:
 docker-compose -f docker-compose.dev.yml up redis
 ```
 
-Start the app:
+Start the app (requires a global `portless` install: `npm install -g portless`):
 
 ```bash
 pnpm dev
 ```
+
+Use `pnpm dev:next` to skip portless and run on `localhost:3000`.
 
 ## Checks
 

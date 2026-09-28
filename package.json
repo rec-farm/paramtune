@@ -13,8 +13,8 @@
   },
   "homepage": "https://github.com/RodrigoEspinosa/paramtune#readme",
   "scripts": {
-    "dev": "next dev",
-    "dev:portless": "portless paramtune next dev",
+    "dev": "portless paramtune next dev",
+    "dev:next": "next dev",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",

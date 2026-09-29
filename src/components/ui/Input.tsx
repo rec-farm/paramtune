@@ -12,8 +12,8 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
       <input
         type={type}
         className={cn(
-          'input',
-          error && 'border-destructive focus-visible:ring-destructive',
+          'pt-input',
+          error && 'border-danger focus:border-danger',
           className
         )}
         ref={ref}

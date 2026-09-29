@@ -1,0 +1,149 @@
+/* Paramtune Console component classes (DESIGN.md §5). Prefix: pt- */
+
+@layer components {
+  /* Uppercase 12px label with 0.08em tracking */
+  .pt-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+  }
+
+  /* Syncopate display type: wordmark, page and section titles only */
+  .pt-display {
+    font-family: var(--font-display);
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+  }
+
+  .pt-btn {
+    @apply inline-flex items-center justify-center gap-2 whitespace-nowrap border border-transparent px-4 disabled:pointer-events-none disabled:opacity-40;
+    height: 40px;
+    font-size: 0.875rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    transition:
+      background-color var(--pt-dur-fast) var(--pt-ease-out),
+      border-color var(--pt-dur-fast) var(--pt-ease-out),
+      color var(--pt-dur-fast) var(--pt-ease-out);
+  }
+
+  .pt-btn-primary {
+    @apply bg-primary text-primary-foreground;
+  }
+  .pt-btn-primary:active {
+    background-color: #c5e87f;
+  }
+  @media (hover: hover) {
+    .pt-btn-primary:hover {
+      background-color: #e6fbbd;
+    }
+  }
+
+  .pt-btn-secondary {
+    @apply bg-surface-2 text-foreground border-border-strong;
+  }
+  .pt-btn-secondary:active {
+    @apply bg-surface-3;
+  }
+  @media (hover: hover) {
+    .pt-btn-secondary:hover {
+      @apply border-input;
+    }
+  }
+
+  .pt-btn-ghost {
+    @apply bg-transparent text-foreground;
+  }
+  .pt-btn-ghost:active {
+    @apply bg-surface-3;
+  }
+  @media (hover: hover) {
+    .pt-btn-ghost:hover {
+      @apply bg-surface-2;
+    }
+  }
+
+  /* Destructive fill: only inside a confirmation step */
+  .pt-btn-destructive {
+    @apply bg-danger-fill text-white;
+  }
+  @media (hover: hover) {
+    .pt-btn-destructive:hover {
+      background-color: #b91c1c;
+    }
+  }
+
+  .pt-card {
+    @apply border border-border bg-surface text-card-foreground;
+    transition: border-color var(--pt-dur-fast) var(--pt-ease-out);
+  }
+
+  .pt-card-elevated {
+    @apply bg-surface-2;
+  }
+
+  .pt-card-interactive {
+    @apply cursor-pointer;
+    transition:
+      border-color var(--pt-dur-fast) var(--pt-ease-out),
+      background-color var(--pt-dur-fast) var(--pt-ease-out);
+  }
+  @media (hover: hover) {
+    .pt-card-interactive:hover {
+      @apply bg-surface-2 border-border-strong;
+    }
+  }
+
+  .pt-input,
+  .pt-select {
+    @apply flex w-full border border-input bg-surface px-3 text-sm text-foreground disabled:cursor-not-allowed disabled:opacity-40;
+    height: 40px;
+    transition: border-color var(--pt-dur-fast) var(--pt-ease-out);
+  }
+  .pt-input {
+    @apply file:border-0 file:bg-transparent file:text-sm file:font-bold file:text-foreground placeholder:text-meta;
+  }
+  .pt-input:focus,
+  .pt-select:focus {
+    @apply border-primary;
+  }
+
+  /* Loading skeleton: a static block shaped like the result */
+  .pt-skeleton {
+    @apply bg-surface-2;
+  }
+
+  /* List entrance: opacity + transform only, 40ms stagger */
+  .animate-in {
+    animation: animate-in var(--pt-dur-slow) var(--pt-ease-out) backwards;
+  }
+  .stagger-1 {
+    animation-delay: var(--pt-stagger);
+  }
+  .stagger-2 {
+    animation-delay: calc(var(--pt-stagger) * 2);
+  }
+  .stagger-3 {
+    animation-delay: calc(var(--pt-stagger) * 3);
+  }
+
+  @keyframes animate-in {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .animate-in {
+      animation: none;
+    }
+  }
+}

@@ -1,6 +1,7 @@
 'use client'
 
 import dynamic from 'next/dynamic'
+import Link from 'next/link'
 import { Menu } from 'lucide-react'
 import { useSidebar } from '@/contexts/SidebarContext'
 
@@ -10,28 +11,23 @@ export default function MobileHeader() {
   const { open } = useSidebar()
 
   return (
-    <header className="sticky top-0 z-40 md:hidden bg-black/80 backdrop-blur-sm border-b border-primary/20">
-      <div className="flex items-center justify-between px-4 py-3">
-        {/* Hamburger button */}
+    <header className="sticky top-0 z-40 md:hidden bg-background border-b border-border">
+      <div className="flex items-center justify-between h-16 px-2">
         <button
           onClick={open}
-          className="flex items-center justify-center h-10 w-10 hover:bg-primary/5 transition-colors"
+          className="flex items-center justify-center h-12 w-12 hover:bg-surface-2 transition-colors duration-150"
           aria-label="Open menu"
         >
-          <Menu className="h-5 w-5" />
+          <Menu className="h-5 w-5" strokeWidth={1.5} />
         </button>
 
-        {/* Logo / Branding */}
-        <div className="flex items-center gap-2">
-          <div className="w-6 h-6 border border-primary flex items-center justify-center">
-            <div className="w-3 h-3 bg-primary/90" />
-          </div>
-          <span className="font-display font-bold text-sm tracking-widest uppercase">
-            PARAMTUNE
-          </span>
-        </div>
+        <Link
+          href="/"
+          className="pt-display text-sm inline-flex items-center min-h-12"
+        >
+          Paramtune
+        </Link>
 
-        {/* Logout button or spacer to balance the header */}
         <MobileAuthNav />
       </div>
     </header>

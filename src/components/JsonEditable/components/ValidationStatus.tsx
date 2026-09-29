@@ -1,6 +1,12 @@
 'use client'
 
 import { memo } from 'react'
+import {
+  CircleCheck,
+  CircleX,
+  LoaderCircle,
+  TriangleAlert,
+} from 'lucide-react'
 import type { ValidationIssue } from '../types'
 
 interface ValidationStatusProps {
@@ -10,9 +16,11 @@ interface ValidationStatusProps {
   isValidating?: boolean
 }
 
+const badgeClassName =
+  'inline-flex items-center gap-1 border px-2 py-0.5 text-xs font-bold uppercase tracking-[0.08em]'
+
 export const ValidationStatus = memo(function ValidationStatus({
   isValid,
-  errorMessage,
   issues = [],
   isValidating = false,
 }: ValidationStatusProps) {
@@ -21,11 +29,16 @@ export const ValidationStatus = memo(function ValidationStatus({
   // Validating state - show subtle indicator
   if (isValidating && isValid) {
     return (
-      <div className="flex items-center gap-1.5 text-gray-400 text-xs font-fragmented uppercase tracking-wider">
-        <div className="w-3.5 h-3.5 flex items-center justify-center">
-          <div className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-pulse" />
-        </div>
-        <span className="text-gray-500">Validating...</span>
+      <div
+        role="status"
+        className={`${badgeClassName} border-border-strong text-muted-foreground`}
+      >
+        <LoaderCircle
+          className="w-4 h-4 animate-spin motion-reduce:animate-none"
+          strokeWidth={1.5}
+          aria-hidden="true"
+        />
+        Validating
       </div>
     )
   }
@@ -33,14 +46,11 @@ export const ValidationStatus = memo(function ValidationStatus({
   // Invalid JSON - show error
   if (!isValid) {
     return (
-      <div className="flex items-center gap-1.5 text-red-500 text-xs font-fragmented uppercase tracking-wider">
-        <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-          <path
-            fillRule="evenodd"
-            d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-            clipRule="evenodd"
-          />
-        </svg>
+      <div
+        role="status"
+        className={`${badgeClassName} border-danger/40 bg-danger/10 text-danger`}
+      >
+        <CircleX className="w-4 h-4" strokeWidth={1.5} aria-hidden="true" />
         Invalid JSON
       </div>
     )
@@ -49,32 +59,23 @@ export const ValidationStatus = memo(function ValidationStatus({
   // Valid JSON with warnings - show warning icon
   if (warningCount > 0) {
     return (
-      <div className="flex items-center gap-1.5 text-amber-500 text-xs font-fragmented uppercase tracking-wider">
-        <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-          <path
-            fillRule="evenodd"
-            d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
-            clipRule="evenodd"
-          />
-        </svg>
-        Valid JSON
-        <span className="text-[10px] text-amber-400">
-          ({warningCount} warning{warningCount > 1 ? 's' : ''})
-        </span>
+      <div
+        role="status"
+        className={`${badgeClassName} border-warn/40 bg-warn/10 text-warn`}
+      >
+        <TriangleAlert className="w-4 h-4" strokeWidth={1.5} aria-hidden="true" />
+        Valid JSON · {warningCount} warning{warningCount > 1 ? 's' : ''}
       </div>
     )
   }
 
   // Valid JSON with no issues
   return (
-    <div className="flex items-center gap-1.5 text-primary text-xs font-fragmented uppercase tracking-wider">
-      <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20">
-        <path
-          fillRule="evenodd"
-          d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-          clipRule="evenodd"
-        />
-      </svg>
+    <div
+      role="status"
+      className={`${badgeClassName} border-success/40 bg-success/10 text-success`}
+    >
+      <CircleCheck className="w-4 h-4" strokeWidth={1.5} aria-hidden="true" />
       Valid JSON
     </div>
   )

@@ -7,8 +7,6 @@ import { createHash } from 'crypto'
 import { saveSchemaContent } from '@/actions/saveSchema'
 import PageTitle from '@/components/PageTitle'
 import SchemaTabs from '@/components/SchemaTabs'
-import Badge from '@/components/ui/Badge'
-import Button from '@/components/ui/Button'
 import {
   getSchema,
   getSchemaHistoryWithTimestamps,
@@ -31,7 +29,7 @@ export default async function Page({
   const contentHash = createHash('sha256')
     .update(JSON.stringify(schema?.content || {}))
     .digest('hex')
-  const shortHash = `0x${contentHash.slice(0, 3).toUpperCase()}...${contentHash.slice(-3).toUpperCase()}`
+  const shortHash = `${contentHash.slice(0, 8)}`
   const history = await getSchemaHistoryWithTimestamps(
     platformName,
     versionName
@@ -63,38 +61,50 @@ export default async function Page({
   }
 
   return (
-    <div className="space-y-4 mx-auto max-w-5xl px-2 md:px-0">
-      <header className="space-y-1">
+    <div className="space-y-4 mx-auto max-w-5xl">
+      <header className="space-y-2">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <PageTitle platform={platformName} version={versionName} />
           <div className="flex items-center gap-2 flex-wrap">
             <Link
               href={`/dashboard/compare?platformA=${encodeURIComponent(platformName)}&versionA=${encodeURIComponent(versionName)}`}
+              className="pt-btn pt-btn-secondary h-10 px-4"
             >
-              <Button variant="outline" size="sm" className="gap-1.5 h-10 sm:h-8">
-                <GitCompare className="h-3.5 w-3.5" />
-                Compare
-              </Button>
+              <GitCompare className="h-4 w-4" strokeWidth={1.5} aria-hidden="true" />
+              Compare
             </Link>
-            <Badge variant="secondary" className="text-xs">
-              JSON Schema
-            </Badge>
           </div>
         </div>
-        <div className="text-[10px] text-gray-500 font-fragmented uppercase tracking-wider flex items-center gap-3">
-          <span>HASH: {shortHash}</span>
-          <span className="w-1 h-1 bg-primary/40 rounded-full" />
-          <span>{history.length} {history.length === 1 ? 'version' : 'versions'}</span>
-          <span className="w-1 h-1 bg-primary/40 rounded-full" />
-          <span>{schema?.dependencies?.length ?? 0} {schema?.dependencies?.length === 1 ? 'dep' : 'deps'}</span>
-          <span className="w-1 h-1 bg-primary/40 rounded-full" />
-          <span>{history[0]?.timestamp
-            ? new Date(history[0].timestamp).toLocaleDateString()
-            : '—'}</span>
-        </div>
+        <p className="text-xs text-meta tabular-nums flex flex-wrap items-center gap-x-2 gap-y-1">
+          <span>JSON Schema</span>
+          <span aria-hidden="true">·</span>
+          <span title={`sha256 ${contentHash}`}>sha256 {shortHash}</span>
+          <span aria-hidden="true">·</span>
+          <span>
+            {history.length} {history.length === 1 ? 'revision' : 'revisions'}
+          </span>
+          <span aria-hidden="true">·</span>
+          <span>
+            {schema?.dependencies?.length ?? 0}{' '}
+            {schema?.dependencies?.length === 1 ? 'dependency' : 'dependencies'}
+          </span>
+          <span aria-hidden="true">·</span>
+          <span>
+            {history[0]?.timestamp
+              ? `Updated ${new Date(history[0].timestamp).toLocaleDateString()}`
+              : 'Never saved'}
+          </span>
+        </p>
       </header>
 
-      <Suspense fallback={<div>Loading...</div>}>
+      <Suspense
+        fallback={
+          <div className="space-y-4" aria-busy="true">
+            <div className="pt-skeleton h-10 w-72" />
+            <div className="pt-skeleton h-96 w-full" />
+          </div>
+        }
+      >
         <div className="space-y-4">
           <SchemaTabs
             defaultValue={JSON.stringify(schema?.content || {}, null, 2)}

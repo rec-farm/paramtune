@@ -4,7 +4,7 @@ A highly modular, performant JSON editor component built with React and TypeScri
 
 ## Features
 
-- **Syntax Highlighting**: Real-time JSON syntax highlighting with customizable themes
+- **Syntax Highlighting**: Real-time JSON syntax highlighting using the Paramtune Console token colors
 - **Auto-completion**: Smart auto-completion for braces, brackets, and quotes
 - **Validation**: Real-time JSON validation with error reporting
 - **Keyboard Shortcuts**: Tab indentation, Enter for new lines, auto-closing brackets
@@ -104,12 +104,14 @@ function AdvancedEditor() {
 ### Custom Syntax Highlighting Theme
 
 ```tsx
-import { createCustomTheme, highlightJson } from '@/components/JsonEditable'
+import {
+  createCustomTheme,
+  highlightJson,
+} from '@/components/JsonEditable/utils/optimizedSyntaxHighlighter'
 
+// Overrides are merged over the default dark theme (DESIGN.md token colors)
 const customTheme = createCustomTheme({
-  keys: 'text-blue-600 font-bold',
-  strings: 'text-green-600',
-  numbers: 'text-purple-600',
+  keys: 'text-muted-foreground',
 })
 
 const highlighted = highlightJson(jsonString, {}, customTheme)

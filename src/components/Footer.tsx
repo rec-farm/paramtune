@@ -1,74 +1,51 @@
 import Link from 'next/link'
 
+const REPO_URL = 'https://github.com/RodrigoEspinosa/paramtune'
+
+const linkClass =
+  'inline-flex items-center min-h-8 text-sm text-muted-foreground hover:text-foreground transition-colors duration-150'
+
 export default function Footer() {
   return (
-    <footer className="relative z-50 pt-24 pb-12 border-t border-primary/10 mt-24">
-      <div className="max-w-[1400px] mx-auto px-6 grid grid-cols-1 md:grid-cols-12 gap-12 text-gray-500">
-        <div className="md:col-span-4">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-8 h-8 border border-primary flex items-center justify-center font-display text-primary text-xs">
-              P
-            </div>
-            <span className="font-display font-bold text-white tracking-widest text-lg">
-              PARAMTUNE
-            </span>
-          </div>
-          <p className="text-[10px] uppercase tracking-widest leading-loose font-fragmented">
-            Centralized Architecture for modern systems.
-            <br />
-            Self-hosted. API-First. Open Source.
-            <br />
-            &copy; {new Date().getFullYear()} SYSTEM_CORE_V1.0
+    <footer className="border-t border-border">
+      <div className="max-w-7xl mx-auto px-4 md:px-6 py-12 grid grid-cols-1 md:grid-cols-12 gap-8">
+        <div className="md:col-span-6 space-y-4">
+          <span className="pt-display text-base text-foreground">Paramtune</span>
+          <p className="text-sm text-muted-foreground max-w-[68ch]">
+            Self-hosted, API-first configuration management. Open source.
           </p>
         </div>
 
-        <div className="md:col-span-8 flex flex-wrap justify-end gap-x-16 gap-y-8">
-          <div className="flex flex-col gap-4">
-            <span className="text-[10px] font-bold text-primary tracking-widest font-display">
-              _DOCUMENTATION
-            </span>
-            <Link
-              href="#quickstart"
-              className="text-xs hover:text-white transition-colors font-fragmented"
-            >
-              Quick Start
+        <div className="md:col-span-6 flex flex-wrap md:justify-end gap-x-16 gap-y-8">
+          <div className="flex flex-col gap-2">
+            <span className="pt-label text-meta">Documentation</span>
+            <Link href="#quickstart" className={linkClass}>
+              Quick start
             </Link>
-            <Link
-              href="/api-docs"
-              className="text-xs hover:text-white transition-colors font-fragmented"
-            >
-              API Reference
+            <Link href="/api-docs" className={linkClass}>
+              API reference
             </Link>
           </div>
-          <div className="flex flex-col gap-4">
-            <span className="text-[10px] font-bold text-primary tracking-widest font-display">
-              _LEGAL
-            </span>
-            <span className="text-xs font-fragmented">Privacy Policy</span>
-            <span className="text-xs font-fragmented">
-              Open Source License
-            </span>
-          </div>
-          <div className="flex flex-col gap-4">
-            <span className="text-[10px] font-bold text-primary tracking-widest font-display">
-              _SOCIAL
-            </span>
+          <div className="flex flex-col gap-2">
+            <span className="pt-label text-meta">Project</span>
             <Link
-              href="https://github.com"
+              href={REPO_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-xs hover:text-white transition-colors font-fragmented"
+              className={linkClass}
             >
               GitHub
             </Link>
-            <span className="text-xs font-fragmented">Discord</span>
-            <span className="text-xs font-fragmented">X / Twitter</span>
+            <Link
+              href={`${REPO_URL}/blob/master/LICENSE`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={linkClass}
+            >
+              License
+            </Link>
           </div>
         </div>
-      </div>
-
-      <div className="max-w-[1400px] mx-auto px-6">
-        <div className="mt-12 h-1 w-full bg-gradient-to-r from-transparent via-primary/20 to-transparent" />
       </div>
     </footer>
   )

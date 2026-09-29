@@ -3,6 +3,7 @@
 import { useState, useTransition } from 'react'
 import Image from 'next/image'
 import { formatDistanceToNow } from 'date-fns'
+import { FilePlus2, GitCommitHorizontal, History, Loader2, RotateCcw } from 'lucide-react'
 import Card from '@/components/ui/Card'
 import Badge from '@/components/ui/Badge'
 import Button from '@/components/ui/Button'
@@ -70,193 +71,176 @@ export default function SchemaHistory({
 
   const selectedEntry = selectedIndex !== null ? history[selectedIndex] : null
 
+  const renderAuthor = (
+    author: SchemaHistoryEntry['author'] | undefined,
+    size: 16 | 20
+  ) => {
+    if (!author) {
+      return <span className="text-muted-foreground">Unknown</span>
+    }
+    const box = size === 16 ? 'h-4 w-4' : 'h-5 w-5'
+    return (
+      <span className="flex items-center gap-2 min-w-0 text-muted-foreground">
+        {author.image ? (
+          <Image
+            src={author.image}
+            alt=""
+            width={size}
+            height={size}
+            unoptimized
+            className={`${box} shrink-0`}
+          />
+        ) : (
+          <span
+            className={`${box} shrink-0 border border-border-strong flex items-center justify-center text-xs text-foreground`}
+            aria-hidden="true"
+          >
+            {author.name?.charAt(0).toUpperCase() || '?'}
+          </span>
+        )}
+        <span className="truncate">{author.name}</span>
+      </span>
+    )
+  }
+
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="space-y-1">
-          <h3 className="text-sm font-display font-bold uppercase tracking-widest">Schema History</h3>
-          <p className="text-[10px] text-muted-foreground font-fragmented uppercase tracking-wider">
+      <div className="flex items-center justify-between gap-4">
+        <div>
+          <h3 className="pt-display text-base">Schema history</h3>
+          <p className="text-sm text-muted-foreground">
             {history.length} version{history.length !== 1 ? 's' : ''} saved
           </p>
         </div>
         <Button
-          variant="outline"
+          variant="secondary"
           size="sm"
           onClick={() => setShowDiff(!showDiff)}
           disabled={selectedIndex === null || selectedIndex === 0}
+          aria-pressed={showDiff}
         >
-          {showDiff ? 'Hide' : 'Show'} Diff
+          {showDiff ? 'Hide diff' : 'Show diff'}
         </Button>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        {/* History List */}
-        <Card className="p-3">
-          <div className="space-y-1.5 max-h-96 overflow-y-auto">
+        {/* History list */}
+        <Card className="p-0 overflow-hidden">
+          <ul className="max-h-96 overflow-y-auto divide-y divide-border" aria-label="Versions">
             {history.map((entry, index) => {
               const { relative, absolute } = formatTimestamp(entry.timestamp)
               const changeType = getChangeType(index)
               const isSelected = selectedIndex === index
+              const ActionIcon = changeType === 'initial' ? FilePlus2 : GitCommitHorizontal
+              const verb = changeType === 'initial' ? 'Created' : 'Updated'
 
               return (
-                <div
-                  key={entry.timestamp}
-                  className={`p-3 border cursor-pointer transition-colors ${
-                    isSelected
-                      ? 'border-primary/60 bg-primary/10'
-                      : 'border-primary/20 hover:border-primary/40 hover:bg-black/30'
-                  }`}
-                  onClick={() => setSelectedIndex(index)}
-                >
-                  <div className="flex items-center justify-between mb-1.5">
-                    <div className="flex items-center gap-2">
-                      <Badge
-                        variant={
-                          changeType === 'latest'
-                            ? 'default'
-                            : changeType === 'initial'
-                            ? 'secondary'
-                            : 'outline'
-                        }
-                        className="text-[10px]"
-                      >
-                        {changeType === 'latest'
-                          ? 'Current'
-                          : changeType === 'initial'
-                          ? 'Initial'
-                          : 'Update'}
-                      </Badge>
-                      <span className="text-sm font-fragmented font-medium">
-                        Version {history.length - index}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      {entry.author ? (
-                        <div className="flex items-center gap-1.5">
-                          {entry.author.image ? (
-                            <Image
-                              src={entry.author.image}
-                              alt=""
-                              width={16}
-                              height={16}
-                              unoptimized
-                              className="h-4 w-4 rounded-full"
-                            />
-                          ) : (
-                            <div className="h-4 w-4 bg-primary/20 flex items-center justify-center">
-                              <span className="text-[10px] font-fragmented font-medium">
-                                {entry.author.name?.charAt(0).toUpperCase() || '?'}
-                              </span>
-                            </div>
-                          )}
-                          <span className="text-[10px] text-muted-foreground font-fragmented">
-                            {entry.author.name}
-                          </span>
-                        </div>
-                      ) : (
-                        <span className="text-[10px] text-muted-foreground font-fragmented uppercase tracking-wider">Unknown</span>
-                      )}
-                      <span
-                        className="text-[10px] text-muted-foreground font-fragmented"
+                <li key={entry.timestamp}>
+                  <button
+                    type="button"
+                    aria-current={isSelected ? 'true' : undefined}
+                    className={`w-full text-left px-4 py-3 text-sm transition-colors duration-150 ${
+                      isSelected
+                        ? 'bg-accent-dim shadow-[inset_2px_0_0_var(--pt-accent)]'
+                        : 'hover:bg-surface-2'
+                    }`}
+                    onClick={() => setSelectedIndex(index)}
+                  >
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                      <time
+                        dateTime={new Date(entry.timestamp).toISOString()}
                         title={absolute}
+                        className="text-xs text-meta tabular-nums"
                       >
                         {relative}
+                      </time>
+                      <span className="flex items-center gap-1 text-foreground">
+                        <ActionIcon className="w-4 h-4" strokeWidth={1.5} aria-hidden="true" />
+                        {verb}
                       </span>
+                      <span className="font-mono text-foreground">
+                        v{history.length - index}
+                      </span>
+                      <span className="text-xs">{renderAuthor(entry.author, 16)}</span>
+                      {changeType === 'latest' && (
+                        <Badge variant="default" className="ml-auto">
+                          Current
+                        </Badge>
+                      )}
                     </div>
-                  </div>
-
-                  <p className="text-xs text-muted-foreground font-fragmented mb-2">
-                    {getChangeDescription(index)}
-                  </p>
-
-                  <div className="flex items-center gap-3 text-[10px] text-muted-foreground font-fragmented uppercase tracking-wider">
-                    <span>
-                      {Object.keys(entry.content || {}).length} properties
-                    </span>
-                    {entry.dependencies.length > 0 && (
-                      <>
-                        <span className="w-1 h-1 bg-primary/40 rounded-full" />
-                        <span>{entry.dependencies.length} dependencies</span>
-                      </>
-                    )}
-                  </div>
-                </div>
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {getChangeDescription(index)} ·{' '}
+                      <span className="tabular-nums">
+                        {Object.keys(entry.content || {}).length}
+                      </span>{' '}
+                      properties
+                      {entry.dependencies.length > 0 && (
+                        <>
+                          {' '}·{' '}
+                          <span className="tabular-nums">{entry.dependencies.length}</span>{' '}
+                          dependencies
+                        </>
+                      )}
+                    </p>
+                  </button>
+                </li>
               )
             })}
-          </div>
+          </ul>
         </Card>
 
-        {/* Selected Entry Details */}
-        <Card className="p-3">
+        {/* Selected entry details */}
+        <Card className="p-4">
           {selectedEntry ? (
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h4 className="text-sm font-display font-bold uppercase tracking-widest">
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <h4 className="pt-label text-foreground">
                   Version {history.length - (selectedIndex ?? 0)}
                 </h4>
-                <div className="flex items-center gap-3">
-                  {selectedEntry.author ? (
-                    <div className="flex items-center gap-1.5">
-                      {selectedEntry.author.image ? (
-                        <Image
-                          src={selectedEntry.author.image}
-                          alt=""
-                          width={20}
-                          height={20}
-                          unoptimized
-                          className="h-5 w-5 rounded-full"
-                        />
-                      ) : (
-                        <div className="h-5 w-5 bg-primary/20 flex items-center justify-center">
-                          <span className="text-[10px] font-fragmented font-medium">
-                            {selectedEntry.author.name?.charAt(0).toUpperCase() || '?'}
-                          </span>
-                        </div>
-                      )}
-                      <span className="text-xs font-fragmented">{selectedEntry.author.name}</span>
-                    </div>
-                  ) : (
-                    <span className="text-[10px] text-muted-foreground font-fragmented uppercase tracking-wider">Unknown author</span>
-                  )}
-                  <Badge variant="outline" className="text-[10px]">
+                <div className="flex items-center gap-3 text-xs">
+                  {renderAuthor(selectedEntry.author, 20)}
+                  <time
+                    dateTime={new Date(selectedEntry.timestamp).toISOString()}
+                    className="text-meta tabular-nums"
+                  >
                     {formatTimestamp(selectedEntry.timestamp).absolute}
-                  </Badge>
+                  </time>
                 </div>
               </div>
 
               {selectedIndex !== null && selectedIndex !== 0 && onRestore && (
                 <div className="flex justify-end">
                   <Button
-                    variant="outline"
+                    variant="secondary"
                     size="sm"
                     disabled={isPending}
+                    aria-busy={isPending}
                     onClick={() => handleRestore(selectedEntry.content)}
                   >
-                    {isPending ? 'Restoring...' : 'Restore this version'}
+                    {isPending ? (
+                      <Loader2 className="w-4 h-4 animate-spin" strokeWidth={1.5} aria-hidden="true" />
+                    ) : (
+                      <RotateCcw className="w-4 h-4" strokeWidth={1.5} aria-hidden="true" />
+                    )}
+                    {isPending ? 'Restoring' : 'Restore this version'}
                   </Button>
                 </div>
               )}
 
               <div className="space-y-4">
                 <div>
-                  <h5 className="text-[10px] font-fragmented font-bold uppercase tracking-widest text-muted-foreground mb-2">Schema Content</h5>
-                  <div className="bg-black/50 border border-primary/30 p-3">
-                    <pre className="text-xs font-fragmented overflow-x-auto text-foreground/80">
-                      {JSON.stringify(selectedEntry.content, null, 2)}
-                    </pre>
-                  </div>
+                  <h5 className="pt-label text-muted-foreground mb-2">Content</h5>
+                  <pre className="bg-background border border-border p-3 text-xs font-mono overflow-x-auto text-foreground">
+                    {JSON.stringify(selectedEntry.content, null, 2)}
+                  </pre>
                 </div>
 
                 {selectedEntry.dependencies.length > 0 && (
                   <div>
-                    <h5 className="text-[10px] font-fragmented font-bold uppercase tracking-widest text-muted-foreground mb-2">Dependencies</h5>
-                    <div className="flex flex-wrap gap-1.5">
+                    <h5 className="pt-label text-muted-foreground mb-2">Dependencies</h5>
+                    <div className="flex flex-wrap gap-2">
                       {selectedEntry.dependencies.map((dep, idx) => (
-                        <Badge
-                          key={idx}
-                          variant="secondary"
-                          className="text-[10px]"
-                        >
+                        <Badge key={idx} variant="secondary" className="normal-case">
                           {dep}
                         </Badge>
                       ))}
@@ -266,8 +250,8 @@ export default function SchemaHistory({
 
                 {showDiff && selectedIndex !== null && selectedIndex > 0 && (
                   <div>
-                    <h5 className="text-[10px] font-fragmented font-bold uppercase tracking-widest text-muted-foreground mb-2">
-                      Changes from Version {history.length - selectedIndex + 1}
+                    <h5 className="pt-label text-muted-foreground mb-2">
+                      Changes from version {history.length - selectedIndex + 1}
                     </h5>
                     <SchemaDiff
                       current={selectedEntry.content}
@@ -278,12 +262,11 @@ export default function SchemaHistory({
               </div>
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center py-16 text-center">
-              <div className="w-10 h-10 border border-primary/30 flex items-center justify-center mb-4">
-                <div className="w-4 h-4 border border-primary/20" />
-              </div>
-              <p className="text-[10px] font-fragmented uppercase tracking-widest text-muted-foreground">
-                Select a version to view details
+            <div className="flex flex-col items-center justify-center py-16 text-center gap-2">
+              <History className="w-5 h-5 text-meta" strokeWidth={1.5} aria-hidden="true" />
+              <p className="text-sm text-foreground">No version selected</p>
+              <p className="text-sm text-muted-foreground">
+                Pick a version from the list to see its content and changes.
               </p>
             </div>
           )}

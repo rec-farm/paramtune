@@ -1,6 +1,7 @@
 'use client'
 
 import { memo } from 'react'
+import { Braces, Copy, Download } from 'lucide-react'
 
 interface ActionButtonsProps {
   isValid: boolean
@@ -9,51 +10,45 @@ interface ActionButtonsProps {
   onDownload: () => void
 }
 
+const buttonClassName = 'pt-btn pt-btn-secondary h-8 px-3 text-xs'
+
 export const ActionButtons = memo(function ActionButtons({
   isValid,
   onFormat,
   onCopy,
   onDownload,
 }: ActionButtonsProps) {
-  const buttonClassName =
-    'text-sm px-3 py-1.5 bg-muted hover:bg-muted/80 rounded text-muted-foreground hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed transition-colors'
-  const smallButtonClassName =
-    'text-xs px-2 py-1 bg-muted hover:bg-muted/80 rounded text-muted-foreground hover:text-foreground disabled:opacity-50 disabled:cursor-not-allowed'
-
   return (
-    <>
-      {/* Main Actions */}
-      <div className="flex items-center gap-2">
-        <button
-          type="button"
-          onClick={onFormat}
-          disabled={!isValid}
-          className={buttonClassName}
-        >
-          Format
-        </button>
+    <div className="flex flex-wrap items-center gap-2">
+      <button
+        type="button"
+        onClick={onFormat}
+        disabled={!isValid}
+        className={buttonClassName}
+      >
+        <Braces className="w-4 h-4" strokeWidth={1.5} aria-hidden="true" />
+        Format
+      </button>
 
-        <button
-          type="button"
-          onClick={onCopy}
-          disabled={!isValid}
-          className={buttonClassName}
-        >
-          Copy
-        </button>
-      </div>
+      <button
+        type="button"
+        onClick={onCopy}
+        disabled={!isValid}
+        className={buttonClassName}
+      >
+        <Copy className="w-4 h-4" strokeWidth={1.5} aria-hidden="true" />
+        Copy
+      </button>
 
-      {/* Quick Actions */}
-      <div className="flex flex-wrap gap-2 pt-2 border-t border-border/30">
-        <button
-          type="button"
-          onClick={onDownload}
-          disabled={!isValid}
-          className={smallButtonClassName}
-        >
-          Download
-        </button>
-      </div>
-    </>
+      <button
+        type="button"
+        onClick={onDownload}
+        disabled={!isValid}
+        className={buttonClassName}
+      >
+        <Download className="w-4 h-4" strokeWidth={1.5} aria-hidden="true" />
+        Download
+      </button>
+    </div>
   )
 })

@@ -26,28 +26,28 @@ const Card = forwardRef<HTMLDivElement, CardProps>(
       <div
         ref={ref}
         className={cn(
-          'card p-6 animate-in',
+          'pt-card p-6 animate-in',
           {
-            'card-elevated': variant === 'elevated',
-            'border-2': variant === 'outlined',
-            'card-interactive': variant === 'interactive',
+            'pt-card-elevated': variant === 'elevated',
+            'border-border-strong': variant === 'outlined',
+            'pt-card-interactive': variant === 'interactive',
           },
           className
         )}
         {...props}
       >
         {(title || subtitle || actions) && (
-          <div className="mb-6 space-y-1.5">
+          <div className="mb-6">
             <div className="flex items-center justify-between">
               {(title || subtitle) && (
                 <div className="space-y-1">
                   {title && (
-                    <h3 className="text-sm font-display font-bold uppercase tracking-widest text-foreground">
+                    <h3 className="pt-label text-foreground">
                       {title}
                     </h3>
                   )}
                   {subtitle && (
-                    <p className="text-xs text-gray-500 font-fragmented">{subtitle}</p>
+                    <p className="text-sm text-muted-foreground">{subtitle}</p>
                   )}
                 </div>
               )}
@@ -70,7 +70,7 @@ export const CardHeader = forwardRef<
 >(({ className, ...props }, ref) => (
   <div
     ref={ref}
-    className={cn('flex flex-col space-y-1.5 p-6', className)}
+    className={cn('flex flex-col gap-2 p-6', className)}
     {...props}
   />
 ))
@@ -83,7 +83,7 @@ export const CardTitle = forwardRef<
   <h3
     ref={ref}
     className={cn(
-      'text-sm font-display font-bold uppercase tracking-widest',
+      'pt-label',
       className
     )}
     {...props}

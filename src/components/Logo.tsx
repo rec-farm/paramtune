@@ -11,23 +11,16 @@ const Logo = forwardRef<HTMLDivElement, LogoProps>(
     const content = (
       <div
         ref={ref}
-        className={cn('flex items-center gap-3', className)}
+        className={cn('flex items-center', className)}
         {...props}
       >
-        <div className="w-8 h-8 border border-primary flex items-center justify-center">
-          <span className="font-display text-primary text-xs font-bold">
-            P
-          </span>
-        </div>
-        <span className="font-display font-bold text-white tracking-widest text-base uppercase">
-          PARAMTUNE
-        </span>
+        <span className="pt-display text-base text-foreground">Paramtune</span>
       </div>
     )
 
     if (asLink) {
       return (
-        <Link href="/" className="inline-flex items-center">
+        <Link href="/" className="inline-flex items-center min-h-8">
           {content}
         </Link>
       )

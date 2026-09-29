@@ -12,7 +12,7 @@ export default function MobileAuthNav() {
 
   // Show nothing when not logged in (mobile header already has its own non-auth state)
   if (!session?.user) {
-    return <div className="w-10" /> // Spacer for layout balance
+    return <div className="w-12" /> // Spacer for layout balance
   }
 
   const user = session.user
@@ -20,7 +20,6 @@ export default function MobileAuthNav() {
 
   return (
     <div className="flex items-center gap-2">
-      {/* Avatar */}
       {user.image ? (
         <Image
           src={user.image}
@@ -28,21 +27,23 @@ export default function MobileAuthNav() {
           width={32}
           height={32}
           unoptimized
-          className="h-8 w-8 rounded-full border border-primary/20"
+          className="h-8 w-8 border border-border-strong"
         />
       ) : (
-        <div className="h-8 w-8 rounded-full bg-primary/20 flex items-center justify-center border border-primary/20">
-          <span className="text-sm font-medium">{initial}</span>
-        </div>
+        <span
+          className="h-8 w-8 flex items-center justify-center border border-border-strong bg-surface-2 text-sm font-bold"
+          aria-hidden="true"
+        >
+          {initial}
+        </span>
       )}
 
-      {/* Logout button */}
       <button
         onClick={() => signOut()}
-        className="flex items-center justify-center h-10 w-10 rounded-md hover:bg-sidebar-foreground/10 transition-colors"
+        className="flex items-center justify-center h-12 w-12 text-muted-foreground hover:bg-surface-2 transition-colors duration-150"
         aria-label="Sign out"
       >
-        <LogOut className="h-5 w-5" />
+        <LogOut className="h-5 w-5" strokeWidth={1.5} />
       </button>
     </div>
   )

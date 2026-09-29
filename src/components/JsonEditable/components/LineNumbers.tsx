@@ -37,7 +37,7 @@ export const LineNumbers = memo(function LineNumbers({
             left: '8px',
             right: '8px',
           }}
-          className="text-xs text-gray-500 pointer-events-none select-none font-mono"
+          className="text-xs text-meta tabular-nums pointer-events-none select-none font-mono"
         >
           {i + 1}
         </div>

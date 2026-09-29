@@ -1,14 +1,11 @@
 'use client'
 
 import { useMemo } from 'react'
-import Card from '@/components/ui/Card'
 import Badge from '@/components/ui/Badge'
 import {
   calculateDiff,
   formatPath,
-  getNestedValue,
   getValueDisplay,
-  type DiffResult,
 } from '@/lib/schemaDiff'
 
 interface SchemaDiffProps {
@@ -27,133 +24,85 @@ export default function SchemaDiff({ current, previous }: SchemaDiffProps) {
 
   if (!hasChanges) {
     return (
-      <Card className="p-4">
-        <div className="text-center py-4 text-muted-foreground">
-          <p>No changes detected between versions</p>
-        </div>
-      </Card>
+      <div className="border border-border bg-surface p-6 text-center">
+        <p className="text-sm text-muted-foreground">
+          No changes between these versions.
+        </p>
+      </div>
     )
   }
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-4">
-        <h4 className="font-medium">Changes Summary</h4>
-        <div className="flex items-center gap-2">
-          {summary.added > 0 && (
-            <Badge variant="default" className="text-xs">
-              +{summary.added} added
-            </Badge>
-          )}
-          {summary.removed > 0 && (
-            <Badge variant="destructive" className="text-xs">
-              -{summary.removed} removed
-            </Badge>
-          )}
-          {summary.modified > 0 && (
-            <Badge variant="secondary" className="text-xs">
-              ~{summary.modified} modified
-            </Badge>
-          )}
-        </div>
-      </div>
-
-      <div className="space-y-3">
-        {byType.added.length > 0 && (
-          <div>
-            <h5 className="text-sm font-medium mb-2 text-green-600">
-              Added Properties
-            </h5>
-            <div className="space-y-1">
-              {byType.added.map((change) => (
-                <div
-                  key={change.path}
-                  className="flex items-start gap-2 p-2 bg-green-50 rounded border-l-2 border-green-500"
-                >
-                  <span className="text-green-600 font-mono text-xs">+</span>
-                  <div className="flex-1 min-w-0">
-                    <code className="text-xs font-medium text-green-800">
-                      {formatPath(change.path)}
-                    </code>
-                    <div className="text-xs text-green-700 mt-1">
-                      {getValueDisplay(change.newValue)}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+      <div className="flex flex-wrap items-center gap-2">
+        <h4 className="pt-label text-muted-foreground mr-2">Summary</h4>
+        {summary.added > 0 && (
+          <Badge variant="success">+ {summary.added} added</Badge>
         )}
-
-        {byType.removed.length > 0 && (
-          <div>
-            <h5 className="text-sm font-medium mb-2 text-red-600">
-              Removed Properties
-            </h5>
-            <div className="space-y-1">
-              {byType.removed.map((change) => (
-                <div
-                  key={change.path}
-                  className="flex items-start gap-2 p-2 bg-red-50 rounded border-l-2 border-red-500"
-                >
-                  <span className="text-red-600 font-mono text-xs">-</span>
-                  <div className="flex-1 min-w-0">
-                    <code className="text-xs font-medium text-red-800">
-                      {formatPath(change.path)}
-                    </code>
-                    <div className="text-xs text-red-700 mt-1">
-                      {getValueDisplay(change.oldValue)}
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+        {summary.removed > 0 && (
+          <Badge variant="destructive">− {summary.removed} removed</Badge>
         )}
-
-        {byType.modified.length > 0 && (
-          <div>
-            <h5 className="text-sm font-medium mb-2 text-blue-600">
-              Modified Properties
-            </h5>
-            <div className="space-y-1">
-              {byType.modified.map((change) => (
-                <div
-                  key={change.path}
-                  className="p-2 bg-blue-50 rounded border-l-2 border-blue-500"
-                >
-                  <code className="text-xs font-medium text-blue-800">
-                    {formatPath(change.path)}
-                  </code>
-                  {change.typeChange && (
-                    <span className="ml-2 text-xs text-blue-500">
-                      (type: {change.typeChange.from} → {change.typeChange.to})
-                    </span>
-                  )}
-                  <div className="mt-2 space-y-1">
-                    <div className="flex items-start gap-2">
-                      <span className="text-red-600 font-mono text-xs">
-                        -
-                      </span>
-                      <div className="text-xs text-red-700 font-mono bg-red-100 p-1 rounded">
-                        {getValueDisplay(change.oldValue)}
-                      </div>
-                    </div>
-                    <div className="flex items-start gap-2">
-                      <span className="text-green-600 font-mono text-xs">
-                        +
-                      </span>
-                      <div className="text-xs text-green-700 font-mono bg-green-100 p-1 rounded">
-                        {getValueDisplay(change.newValue)}
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+        {summary.modified > 0 && (
+          <Badge variant="warning">~ {summary.modified} changed</Badge>
         )}
       </div>
+
+      <ul className="border border-border bg-surface font-mono text-xs divide-y divide-border">
+        {byType.added.map((change) => (
+          <li
+            key={`added-${change.path}`}
+            className="flex items-start gap-3 px-3 py-2 bg-[var(--pt-success-bg)]"
+          >
+            <span className="w-3 shrink-0 text-success" aria-label="Added">+</span>
+            <div className="flex-1 min-w-0 space-y-1">
+              <code className="text-foreground break-all">{formatPath(change.path)}</code>
+              <div className="text-success break-all">{getValueDisplay(change.newValue)}</div>
+            </div>
+          </li>
+        ))}
+
+        {byType.removed.map((change) => (
+          <li
+            key={`removed-${change.path}`}
+            className="flex items-start gap-3 px-3 py-2 bg-[var(--pt-danger-bg)]"
+          >
+            <span className="w-3 shrink-0 text-danger" aria-label="Removed">−</span>
+            <div className="flex-1 min-w-0 space-y-1">
+              <code className="text-foreground break-all line-through decoration-danger/60">
+                {formatPath(change.path)}
+              </code>
+              <div className="text-danger break-all">{getValueDisplay(change.oldValue)}</div>
+            </div>
+          </li>
+        ))}
+
+        {byType.modified.map((change) => (
+          <li
+            key={`modified-${change.path}`}
+            className="flex items-start gap-3 px-3 py-2 bg-[var(--pt-warn-bg)]"
+          >
+            <span className="w-3 shrink-0 text-warn" aria-label="Changed">~</span>
+            <div className="flex-1 min-w-0 space-y-1">
+              <code className="text-foreground break-all">
+                {formatPath(change.path)}
+                {change.typeChange && (
+                  <span className="ml-2 text-muted-foreground">
+                    (type: {change.typeChange.from} → {change.typeChange.to})
+                  </span>
+                )}
+              </code>
+              <div className="flex items-start gap-2 text-danger">
+                <span aria-hidden="true">−</span>
+                <span className="break-all">{getValueDisplay(change.oldValue)}</span>
+              </div>
+              <div className="flex items-start gap-2 text-success">
+                <span aria-hidden="true">+</span>
+                <span className="break-all">{getValueDisplay(change.newValue)}</span>
+              </div>
+            </div>
+          </li>
+        ))}
+      </ul>
     </div>
   )
 }

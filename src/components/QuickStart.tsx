@@ -9,55 +9,61 @@ export default function QuickStart() {
   const [copied, setCopied] = useState(false)
 
   const handleCopy = async () => {
-    await navigator.clipboard.writeText(DOCKER_COMMAND)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+    try {
+      await navigator.clipboard.writeText(DOCKER_COMMAND)
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    } catch {
+      setCopied(false)
+    }
   }
 
   return (
     <section
       id="quickstart"
-      className="relative mx-auto max-w-7xl px-6 py-16 md:py-20"
+      aria-labelledby="quickstart-title"
+      className="max-w-7xl mx-auto px-4 md:px-6 py-16"
     >
-      <div className="text-center mb-10 md:mb-12">
-        <h2 className="text-4xl md:text-5xl font-display font-bold tracking-widest uppercase mb-4">
-          QUICK_START
+      <div className="mb-8 space-y-2">
+        <h2 id="quickstart-title" className="pt-display text-xl">
+          Quick start
         </h2>
-        <div className="flex items-center justify-center gap-4 mt-2">
-          <div className="h-px w-16 bg-primary/30" />
-          <p className="text-sm text-gray-500 font-fragmented uppercase tracking-wider">
-            Get ParamTune running locally in seconds
-          </p>
-          <div className="h-px w-16 bg-primary/30" />
-        </div>
+        <p className="text-muted-foreground">
+          Run Paramtune locally with one command.
+        </p>
       </div>
 
-      <div className="mx-auto max-w-2xl">
-        <div className="relative group">
-          <div className="flex items-center border border-primary/30 bg-black/60 hover:border-primary/50 transition-colors overflow-hidden">
-            <div className="px-4 py-3 bg-primary/10 border-r-2 border-primary/40 text-primary text-sm font-fragmented font-bold">
-              $
-            </div>
-            <code className="flex-1 px-4 py-3 text-sm font-fragmented overflow-x-auto">
-              {DOCKER_COMMAND}
-            </code>
-            <button
-              onClick={handleCopy}
-              className="px-4 py-3 text-gray-500 hover:text-primary transition-colors border-l-2 border-primary/40 hover:bg-primary/10"
-              aria-label="Copy to clipboard"
-            >
-              {copied ? (
-                <Check className="w-4 h-4 text-primary" />
-              ) : (
-                <Copy className="w-4 h-4" />
-              )}
-            </button>
-          </div>
+      <div className="max-w-2xl">
+        <div className="flex items-stretch border border-border bg-surface">
+          <span
+            className="flex items-center px-4 border-r border-border text-meta text-sm select-none"
+            aria-hidden="true"
+          >
+            $
+          </span>
+          <code className="flex-1 flex items-center px-4 py-3 text-sm overflow-x-auto whitespace-nowrap">
+            {DOCKER_COMMAND}
+          </code>
+          <button
+            type="button"
+            onClick={handleCopy}
+            className="flex items-center justify-center w-12 border-l border-border text-muted-foreground hover:bg-surface-2 hover:text-foreground transition-colors duration-150"
+            aria-label={copied ? 'Copied' : 'Copy command'}
+          >
+            {copied ? (
+              <Check className="w-4 h-4 text-success" strokeWidth={1.5} />
+            ) : (
+              <Copy className="w-4 h-4" strokeWidth={1.5} />
+            )}
+          </button>
         </div>
+        <span className="sr-only" aria-live="polite">
+          {copied ? 'Command copied to clipboard' : ''}
+        </span>
 
-        <p className="mt-6 text-center text-sm text-gray-500 font-fragmented">
+        <p className="mt-4 text-sm text-muted-foreground">
           Then open{' '}
-          <code className="px-2 py-1 bg-primary/10 font-fragmented text-xs border border-primary/30 text-primary">
+          <code className="px-1 border border-border bg-surface text-foreground">
             http://localhost:3000
           </code>{' '}
           and create your first platform.

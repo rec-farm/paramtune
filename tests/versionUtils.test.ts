@@ -78,6 +78,12 @@ describe('getLatestVersion', () => {
 })
 
 describe('isValidVersion', () => {
+  it('rejects non-string values, including ones whose string form looks valid', () => {
+    expect(isValidVersion(['1.2.3'])).toBe(false)
+    expect(isValidVersion(123)).toBe(false)
+    expect(isValidVersion(undefined)).toBe(false)
+  })
+
   it('accepts a standard semver version', () => {
     expect(isValidVersion('1.2.3')).toBe(true)
   })

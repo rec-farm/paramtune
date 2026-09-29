@@ -157,6 +157,20 @@ describe('POST /api/[platform]/versions', () => {
     expect(mockSavePlatform).not.toHaveBeenCalled()
   })
 
+  it.each([['a number', 123], ['an array', ['1.2.3']], ['an object', { v: '1.2.3' }]])(
+    'rejects a version that is %s instead of a string',
+    async (_label, version) => {
+      mockGetPlatform.mockResolvedValue({ name: 'ios', versions: ['1.0.0'] })
+
+      const response = (await POST(makePostRequest({ version }), {
+        params: Promise.resolve({ platform: 'ios' }),
+      })) as any
+
+      expect(response._init.status).toBe(400)
+      expect(mockSavePlatform).not.toHaveBeenCalled()
+    }
+  )
+
   it('rejects a missing version field', async () => {
     mockGetPlatform.mockResolvedValue({ name: 'ios', versions: ['1.0.0'] })
 

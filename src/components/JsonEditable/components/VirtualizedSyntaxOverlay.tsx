@@ -2,14 +2,14 @@
 
 import { memo, useMemo, useState, useEffect, useRef } from 'react'
 import DOMPurify from 'dompurify'
-import { highlightVisibleLines, getTheme } from '../utils/optimizedSyntaxHighlighter'
+import { highlightVisibleLines } from '../utils/optimizedSyntaxHighlighter'
+import { EDITOR_CONSTANTS } from '../utils/editorConstants'
 
 interface SyntaxHighlightOverlayProps {
   visibleLines: string[]
   lineHeight: number
   scrollTop: number
   showLineNumbers: boolean
-  theme?: 'light' | 'dark'
 }
 
 // Debounce delay for syntax highlighting (ms)
@@ -26,7 +26,6 @@ export const SyntaxHighlightOverlay = memo(function SyntaxHighlightOverlay({
   lineHeight,
   scrollTop,
   showLineNumbers,
-  theme = 'dark',
 }: SyntaxHighlightOverlayProps) {
   // Debounced lines trail behind visibleLines for smoother typing
   const [debouncedLines, setDebouncedLines] = useState(visibleLines)
@@ -48,10 +47,9 @@ export const SyntaxHighlightOverlay = memo(function SyntaxHighlightOverlay({
   }, [visibleLines])
 
   const highlightedContent = useMemo(() => {
-    const themeConfig = getTheme(theme)
-    const rawHtml = highlightVisibleLines(debouncedLines, {}, themeConfig)
+    const rawHtml = highlightVisibleLines(debouncedLines)
     return DOMPurify.sanitize(rawHtml, SANITIZE_CONFIG)
-  }, [debouncedLines, theme])
+  }, [debouncedLines])
 
   const overlayStyle = useMemo(
     () => ({
@@ -63,9 +61,8 @@ export const SyntaxHighlightOverlay = memo(function SyntaxHighlightOverlay({
       pointerEvents: 'none' as const,
       overflow: 'hidden',
       lineHeight: `${lineHeight}px`,
-      fontSize: '14px',
-      fontFamily:
-        'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace',
+      fontSize: `${EDITOR_CONSTANTS.FONT_SIZE}px`,
+      fontFamily: EDITOR_CONSTANTS.FONT_FAMILY,
       whiteSpace: 'pre-wrap' as const,
       wordWrap: 'break-word' as const,
       paddingTop: '16px',

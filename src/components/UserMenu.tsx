@@ -9,16 +9,29 @@ export default function UserMenu() {
   const { data: session } = useSession()
   const [isOpen, setIsOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
+  const triggerRef = useRef<HTMLButtonElement>(null)
 
-  // Close menu when clicking outside
+  // Close menu when clicking outside or pressing Escape
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
         setIsOpen(false)
       }
     }
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === 'Escape') {
+        setIsOpen((open) => {
+          if (open) triggerRef.current?.focus()
+          return false
+        })
+      }
+    }
     document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
+    document.addEventListener('keydown', handleKeyDown)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('keydown', handleKeyDown)
+    }
   }, [])
 
   if (!session?.user) {
@@ -31,52 +44,58 @@ export default function UserMenu() {
   return (
     <div className="relative" ref={menuRef}>
       <button
+        ref={triggerRef}
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 px-2 py-1.5 rounded-md hover:bg-primary/5 transition-colors"
+        className="flex items-center gap-2 h-11 md:h-10 px-1 text-muted-foreground hover:bg-surface-2 transition-colors duration-150"
         aria-expanded={isOpen}
-        aria-haspopup="true"
+        aria-haspopup="menu"
+        aria-label={`Account menu for ${user.name ?? 'current user'}`}
       >
-        {/* Avatar */}
         {user.image ? (
           <Image
             src={user.image}
             alt=""
-            width={28}
-            height={28}
+            width={32}
+            height={32}
             unoptimized
-            className="h-7 w-7 rounded-full border border-primary/20"
+            className="h-8 w-8 border border-border-strong"
           />
         ) : (
-          <div className="h-7 w-7 rounded-full bg-primary/20 flex items-center justify-center border border-primary/20">
-            <span className="text-xs font-medium">{initial}</span>
-          </div>
+          <span className="h-8 w-8 flex items-center justify-center border border-border-strong bg-surface-2 text-sm font-bold text-foreground">
+            {initial}
+          </span>
         )}
-        <ChevronDown className={`h-3 w-3 text-muted-foreground transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown
+          className={`h-4 w-4 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`}
+          strokeWidth={1.5}
+          aria-hidden="true"
+        />
       </button>
 
-      {/* Dropdown menu */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-56 bg-black/95 border border-primary/20 shadow-lg shadow-black/50 z-50 animate-in">
-          {/* User info section */}
-          <div className="px-4 py-3 border-b border-primary/10">
-            <p className="text-sm font-display font-bold text-foreground truncate tracking-wider uppercase">
+        <div
+          role="menu"
+          className="absolute right-0 mt-2 w-64 bg-popover border border-border-strong shadow-[var(--elev-raised)] z-50"
+        >
+          <div className="px-4 py-3 border-b border-border">
+            <p className="text-sm font-bold text-foreground truncate">
               {user.name}
             </p>
-            <p className="text-[10px] text-gray-500 truncate font-fragmented">
+            <p className="text-xs text-muted-foreground truncate">
               {user.email}
             </p>
           </div>
 
-          {/* Menu items */}
           <div className="py-1">
             <button
+              role="menuitem"
               onClick={() => {
                 setIsOpen(false)
                 signOut()
               }}
-              className="w-full flex items-center gap-3 px-4 py-2 text-sm text-muted-foreground hover:text-foreground hover:bg-primary/5 transition-colors"
+              className="w-full flex items-center gap-3 h-10 px-4 text-sm text-foreground hover:bg-surface-3 transition-colors duration-150"
             >
-              <LogOut className="h-4 w-4" />
+              <LogOut className="h-4 w-4" strokeWidth={1.5} aria-hidden="true" />
               Sign out
             </button>
           </div>

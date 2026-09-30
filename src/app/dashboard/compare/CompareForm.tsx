@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation'
 import Card from '@/components/ui/Card'
 import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
+import { AlertCircle, Loader2 } from 'lucide-react'
 import SideBySideDiff from '@/components/SchemaDiff/SideBySideDiff'
 import { type Platform } from '@/models/Platform'
 import { type DiffResult } from '@/lib/schemaDiff'
@@ -114,18 +115,18 @@ export default function CompareForm({
       {/* Selector panels */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Schema A selector */}
-        <Card className="p-5">
+        <Card className="p-6">
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <Badge variant="secondary">A</Badge>
-              <span className="text-sm font-medium uppercase tracking-wider">Source Schema</span>
+              <span className="text-sm font-bold">Source schema</span>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div>
                 <label
                   htmlFor="platformA"
-                  className="block text-xs font-medium uppercase tracking-wider mb-1.5"
+                  className="pt-label block mb-2"
                 >
                   Platform
                 </label>
@@ -133,7 +134,7 @@ export default function CompareForm({
                   id="platformA"
                   value={schemaA.platform}
                   onChange={(e) => handlePlatformChangeA(e.target.value)}
-                  className="select"
+                  className="pt-select"
                 >
                   <option value="">Select platform...</option>
                   {platforms.map((p) => (
@@ -147,7 +148,7 @@ export default function CompareForm({
               <div>
                 <label
                   htmlFor="versionA"
-                  className="block text-xs font-medium uppercase tracking-wider mb-1.5"
+                  className="pt-label block mb-2"
                 >
                   Version
                 </label>
@@ -158,7 +159,7 @@ export default function CompareForm({
                     setSchemaA((prev) => ({ ...prev, version: e.target.value }))
                   }
                   disabled={!schemaA.platform}
-                  className="select"
+                  className="pt-select"
                 >
                   <option value="">Select version...</option>
                   {versionsA.map((v) => (
@@ -173,18 +174,18 @@ export default function CompareForm({
         </Card>
 
         {/* Schema B selector */}
-        <Card className="p-5">
+        <Card className="p-6">
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <Badge variant="secondary">B</Badge>
-              <span className="text-sm font-medium uppercase tracking-wider">Target Schema</span>
+              <span className="text-sm font-bold">Target schema</span>
             </div>
 
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div>
                 <label
                   htmlFor="platformB"
-                  className="block text-xs font-medium uppercase tracking-wider mb-1.5"
+                  className="pt-label block mb-2"
                 >
                   Platform
                 </label>
@@ -192,7 +193,7 @@ export default function CompareForm({
                   id="platformB"
                   value={schemaB.platform}
                   onChange={(e) => handlePlatformChangeB(e.target.value)}
-                  className="select"
+                  className="pt-select"
                 >
                   <option value="">Select platform...</option>
                   {platforms.map((p) => (
@@ -206,7 +207,7 @@ export default function CompareForm({
               <div>
                 <label
                   htmlFor="versionB"
-                  className="block text-xs font-medium uppercase tracking-wider mb-1.5"
+                  className="pt-label block mb-2"
                 >
                   Version
                 </label>
@@ -217,7 +218,7 @@ export default function CompareForm({
                     setSchemaB((prev) => ({ ...prev, version: e.target.value }))
                   }
                   disabled={!schemaB.platform}
-                  className="select"
+                  className="pt-select"
                 >
                   <option value="">Select version...</option>
                   {versionsB.map((v) => (
@@ -237,17 +238,38 @@ export default function CompareForm({
         <Button
           onClick={handleCompare}
           disabled={!canCompare || isPending}
+          aria-busy={isPending}
           size="lg"
         >
-          {isPending ? 'Comparing...' : 'Compare Schemas'}
+          {isPending && (
+            <Loader2 className="h-4 w-4 animate-spin" strokeWidth={1.5} aria-hidden="true" />
+          )}
+          {isPending ? 'Comparing' : 'Compare schemas'}
         </Button>
       </div>
 
       {/* Error display */}
       {error && (
-        <Card className="p-4 border-destructive/50 bg-black/50">
-          <p className="text-sm text-destructive font-mono">{error}</p>
-        </Card>
+        <div
+          role="alert"
+          className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-danger/40 bg-[var(--pt-danger-bg)] p-4"
+        >
+          <div className="flex items-start gap-2 text-sm">
+            <AlertCircle className="h-4 w-4 mt-1 shrink-0 text-danger" strokeWidth={1.5} aria-hidden="true" />
+            <div>
+              <p className="font-bold text-danger">Comparison failed</p>
+              <p className="text-muted-foreground">{error}</p>
+            </div>
+          </div>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={handleCompare}
+            disabled={!canCompare || isPending}
+          >
+            Retry
+          </Button>
+        </div>
       )}
 
       {/* Diff result display */}
@@ -264,8 +286,12 @@ export default function CompareForm({
       {/* Empty state */}
       {!compareResult && !error && (
         <Card className="p-8">
-          <div className="text-center text-muted-foreground">
-            <p>Select two schemas to compare</p>
+          <div className="text-center space-y-2">
+            <p className="font-bold">Nothing to compare yet</p>
+            <p className="text-sm text-muted-foreground">
+              Pick a platform and version for both A and B, then press
+              Compare schemas to see what changed.
+            </p>
           </div>
         </Card>
       )}

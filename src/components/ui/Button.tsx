@@ -12,20 +12,20 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     return (
       <button
         className={cn(
-          'btn',
+          'pt-btn',
           {
-            'btn-primary': variant === 'primary',
-            'btn-secondary': variant === 'secondary',
-            'btn-ghost': variant === 'ghost',
-            'btn-destructive': variant === 'destructive',
-            'border border-primary/30 bg-transparent hover:bg-black/50 hover:border-primary/50':
+            'pt-btn-primary': variant === 'primary',
+            'pt-btn-secondary': variant === 'secondary',
+            'pt-btn-ghost': variant === 'ghost',
+            'pt-btn-destructive': variant === 'destructive',
+            'border-border-strong bg-transparent hover:bg-surface-2':
               variant === 'outline',
           },
           {
             'h-8 px-3 text-xs': size === 'sm',
-            'h-9 px-4': size === 'md',
-            'h-10 px-6 text-base': size === 'lg',
-            'h-9 w-9 p-0': size === 'icon',
+            'h-10 px-4': size === 'md',
+            'h-12 px-6': size === 'lg',
+            'h-10 w-10 p-0': size === 'icon',
           },
           className
         )}

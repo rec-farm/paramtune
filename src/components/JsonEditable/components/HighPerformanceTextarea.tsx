@@ -2,6 +2,7 @@
 
 import { memo, forwardRef, useCallback, useMemo, useState } from 'react'
 import { VirtualizedLineNumbers } from './VirtualizedLineNumbers'
+import { EDITOR_CONSTANTS } from '../utils/editorConstants'
 
 interface JsonTextareaProps {
   value: string
@@ -78,11 +79,10 @@ export const JsonTextarea = memo(
         maxHeight: `${maxHeight}px`,
         lineHeight: `${LINE_HEIGHT}px`,
         tabSize: 2,
-        fontFamily:
-          'ui-monospace, SFMono-Regular, "SF Mono", Consolas, "Liberation Mono", Menlo, monospace',
-        color: maskText ? 'transparent' : '#E5E7EB',
-        caretColor: '#E5E7EB',
-        fontSize: '14px',
+        fontFamily: EDITOR_CONSTANTS.FONT_FAMILY,
+        color: maskText ? 'transparent' : 'var(--pt-fg)',
+        caretColor: 'var(--pt-fg)',
+        fontSize: `${EDITOR_CONSTANTS.FONT_SIZE}px`,
         paddingTop: '16px',
         paddingLeft: showLineNumbers ? '48px' : '16px',
         paddingRight: '16px',

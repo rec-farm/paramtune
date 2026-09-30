@@ -1,6 +1,7 @@
 import PageTitle from '@/components/PageTitle'
 import AddVersionForm from '@/components/AddVersionForm'
-import Badge from '@/components/ui/Badge'
+import Link from 'next/link'
+import { cn } from '@/lib/utils'
 import Card from '@/components/ui/Card'
 import { getPlatform } from '@/models/Platform'
 import { sortVersionsDescending } from '@/lib/versionUtils'
@@ -12,16 +13,20 @@ export const dynamic = 'force-dynamic'
 
 type VersionTagProps = {
   latest: boolean
-  version: string
+  version: { platform: string; name: string }
 }
 
 const VersionTag = ({ version, latest }: VersionTagProps) => (
-  <Badge className="relative">
-    {latest && (
-      <span className="absolute -left-1 -top-1 h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+  <Link
+    href={`/dashboard/${encodeURIComponent(version.platform)}/${encodeURIComponent(version.name)}`}
+    className={cn(
+      'inline-flex items-center gap-2 h-8 px-3 border text-sm normal-case tabular-nums transition-colors duration-150 hover:bg-surface-2',
+      latest ? 'border-primary text-foreground' : 'border-border-strong text-muted-foreground'
     )}
-    v{version}
-  </Badge>
+  >
+    v{version.name}
+    {latest && <span className="pt-label text-meta">latest</span>}
+  </Link>
 )
 
 export default async function Page({
@@ -38,13 +43,18 @@ export default async function Page({
       <div className="space-y-6">
         <PageTitle platform={platformName} />
         <Card
-          title="Platform Not Found"
+          title="Platform not found"
           subtitle="The platform you're looking for doesn't exist"
         >
-          <p className="text-muted-foreground">
-            Platform &quot;{platformName}&quot; could not be found. It may have
-            been deleted or never existed.
-          </p>
+          <div className="space-y-4">
+            <p className="text-muted-foreground">
+              Platform &quot;{platformName}&quot; could not be found. It may
+              have been deleted or never existed.
+            </p>
+            <Link href="/dashboard" className="pt-btn pt-btn-secondary">
+              Back to platforms
+            </Link>
+          </div>
         </Card>
       </div>
     )
@@ -67,20 +77,38 @@ export default async function Page({
       <PageTitle platform={platformName} />
 
       <Card title="Versions">
-        <Suspense fallback={<div>Loading...</div>}>
-          <ul className="flex flex-wrap gap-2">
-            {sortVersionsDescending(platform?.versions ?? []).map(
-              (version: string, index) => (
-                <li key={version}>
-                  <VersionTag latest={index === 0} version={version} />
-                </li>
-              )
-            )}
-          </ul>
+        <Suspense
+          fallback={
+            <div className="flex flex-wrap gap-2" aria-busy="true">
+              <div className="pt-skeleton h-8 w-24" />
+              <div className="pt-skeleton h-8 w-24" />
+              <div className="pt-skeleton h-8 w-24" />
+            </div>
+          }
+        >
+          {(platform.versions ?? []).length === 0 ? (
+            <p className="text-sm text-muted-foreground">
+              This platform has no versions yet. Add one below to start
+              editing its schema.
+            </p>
+          ) : (
+            <ul className="flex flex-wrap gap-2">
+              {sortVersionsDescending(platform.versions ?? []).map(
+                (version: string, index) => (
+                  <li key={version}>
+                    <VersionTag
+                      latest={index === 0}
+                      version={{ platform: platformName, name: version }}
+                    />
+                  </li>
+                )
+              )}
+            </ul>
+          )}
         </Suspense>
       </Card>
 
-      <Card title="Add Version">
+      <Card title="Add version">
         <AddVersionForm action={createVersion} />
       </Card>
     </div>

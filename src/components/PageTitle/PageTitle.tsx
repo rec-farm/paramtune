@@ -6,20 +6,16 @@ type Props = {
 
 export default function PageTitle({ platform, version, subtitle }: Props) {
   return (
-    <div>
-      <h2 className="text-3xl font-display font-bold uppercase tracking-widest">
+    <div className="space-y-2">
+      <h1 className="pt-display text-xl break-words">
         {platform}
         {version && (
-          <span className="text-sm text-primary/60 font-fragmented font-normal tracking-normal px-2">
-            /v{version}
+          <span className="ml-2 align-middle text-base font-fragmented font-normal normal-case tracking-normal text-muted-foreground">
+            v{version}
           </span>
         )}
-      </h2>
-      {subtitle && (
-        <p className="mt-2 text-sm text-gray-500 font-fragmented uppercase tracking-wider">
-          {subtitle}
-        </p>
-      )}
+      </h1>
+      {subtitle && <p className="text-sm text-muted-foreground">{subtitle}</p>}
     </div>
   )
 }

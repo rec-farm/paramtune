@@ -1,75 +1,25 @@
 'use client'
 
 import { forwardRef, useCallback, useEffect, useRef } from 'react'
+import { Code, Hash, Key } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { AutocompletePopupProps, AutocompleteSuggestion } from '../types'
 
-// Icons for different suggestion kinds
-function KeyIcon() {
-  return (
-    <svg
-      className="w-3.5 h-3.5 text-blue-400"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"
-      />
-    </svg>
-  )
-}
-
-function ValueIcon() {
-  return (
-    <svg
-      className="w-3.5 h-3.5 text-green-400"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"
-      />
-    </svg>
-  )
-}
-
-function KeywordIcon() {
-  return (
-    <svg
-      className="w-3.5 h-3.5 text-purple-400"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-    >
-      <path
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        strokeWidth={2}
-        d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"
-      />
-    </svg>
-  )
-}
+const KIND_ICONS = {
+  key: Key,
+  value: Hash,
+  keyword: Code,
+} as const
 
 function SuggestionIcon({ kind }: { kind: AutocompleteSuggestion['kind'] }) {
-  switch (kind) {
-    case 'key':
-      return <KeyIcon />
-    case 'value':
-      return <ValueIcon />
-    case 'keyword':
-      return <KeywordIcon />
-    default:
-      return <KeyIcon />
-  }
+  const Icon = KIND_ICONS[kind] ?? Key
+  return (
+    <Icon
+      className="w-4 h-4 shrink-0 text-muted-foreground"
+      strokeWidth={1.5}
+      aria-hidden="true"
+    />
+  )
 }
 
 const AutocompletePopup = forwardRef<HTMLDivElement, AutocompletePopupProps>(
@@ -103,11 +53,10 @@ const AutocompletePopup = forwardRef<HTMLDivElement, AutocompletePopupProps>(
         ref={ref}
         className={cn(
           'absolute z-50',
-          'bg-gray-800 rounded-lg shadow-xl',
-          'border border-gray-700',
+          'bg-popover shadow-[var(--elev-raised)]',
+          'border border-border-strong',
           'min-w-[200px] max-w-[300px]',
-          'overflow-hidden',
-          'animate-in fade-in-0 zoom-in-95 duration-100'
+          'overflow-hidden'
         )}
         style={{
           top: position.top,
@@ -127,12 +76,12 @@ const AutocompletePopup = forwardRef<HTMLDivElement, AutocompletePopupProps>(
               role="option"
               aria-selected={index === selectedIndex}
               className={cn(
-                'flex items-center gap-2 px-3 py-1.5 cursor-pointer',
-                'text-sm text-gray-200',
-                'transition-colors duration-75',
+                'flex items-center gap-2 h-8 px-3 cursor-pointer',
+                'text-sm text-foreground',
+                'transition-colors duration-150',
                 index === selectedIndex
-                  ? 'bg-blue-600 text-white'
-                  : 'hover:bg-gray-700'
+                  ? 'bg-accent-dim shadow-[inset_2px_0_0_var(--pt-accent)]'
+                  : 'hover:bg-surface-3'
               )}
               onClick={() => handleItemClick(suggestion)}
             >
@@ -142,10 +91,10 @@ const AutocompletePopup = forwardRef<HTMLDivElement, AutocompletePopupProps>(
               </span>
               <span
                 className={cn(
-                  'text-xs px-1.5 py-0.5 rounded',
+                  'text-xs px-1 border',
                   index === selectedIndex
-                    ? 'bg-blue-500 text-blue-100'
-                    : 'bg-gray-700 text-gray-400'
+                    ? 'border-border-strong text-foreground'
+                    : 'border-border text-meta'
                 )}
               >
                 {suggestion.kind}
@@ -155,21 +104,21 @@ const AutocompletePopup = forwardRef<HTMLDivElement, AutocompletePopupProps>(
         </ul>
 
         {/* Keyboard hints */}
-        <div className="flex items-center justify-between px-3 py-1.5 border-t border-gray-700 bg-gray-850 text-xs text-gray-500">
+        <div className="flex items-center justify-between px-3 py-1.5 border-t border-border bg-surface text-xs text-meta">
           <span>
-            <kbd className="px-1 py-0.5 bg-gray-700 rounded text-gray-400 mr-1">
+            <kbd className="px-1 border border-border-strong text-muted-foreground mr-1">
               ↑↓
             </kbd>
             navigate
           </span>
           <span>
-            <kbd className="px-1 py-0.5 bg-gray-700 rounded text-gray-400 mr-1">
+            <kbd className="px-1 border border-border-strong text-muted-foreground mr-1">
               Enter
             </kbd>
             select
           </span>
           <span>
-            <kbd className="px-1 py-0.5 bg-gray-700 rounded text-gray-400 mr-1">
+            <kbd className="px-1 border border-border-strong text-muted-foreground mr-1">
               Esc
             </kbd>
             close

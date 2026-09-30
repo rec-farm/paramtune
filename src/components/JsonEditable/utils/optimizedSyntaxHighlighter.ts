@@ -4,32 +4,16 @@
 import type { SyntaxHighlightOptions, SyntaxHighlightTheme } from '../types'
 import { EDITOR_CONSTANTS } from './editorConstants'
 
-const DARK_THEME: SyntaxHighlightTheme = {
-  extends: 'text-cyan-400 font-bold bg-cyan-400/10 px-1 rounded',
-  keys: 'text-purple-400 font-medium',
-  strings: 'text-green-400 font-medium',
-  booleans: 'text-orange-400 font-bold',
-  null: 'text-gray-500 italic',
-  numbers: 'text-blue-400 font-medium',
-  brackets: 'text-gray-200 font-bold',
-  commas: 'text-gray-500',
-  colons: 'text-gray-400',
-}
-
-const LIGHT_THEME: SyntaxHighlightTheme = {
-  extends: 'text-cyan-600 font-bold bg-cyan-100 px-1 rounded',
-  keys: 'text-purple-600 font-medium',
-  strings: 'text-green-600 font-medium',
-  booleans: 'text-orange-600 font-bold',
-  null: 'text-gray-400 italic',
-  numbers: 'text-blue-600 font-medium',
-  brackets: 'text-gray-700 font-bold',
-  commas: 'text-gray-400',
-  colons: 'text-gray-500',
-}
-
-export function getTheme(themeName: 'light' | 'dark'): SyntaxHighlightTheme {
-  return themeName === 'light' ? LIGHT_THEME : DARK_THEME
+export const DEFAULT_THEME: SyntaxHighlightTheme = {
+  extends: 'text-primary',
+  keys: 'text-foreground',
+  strings: 'text-info',
+  booleans: 'text-pink-300',
+  null: 'text-pink-300',
+  numbers: 'text-warn',
+  brackets: 'text-meta',
+  commas: 'text-meta',
+  colons: 'text-meta',
 }
 
 /**
@@ -44,11 +28,6 @@ function escapeHtml(text: string): string {
     '>': '&gt;',
   }
   return text.replace(/[&<>]/g, (m) => map[m])
-}
-
-// Determine theme name from theme object for cache key optimization
-function getThemeName(theme: SyntaxHighlightTheme): 'light' | 'dark' {
-  return theme === LIGHT_THEME ? 'light' : 'dark'
 }
 
 // Pre-compiled regex patterns for better performance
@@ -78,15 +57,13 @@ function clearCacheIfNeeded() {
 export function highlightJsonLine(
   line: string,
   options: SyntaxHighlightOptions = {},
-  theme: SyntaxHighlightTheme = DARK_THEME
+  theme: SyntaxHighlightTheme = DEFAULT_THEME
 ): string {
-  // Simplified cache key: line content + theme name
-  // Options are rarely changed (defaults used), so skip them in the key
-  const themeName = getThemeName(theme)
-  const cacheKey = `${line}-${themeName}`
-
-  if (highlightCache.has(cacheKey)) {
-    return highlightCache.get(cacheKey)!
+  // Only the default theme is cached; options are rarely changed, so the
+  // cache key is the line content alone
+  const cacheable = theme === DEFAULT_THEME
+  if (cacheable && highlightCache.has(line)) {
+    return highlightCache.get(line)!
   }
 
   const {
@@ -168,9 +145,10 @@ export function highlightJsonLine(
     )
   }
 
-  // Cache the result
-  clearCacheIfNeeded()
-  highlightCache.set(cacheKey, highlighted)
+  if (cacheable) {
+    clearCacheIfNeeded()
+    highlightCache.set(line, highlighted)
+  }
 
   return highlighted
 }
@@ -180,7 +158,7 @@ export function highlightJsonVisibleLines(
   startLine: number = 0,
   endLine: number = 50,
   options: SyntaxHighlightOptions = {},
-  theme: SyntaxHighlightTheme = DARK_THEME
+  theme: SyntaxHighlightTheme = DEFAULT_THEME
 ): string {
   const lines = json.split('\n')
   const visibleLines = lines.slice(startLine, endLine + 1)
@@ -194,7 +172,7 @@ export function highlightJsonVisibleLines(
 export function highlightVisibleLines(
   visibleLines: string[],
   options: SyntaxHighlightOptions = {},
-  theme: SyntaxHighlightTheme = DARK_THEME
+  theme: SyntaxHighlightTheme = DEFAULT_THEME
 ): string {
   return visibleLines
     .map((line) => highlightJsonLine(line, options, theme))
@@ -205,7 +183,7 @@ export function highlightVisibleLines(
 export function highlightJson(
   json: string,
   options: SyntaxHighlightOptions = {},
-  theme: SyntaxHighlightTheme = DARK_THEME
+  theme: SyntaxHighlightTheme = DEFAULT_THEME
 ): string {
   if (json.split('\n').length <= 100) {
     return json
@@ -221,7 +199,7 @@ export function highlightJson(
 export function createCustomTheme(
   overrides: Partial<SyntaxHighlightTheme>
 ): SyntaxHighlightTheme {
-  return { ...DARK_THEME, ...overrides }
+  return { ...DEFAULT_THEME, ...overrides }
 }
 
 export function validateJsonSyntax(json: string): {

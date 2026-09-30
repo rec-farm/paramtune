@@ -1,4 +1,3 @@
-import Badge from '@/components/ui/Badge'
 import Card from '@/components/ui/Card'
 import CreatePlatformForm from '@/components/CreatePlatformForm'
 import {
@@ -13,6 +12,7 @@ import { requireDashboardSession } from '@/lib/dashboardAuth'
 import { revalidatePath } from 'next/cache'
 import { headers } from 'next/headers'
 import Link from 'next/link'
+import { ChevronRight } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
@@ -51,101 +51,70 @@ export default async function Page() {
 
   return (
     <div className="space-y-8">
+      <h1 className="pt-display text-xl">Platforms</h1>
       <Card
-        title="Platforms"
+        title="All platforms"
         subtitle="Manage and configure your application platforms"
-        variant="elevated"
       >
         {platforms.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <div className="w-16 h-16 border border-primary/30 flex items-center justify-center mb-4">
-              <div className="w-8 h-8 bg-primary/20 animate-pulse" />
-            </div>
-            <h3 className="text-lg font-display font-bold tracking-widest uppercase mb-2">
-              NO_PLATFORMS
-            </h3>
-            <p className="text-gray-500 text-sm font-fragmented max-w-sm">
-              Create your first platform to start managing configurations and
-              schemas
+          <div className="py-12 text-center space-y-2">
+            <h3 className="font-bold">No platforms yet</h3>
+            <p className="text-sm text-muted-foreground max-w-sm mx-auto">
+              Platforms group the versions and schemas for one app or service.
+              Create your first one below to get started.
             </p>
+            <a href="#create-platform" className="pt-btn pt-btn-secondary mt-4">
+              Create platform
+            </a>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {platforms.map((platform: Platform) => {
               const latestVersion = getLatestVersion(platform.versions)
               const href = `/dashboard/${encodeURIComponent(platform.name)}`
+              const versionCount = platform.versions?.length || 0
               return (
-                <Link
-                  key={platform.name}
-                  href={href}
-                  className="group relative border border-primary/20 bg-black/40 hover:bg-primary/5 hover:border-primary/40 transition-all duration-300 p-5 min-h-[100px] focus:outline-none focus:ring-1 focus:ring-primary/50"
-                >
-                  <div className="space-y-4">
-                    <div className="flex items-start justify-between">
-                      <div className="space-y-2">
-                        <h3 className="font-display font-bold text-base tracking-widest uppercase group-hover:text-primary transition-colors">
-                          {platform.name}
-                        </h3>
-                        <div className="flex items-center gap-2">
-                          <Badge variant="secondary" className="text-xs">
-                            {platform.versions?.length || 0} {platform.versions?.length === 1 ? 'version' : 'versions'}
-                          </Badge>
-                          <Badge variant="success" className="text-[10px]">
-                            Active
-                          </Badge>
-                        </div>
-                        {latestVersion && (
-                          <p className="text-xs text-gray-500 font-fragmented">
-                            Latest: v{latestVersion}
-                          </p>
-                        )}
+                <li key={platform.name}>
+                  <Link
+                    href={href}
+                    className="group flex h-full flex-col justify-between gap-4 border border-border bg-surface p-4 transition-colors duration-150 hover:bg-surface-2 hover:border-border-strong"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0 space-y-1">
+                        <h3 className="font-bold truncate">{platform.name}</h3>
+                        <p className="text-sm text-muted-foreground tabular-nums">
+                          {versionCount}{' '}
+                          {versionCount === 1 ? 'version' : 'versions'}
+                          {latestVersion && (
+                            <>
+                              {' · latest '}
+                              <span className="text-foreground">
+                                v{latestVersion}
+                              </span>
+                            </>
+                          )}
+                        </p>
                       </div>
-
-                      <div className="opacity-50 group-hover:opacity-100 transition-opacity duration-200 text-primary">
-                        <svg
-                          className="w-4 h-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M9 5l7 7-7 7"
-                          />
-                        </svg>
-                      </div>
+                      <ChevronRight
+                        className="h-4 w-4 shrink-0 text-meta"
+                        strokeWidth={1.5}
+                        aria-hidden="true"
+                      />
                     </div>
-
-                    <div className="pt-2 border-t border-primary/10">
-                      <span className="inline-flex items-center text-[10px] font-display font-bold tracking-widest uppercase text-gray-500 group-hover:text-primary transition-colors">
-                        OPEN_CONFIGS
-                        <svg
-                          className="w-3 h-3 ml-1"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M9 5l7 7-7 7"
-                          />
-                        </svg>
-                      </span>
-                    </div>
-                  </div>
-                </Link>
+                    <span className="pt-label text-muted-foreground">
+                      Open configs
+                    </span>
+                  </Link>
+                </li>
               )
             })}
-          </div>
+          </ul>
         )}
       </Card>
 
       <Card
-        title="Create Platform"
+        id="create-platform"
+        title="Create platform"
         subtitle="Add a new platform to manage its configurations"
       >
         <CreatePlatformForm action={createPlatform} />

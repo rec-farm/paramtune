@@ -1,6 +1,7 @@
 'use client'
 
 import { memo } from 'react'
+import { CircleAlert, TriangleAlert } from 'lucide-react'
 import type { ValidationIssue } from '../types'
 
 interface ErrorDisplayProps {
@@ -26,44 +27,62 @@ export const ErrorDisplay = memo(function ErrorDisplay({
     <div className="space-y-2">
       {/* Errors section */}
       {(errors.length > 0 || hasLegacyError) && (
-        <div className="bg-red-900/20 border border-red-500/30 rounded-lg p-3">
-          <p className="text-sm text-red-400 font-medium">
-            {errors.length > 0
-              ? `JSON Syntax Error${errors.length > 1 ? 's' : ''}`
-              : 'JSON Syntax Error'}
-          </p>
-          {hasLegacyError && (
-            <p className="text-xs text-red-300 mt-1">{errorMessage}</p>
-          )}
-          {errors.map((error, index) => (
-            <p key={index} className="text-xs text-red-300 mt-1">
-              {error.line && error.column && (
-                <span className="text-red-400">
-                  Line {error.line}, Col {error.column}:{' '}
-                </span>
-              )}
-              {error.message}
+        <div
+          role="alert"
+          className="flex gap-2 border border-danger/40 bg-danger/10 p-3"
+        >
+          <CircleAlert
+            className="w-4 h-4 mt-0.5 shrink-0 text-danger"
+            strokeWidth={1.5}
+            aria-hidden="true"
+          />
+          <div className="min-w-0 space-y-1">
+            <p className="text-sm font-bold text-danger">
+              {errors.length > 1 ? 'JSON syntax errors' : 'JSON syntax error'}
             </p>
-          ))}
+            {hasLegacyError && (
+              <p className="text-xs text-foreground">{errorMessage}</p>
+            )}
+            {errors.map((error, index) => (
+              <p key={index} className="text-xs text-foreground">
+                {error.line && error.column && (
+                  <span className="text-muted-foreground tabular-nums">
+                    Line {error.line}, col {error.column}:{' '}
+                  </span>
+                )}
+                {error.message}
+              </p>
+            ))}
+            <p className="text-xs text-muted-foreground">
+              Fix the marked line, then save again.
+            </p>
+          </div>
         </div>
       )}
 
       {/* Warnings section */}
       {warnings.length > 0 && (
-        <div className="bg-amber-900/20 border border-amber-500/30 rounded-lg p-3">
-          <p className="text-sm text-amber-400 font-medium">
-            Warning{warnings.length > 1 ? 's' : ''}
-          </p>
-          {warnings.map((warning, index) => (
-            <p key={index} className="text-xs text-amber-300 mt-1">
-              {warning.line && warning.column && (
-                <span className="text-amber-400">
-                  Line {warning.line}, Col {warning.column}:{' '}
-                </span>
-              )}
-              {warning.message}
+        <div className="flex gap-2 border border-warn/40 bg-warn/10 p-3">
+          <TriangleAlert
+            className="w-4 h-4 mt-0.5 shrink-0 text-warn"
+            strokeWidth={1.5}
+            aria-hidden="true"
+          />
+          <div className="min-w-0 space-y-1">
+            <p className="text-sm font-bold text-warn">
+              Warning{warnings.length > 1 ? 's' : ''}
             </p>
-          ))}
+            {warnings.map((warning, index) => (
+              <p key={index} className="text-xs text-foreground">
+                {warning.line && warning.column && (
+                  <span className="text-muted-foreground tabular-nums">
+                    Line {warning.line}, col {warning.column}:{' '}
+                  </span>
+                )}
+                {warning.message}
+              </p>
+            ))}
+          </div>
         </div>
       )}
     </div>

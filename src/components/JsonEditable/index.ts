@@ -26,7 +26,6 @@ export type {
   ActionButtonsProps,
   ErrorDisplayProps,
   JsonEditorConfig,
-  JsonEditorTheme,
   JsonValidationResult,
   JsonEditorEventHandlers,
   AutocompleteSuggestion,

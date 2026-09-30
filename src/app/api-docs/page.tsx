@@ -1,6 +1,7 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState, type KeyboardEvent } from 'react'
+import { ArrowRight, CheckCircle2, XCircle } from 'lucide-react'
 import Card from '@/components/ui/Card'
 import Badge from '@/components/ui/Badge'
 import NavHeader from '@/components/NavHeader'
@@ -188,17 +189,33 @@ const compositionExamples = [
 
 type Tab = 'guide' | 'reference'
 
+const TABS: { id: Tab; label: string }[] = [
+  { id: 'guide', label: 'Guide' },
+  { id: 'reference', label: 'Reference' },
+]
+
 function MethodBadge({ method }: { method: 'GET' | 'POST' }) {
   return (
-    <Badge variant={method === 'GET' ? 'secondary' : 'success'}>
+    <Badge variant={method === 'GET' ? 'secondary' : 'outline'}>
       {method}
+    </Badge>
+  )
+}
+
+function StatusBadge({ status }: { status: number }) {
+  const ok = status < 400
+  const Icon = ok ? CheckCircle2 : XCircle
+  return (
+    <Badge variant={ok ? 'success' : 'destructive'} className="tabular-nums">
+      <Icon className="w-3 h-3" strokeWidth={1.5} aria-hidden="true" />
+      {status}
     </Badge>
   )
 }
 
 function StepNumber({ n }: { n: number }) {
   return (
-    <div className="flex-shrink-0 w-8 h-8 border border-primary/40 bg-primary/10 flex items-center justify-center text-xs font-display font-bold text-primary">
+    <div className="flex-shrink-0 w-8 h-8 border border-border-strong flex items-center justify-center text-xs font-bold tabular-nums text-muted-foreground">
       {n}
     </div>
   )
@@ -207,91 +224,113 @@ function StepNumber({ n }: { n: number }) {
 function CodeBlock({ children, label }: { children: string; label?: string }) {
   return (
     <div>
-      {label && (
-        <span className="text-[10px] font-display font-bold uppercase tracking-widest text-primary/60 mb-1 block">
-          {label}
-        </span>
-      )}
-      <pre className="text-xs bg-black/60 border border-primary/20 p-3 overflow-x-auto font-fragmented leading-relaxed">
+      {label && <span className="pt-label text-meta mb-1 block">{label}</span>}
+      <pre className="text-sm bg-surface border border-border p-3 overflow-x-auto leading-relaxed">
         {children}
       </pre>
     </div>
   )
 }
 
+function SectionHeading({ title, subtitle }: { title: string; subtitle: string }) {
+  return (
+    <div className="mb-6 space-y-2">
+      <h2 className="pt-display text-lg">{title}</h2>
+      <p className="text-sm text-muted-foreground">{subtitle}</p>
+    </div>
+  )
+}
+
 export default function ApiDocsPage() {
   const [activeTab, setActiveTab] = useState<Tab>('guide')
+  const tabRefs = useRef<(HTMLButtonElement | null)[]>([])
+
+  const focusTab = (index: number) => {
+    const next = (index + TABS.length) % TABS.length
+    setActiveTab(TABS[next].id)
+    tabRefs.current[next]?.focus()
+  }
+
+  const handleTabKeyDown = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
+    if (event.key === 'ArrowRight') focusTab(index + 1)
+    else if (event.key === 'ArrowLeft') focusTab(index - 1)
+    else if (event.key === 'Home') focusTab(0)
+    else if (event.key === 'End') focusTab(TABS.length - 1)
+    else return
+    event.preventDefault()
+  }
 
   return (
     <>
       <NavHeader />
-      <div className="max-w-4xl mx-auto py-8 px-6 pt-32 bg-grid-subtle">
-        <div className="mb-12">
-          <h1 className="text-4xl md:text-5xl font-display font-bold tracking-widest uppercase mb-4">
-            API_DOCS
-          </h1>
-          <div className="flex items-center gap-4 mt-2">
-            <div className="h-px w-12 bg-primary/30" />
-            <p className="text-sm text-gray-500 font-fragmented uppercase tracking-wider">
-              ParamTune API for managing platform schemas and versions
-            </p>
-          </div>
+      <main className="max-w-4xl mx-auto px-4 md:px-6 pt-16 pb-16">
+        <div className="mb-12 space-y-4">
+          <h1 className="pt-display text-xl md:text-3xl">API docs</h1>
+          <p className="text-muted-foreground max-w-[68ch]">
+            Paramtune API for managing platform schemas and versions.
+          </p>
           <a
             href="/openapi.yaml"
-            className="inline-block mt-4 text-[10px] font-display font-bold text-primary tracking-[0.3em] hover:text-white transition-colors uppercase"
+            className="pt-label inline-flex items-center gap-1 min-h-8 text-foreground underline underline-offset-4 decoration-border-strong hover:decoration-foreground transition-colors duration-150"
           >
-            VIEW_OPENAPI_SPEC &rarr;
+            View OpenAPI spec
+            <ArrowRight className="w-4 h-4" strokeWidth={1.5} aria-hidden="true" />
           </a>
         </div>
 
         {/* Tab switcher */}
-        <div className="flex gap-0 mb-8 border-b border-primary/20">
-          <button
-            onClick={() => setActiveTab('guide')}
-            className={`px-6 py-3 text-[11px] font-display font-bold uppercase tracking-[0.25em] transition-colors border-b-2 -mb-px ${
-              activeTab === 'guide'
-                ? 'border-primary text-primary'
-                : 'border-transparent text-gray-500 hover:text-gray-300'
-            }`}
-          >
-            Guide
-          </button>
-          <button
-            onClick={() => setActiveTab('reference')}
-            className={`px-6 py-3 text-[11px] font-display font-bold uppercase tracking-[0.25em] transition-colors border-b-2 -mb-px ${
-              activeTab === 'reference'
-                ? 'border-primary text-primary'
-                : 'border-transparent text-gray-500 hover:text-gray-300'
-            }`}
-          >
-            Reference
-          </button>
+        <div role="tablist" aria-label="Documentation sections" className="flex mb-8 border-b border-border">
+          {TABS.map((tab, index) => {
+            const selected = activeTab === tab.id
+            return (
+              <button
+                key={tab.id}
+                ref={(el) => {
+                  tabRefs.current[index] = el
+                }}
+                type="button"
+                role="tab"
+                id={`tab-${tab.id}`}
+                aria-selected={selected}
+                aria-controls={`panel-${tab.id}`}
+                tabIndex={selected ? 0 : -1}
+                onClick={() => setActiveTab(tab.id)}
+                onKeyDown={(event) => handleTabKeyDown(event, index)}
+                className={`pt-label h-10 px-6 border-b-2 -mb-px transition-colors duration-200 ${
+                  selected
+                    ? 'border-primary text-foreground'
+                    : 'border-transparent text-muted-foreground hover:bg-surface-2'
+                }`}
+              >
+                {tab.label}
+              </button>
+            )
+          })}
         </div>
 
         {activeTab === 'guide' && (
-          <div className="space-y-12">
+          <div
+            role="tabpanel"
+            id="panel-guide"
+            aria-labelledby="tab-guide"
+            className="space-y-12"
+          >
             {/* Quick Start */}
             <section>
-              <h2 className="text-lg font-display font-bold uppercase tracking-widest mb-2">
-                Quick_Start
-              </h2>
-              <div className="flex items-center gap-4 mb-6">
-                <div className="h-px w-8 bg-primary/30" />
-                <p className="text-xs text-gray-500 font-fragmented uppercase tracking-wider">
-                  Go from zero to a resolved schema in four steps
-                </p>
-              </div>
-
+              <SectionHeading
+                title="Quick start"
+                subtitle="Go from zero to a resolved schema in four steps."
+              />
               <div className="space-y-4">
                 {guideSteps.map((step, i) => (
-                  <Card key={i} variant="outlined">
+                  <Card key={i}>
                     <div className="flex items-start gap-4">
                       <StepNumber n={i + 1} />
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-sm font-display font-bold uppercase tracking-widest mb-1">
+                        <h3 className="font-bold mb-1">
                           {step.title.replace(/^\d+\.\s*/, '')}
                         </h3>
-                        <p className="text-xs text-gray-500 font-fragmented mb-3 leading-relaxed">
+                        <p className="text-sm text-muted-foreground mb-3 max-w-[68ch]">
                           {step.description}
                         </p>
                         <div className="space-y-2">
@@ -307,23 +346,15 @@ export default function ApiDocsPage() {
 
             {/* Schema Composition */}
             <section>
-              <h2 className="text-lg font-display font-bold uppercase tracking-widest mb-2">
-                Schema_Composition
-              </h2>
-              <div className="flex items-center gap-4 mb-6">
-                <div className="h-px w-8 bg-primary/30" />
-                <p className="text-xs text-gray-500 font-fragmented uppercase tracking-wider">
-                  Inherit, override, and compose schemas across platforms
-                </p>
-              </div>
-
+              <SectionHeading
+                title="Schema composition"
+                subtitle="Inherit, override, and compose schemas across platforms."
+              />
               <div className="space-y-4">
                 {compositionExamples.map((ex, i) => (
-                  <Card key={i} variant="outlined">
-                    <h3 className="text-sm font-display font-bold uppercase tracking-widest mb-1">
-                      {ex.title}
-                    </h3>
-                    <p className="text-xs text-gray-500 font-fragmented mb-3 leading-relaxed">
+                  <Card key={i}>
+                    <h3 className="font-bold mb-1">{ex.title}</h3>
+                    <p className="text-sm text-muted-foreground mb-3 max-w-[68ch]">
                       {ex.description}
                     </p>
                     <CodeBlock>{ex.code}</CodeBlock>
@@ -334,32 +365,26 @@ export default function ApiDocsPage() {
 
             {/* Validation & Errors */}
             <section>
-              <h2 className="text-lg font-display font-bold uppercase tracking-widest mb-2">
-                Validation
-              </h2>
-              <div className="flex items-center gap-4 mb-6">
-                <div className="h-px w-8 bg-primary/30" />
-                <p className="text-xs text-gray-500 font-fragmented uppercase tracking-wider">
-                  What gets checked before a schema is saved
-                </p>
-              </div>
-
-              <Card variant="outlined">
-                <ul className="space-y-3 text-xs font-fragmented text-gray-400">
+              <SectionHeading
+                title="Validation"
+                subtitle="What gets checked before a schema is saved."
+              />
+              <Card>
+                <ul className="space-y-3 text-sm text-muted-foreground">
                   <li className="flex items-start gap-3">
-                    <span className="text-primary/60 mt-0.5">&#x25B8;</span>
+                    <span className="text-meta" aria-hidden="true">&#x25B8;</span>
                     <span>Content must be a plain JSON object — arrays, strings, and null are rejected.</span>
                   </li>
                   <li className="flex items-start gap-3">
-                    <span className="text-primary/60 mt-0.5">&#x25B8;</span>
-                    <span>Every <code className="text-primary/80">@extends</code> reference must resolve to an existing platform/version pair.</span>
+                    <span className="text-meta" aria-hidden="true">&#x25B8;</span>
+                    <span>Every <code className="text-foreground">@extends</code> reference must resolve to an existing platform/version pair.</span>
                   </li>
                   <li className="flex items-start gap-3">
-                    <span className="text-primary/60 mt-0.5">&#x25B8;</span>
+                    <span className="text-meta" aria-hidden="true">&#x25B8;</span>
                     <span>Semver ranges must match at least one published version.</span>
                   </li>
                   <li className="flex items-start gap-3">
-                    <span className="text-primary/60 mt-0.5">&#x25B8;</span>
+                    <span className="text-meta" aria-hidden="true">&#x25B8;</span>
                     <span>Circular dependency chains are detected at any depth and rejected with a clear error message.</span>
                   </li>
                 </ul>
@@ -367,69 +392,59 @@ export default function ApiDocsPage() {
             </section>
 
             {/* Error format */}
-            <div className="p-6 border border-primary/30 bg-black/50">
-              <h3 className="font-display font-bold uppercase tracking-widest text-sm mb-3">
-                Error_Format
-              </h3>
-              <p className="text-xs text-gray-500 mb-3 font-fragmented leading-relaxed">
-                All error responses share a consistent shape. HTTP status codes follow REST conventions: 400 for bad input, 404 for missing resources, and 500 for server failures.
-              </p>
-              <CodeBlock>{'{ "error": "Error message" }'}</CodeBlock>
-            </div>
+            <section>
+              <SectionHeading
+                title="Error format"
+                subtitle="All error responses share a consistent shape."
+              />
+              <Card>
+                <p className="text-sm text-muted-foreground mb-3 max-w-[68ch]">
+                  HTTP status codes follow REST conventions: 400 for bad input, 404 for missing resources, and 500 for server failures.
+                </p>
+                <CodeBlock>{'{ "error": "Error message" }'}</CodeBlock>
+              </Card>
+            </section>
           </div>
         )}
 
         {activeTab === 'reference' && (
-          <>
+          <div role="tabpanel" id="panel-reference" aria-labelledby="tab-reference">
             <div className="space-y-4">
               {endpoints.map((endpoint, index) => (
-                <Card key={index} variant="outlined">
-                  <div className="flex items-center gap-3 mb-3">
+                <Card key={index}>
+                  <div className="flex flex-wrap items-center gap-3 mb-3">
                     <MethodBadge method={endpoint.method} />
-                    <code className="text-sm font-fragmented bg-black/50 px-3 py-1 border border-primary/20">
+                    <code className="text-sm bg-surface-2 px-3 py-1 border border-border break-all">
                       {endpoint.path}
                     </code>
                   </div>
-                  <p className="text-sm text-gray-500 mb-4 font-fragmented">
+                  <p className="text-sm text-muted-foreground mb-4">
                     {endpoint.description}
                   </p>
 
                   {endpoint.requestBody && (
                     <div className="mb-4">
-                      <h4 className="text-[10px] font-display font-bold uppercase tracking-widest text-primary mb-2">
-                        REQUEST_BODY
-                      </h4>
-                      <p className="text-xs text-gray-500 mb-1 font-fragmented">
+                      <h4 className="pt-label text-meta mb-2">Request body</h4>
+                      <p className="text-sm text-muted-foreground mb-2">
                         {endpoint.requestBody.description}
                       </p>
-                      <pre className="text-xs bg-black/50 border border-primary/20 p-3 overflow-x-auto font-fragmented">
-                        {endpoint.requestBody.example}
-                      </pre>
+                      <CodeBlock>{endpoint.requestBody.example}</CodeBlock>
                     </div>
                   )}
 
                   <div>
-                    <h4 className="text-[10px] font-display font-bold uppercase tracking-widest text-primary mb-2">
-                      RESPONSES
-                    </h4>
-                    <div className="space-y-2">
+                    <h4 className="pt-label text-meta mb-2">Responses</h4>
+                    <div className="space-y-3">
                       {endpoint.responses.map((response, rIndex) => (
-                        <div key={rIndex} className="text-xs">
+                        <div key={rIndex} className="text-sm">
                           <div className="flex items-center gap-2 mb-1">
-                            <Badge
-                              variant={response.status < 400 ? 'outline' : 'destructive'}
-                              className="text-xs"
-                            >
-                              {response.status}
-                            </Badge>
-                            <span className="text-gray-500 font-fragmented">
+                            <StatusBadge status={response.status} />
+                            <span className="text-muted-foreground">
                               {response.description}
                             </span>
                           </div>
                           {response.example && (
-                            <pre className="bg-black/50 border border-primary/20 p-3 overflow-x-auto font-fragmented">
-                              {response.example}
-                            </pre>
+                            <CodeBlock>{response.example}</CodeBlock>
                           )}
                         </div>
                       ))}
@@ -439,20 +454,16 @@ export default function ApiDocsPage() {
               ))}
             </div>
 
-            <div className="mt-8 p-6 border border-primary/30 bg-black/50">
-              <h3 className="font-display font-bold uppercase tracking-widest text-sm mb-3">
-                ERROR_RESPONSES
-              </h3>
-              <p className="text-sm text-gray-500 mb-3 font-fragmented">
+            <Card className="mt-8">
+              <h3 className="pt-label mb-3">Error responses</h3>
+              <p className="text-sm text-muted-foreground mb-3">
                 All endpoints return errors in the following format:
               </p>
-              <pre className="text-xs bg-black/50 border border-primary/20 p-3 font-fragmented">
-                {'{ "error": "Error message" }'}
-              </pre>
-            </div>
-          </>
+              <CodeBlock>{'{ "error": "Error message" }'}</CodeBlock>
+            </Card>
+          </div>
         )}
-      </div>
+      </main>
       <Footer />
     </>
   )

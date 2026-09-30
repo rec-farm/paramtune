@@ -2,6 +2,7 @@
 
 import { useCallback, useState, useTransition } from 'react'
 import { JsonEditable } from '@/components/JsonEditable'
+import { AlertCircle, Loader2 } from 'lucide-react'
 import Button from '@/components/ui/Button'
 import { validateSchemaContent } from '@/actions/validateSchema'
 
@@ -100,9 +101,8 @@ export default function SchemaEditorForm({
           <div className="flex items-center gap-2">
             <Button
               type="button"
-              variant="outline"
+              variant="secondary"
               size="sm"
-              className="h-8"
               disabled={!valid}
               onClick={onFormat}
             >
@@ -110,9 +110,8 @@ export default function SchemaEditorForm({
             </Button>
             <Button
               type="button"
-              variant="outline"
+              variant="secondary"
               size="sm"
-              className="h-8"
               disabled={!valid}
               onClick={onCopy}
             >
@@ -121,10 +120,14 @@ export default function SchemaEditorForm({
             <Button
               type="submit"
               variant="primary"
-              className="clip-brutalist font-display font-bold text-[10px] tracking-wider px-6 py-3 h-auto"
+              size="sm"
               disabled={!isValid || isPending}
+              aria-busy={isPending}
             >
-              {isPending ? 'VALIDATING...' : 'COMMIT_CHANGES'}
+              {isPending && (
+                <Loader2 className="w-4 h-4 animate-spin" strokeWidth={1.5} aria-hidden="true" />
+              )}
+              {isPending ? 'Validating' : 'Save changes'}
             </Button>
           </div>
         )}
@@ -132,16 +135,21 @@ export default function SchemaEditorForm({
 
       {/* Dependency validation errors */}
       {dependencyErrors.length > 0 && (
-        <div className="mt-4 bg-red-900/20 border border-red-500/30 rounded-lg p-3">
-          <p className="text-sm text-red-400 font-medium">
-            Dependency Error{dependencyErrors.length > 1 ? 's' : ''}
+        <div
+          role="alert"
+          className="mt-4 border border-danger/40 bg-[var(--pt-danger-bg)] p-4"
+        >
+          <p className="flex items-center gap-2 text-sm font-bold text-danger">
+            <AlertCircle className="w-4 h-4 shrink-0" strokeWidth={1.5} aria-hidden="true" />
+            Dependency error{dependencyErrors.length > 1 ? 's' : ''}
           </p>
-          <p className="text-xs text-red-300 mt-1">
-            The following @extends references could not be resolved:
+          <p className="text-xs text-muted-foreground mt-1">
+            These @extends references could not be resolved. Check the
+            platform name and version, then save again.
           </p>
-          <ul className="list-disc list-inside mt-2">
+          <ul className="list-disc list-inside mt-2 space-y-1">
             {dependencyErrors.map((error, index) => (
-              <li key={index} className="text-xs text-red-300">
+              <li key={index} className="text-xs font-mono text-danger">
                 {error}
               </li>
             ))}

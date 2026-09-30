@@ -1,6 +1,7 @@
 'use client'
 
 import { memo, useCallback, useEffect, useMemo, useState } from 'react'
+import { CircleCheck, CircleX, LoaderCircle } from 'lucide-react'
 import { useOptimizedJsonEditor } from './hooks/useOptimizedJsonEditor'
 import { useTextareaRef } from './hooks/useTextareaRef'
 import { useAutocomplete } from './hooks/useAutocomplete'
@@ -32,7 +33,6 @@ const JsonEditable = memo(function JsonEditable({
   syntaxHighlighting = true,
   renderToolbar,
   showHeader = true,
-  theme = 'dark',
 }: JsonEditableProps) {
   const { state, actions } = useOptimizedJsonEditor({
     defaultValue,
@@ -279,7 +279,9 @@ const JsonEditable = memo(function JsonEditable({
               isValidating={state.isValidating}
             />
             {state.isDirty && (
-              <div className="text-xs text-yellow-500">• Unsaved changes</div>
+              <div className="pt-label inline-flex items-center gap-1 border border-dashed border-warn/40 bg-warn/10 px-2 py-0.5 text-warn">
+                Unsaved changes
+              </div>
             )}
           </div>
 
@@ -308,7 +310,7 @@ const JsonEditable = memo(function JsonEditable({
 
       {/* JSON Editor */}
       <div className="space-y-2">
-        <div className={`relative overflow-hidden border border-primary/30 ${theme === 'light' ? 'bg-gray-100' : 'bg-zinc-950/50'}`}>
+        <div className={`relative overflow-hidden border border-border focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary bg-surface`}>
           <JsonTextarea
             ref={textareaRef}
             value={state.jsonText}
@@ -343,7 +345,7 @@ const JsonEditable = memo(function JsonEditable({
                 style={{
                   top: 16 + (errorLine - visibleStart) * lineHeight,
                   height: lineHeight,
-                  background: 'rgba(239, 68, 68, 0.15)',
+                  background: 'var(--pt-danger-bg)',
                   pointerEvents: 'none',
                 }}
               />
@@ -368,8 +370,7 @@ const JsonEditable = memo(function JsonEditable({
                   width: 6,
                   height: 6,
                   borderRadius: 9999,
-                  background: 'rgb(239, 68, 68)',
-                  boxShadow: '0 0 0 2px rgba(239,68,68,0.25)',
+                  background: 'var(--pt-danger)',
                   pointerEvents: 'none',
                 }}
               />
@@ -401,13 +402,13 @@ const JsonEditable = memo(function JsonEditable({
                     left: 0,
                     width: '1ch',
                     height: 2,
-                    background: 'rgb(239, 68, 68)',
+                    background: 'var(--pt-danger)',
                   }}
                 />
                 {/* tooltip - hover only */}
                 <div
                   role="tooltip"
-                  className="absolute text-xs bg-red-600 text-white px-2 py-1 shadow-lg whitespace-pre max-w-sm opacity-0 group-hover:opacity-100 transition-opacity font-mono"
+                  className="absolute text-xs bg-popover border border-border-strong text-danger px-2 py-1 shadow-[var(--elev-raised)] whitespace-pre max-w-sm opacity-0 group-hover:opacity-100 transition-opacity duration-150 font-mono"
                   style={{
                     top: -28,
                     left: 0,
@@ -424,17 +425,36 @@ const JsonEditable = memo(function JsonEditable({
               lineHeight={lineHeight}
               scrollTop={scrollTop}
               showLineNumbers={showLineNumbers}
-              theme={theme}
             />
           )}
 
-          {/* Status bar — mirrors MockDashboard footer */}
-          <div className="relative z-30 border-t border-primary/10 px-6 py-3 flex justify-between font-fragmented text-[11px]">
-            <span className={state.isValidating ? 'animate-pulse text-primary' : state.isValid ? 'text-primary' : 'text-red-500'}>
-              {state.isValidating ? 'VALIDATING...' : state.isValid ? 'SCHEMA_VALID' : 'SCHEMA_INVALID'}
-            </span>
-            <span className="text-gray-800">
-              {lineCount} LINES | {new Blob([state.jsonText]).size} B // UTF-8 // JSON_TYPE
+          {/* Status bar */}
+          <div className="relative z-30 border-t border-border px-4 h-10 flex items-center justify-between gap-4 text-xs">
+            {/* The header already shows validation state */}
+            {showHeader ? (
+              <span />
+            ) : (
+              <span
+                className={`inline-flex items-center gap-1 font-bold uppercase tracking-[0.08em] ${
+                  state.isValidating
+                    ? 'text-muted-foreground'
+                    : state.isValid
+                      ? 'text-success'
+                      : 'text-danger'
+                }`}
+              >
+                {state.isValidating ? (
+                  <LoaderCircle className="w-4 h-4 animate-spin motion-reduce:animate-none" strokeWidth={1.5} aria-hidden="true" />
+                ) : state.isValid ? (
+                  <CircleCheck className="w-4 h-4" strokeWidth={1.5} aria-hidden="true" />
+                ) : (
+                  <CircleX className="w-4 h-4" strokeWidth={1.5} aria-hidden="true" />
+                )}
+                {state.isValidating ? 'Validating' : state.isValid ? 'Valid JSON' : 'Invalid JSON'}
+              </span>
+            )}
+            <span className="text-meta tabular-nums">
+              {lineCount} {lineCount === 1 ? 'line' : 'lines'} · {new Blob([state.jsonText]).size} B · UTF-8
             </span>
           </div>
         </div>

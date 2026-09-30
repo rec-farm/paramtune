@@ -1,99 +1,89 @@
+import { Smartphone, Globe, Server } from 'lucide-react'
+
+const PLATFORMS = [
+  { name: 'ios-app', icon: Smartphone, versions: 4, current: true },
+  { name: 'android-app', icon: Smartphone, versions: 3, current: false },
+  { name: 'web-portal', icon: Globe, versions: 2, current: false },
+  { name: 'api-gateway', icon: Server, versions: 1, current: false },
+]
+
+const punct = 'text-meta'
+const key = 'text-foreground'
+const str = 'text-info'
+const num = 'text-warn'
+const lit = 'text-pink-300'
+
 export default function MockDashboard() {
   return (
-    <div className="flex flex-col md:flex-row h-[500px]">
+    <div className="flex flex-col md:flex-row md:h-[480px]" aria-hidden="true">
       {/* Sidebar */}
-      <aside className="w-full md:w-72 border-r border-primary/10 p-8 flex flex-col bg-zinc-900/20">
-        <div className="flex items-center gap-2 mb-8">
-          <div className="w-2 h-2 bg-primary" />
-          <h4 className="text-[10px] font-bold text-primary uppercase tracking-[0.2em]">
-            ENDPOINTS
-          </h4>
-        </div>
-        <ul className="space-y-6">
-          <li className="relative">
-            <span className="absolute -left-8 top-1/2 w-4 h-[1px] bg-primary" />
-            <span className="text-xs text-white font-bold bg-primary/10 px-4 py-2 block border-l border-primary">
-              ios-app.json
-            </span>
-          </li>
-          <li className="px-4 text-xs text-gray-600 hover:text-primary cursor-pointer flex items-center gap-2">
-            <span className="w-1 h-1 border border-gray-600" /> android-app.v2
-          </li>
-          <li className="px-4 text-xs text-gray-600 hover:text-primary cursor-pointer flex items-center gap-2">
-            <span className="w-1 h-1 border border-gray-600" /> web-portal.main
-          </li>
+      <aside className="md:w-64 border-b md:border-b-0 md:border-r border-border bg-surface py-4">
+        <p className="pt-label text-meta px-4 mb-2">Platforms</p>
+        <ul>
+          {PLATFORMS.map(({ name, icon: Icon, versions, current }) => (
+            <li
+              key={name}
+              className={`flex items-center gap-3 h-10 px-4 text-sm ${
+                current
+                  ? 'bg-accent-dim text-foreground shadow-[inset_2px_0_0_var(--pt-accent)]'
+                  : 'text-muted-foreground'
+              }`}
+            >
+              <Icon className="w-5 h-5 shrink-0" strokeWidth={1.5} />
+              <span className="flex-1 truncate">{name}</span>
+              <span className="text-xs text-meta tabular-nums">{versions}</span>
+            </li>
+          ))}
         </ul>
-        <div className="mt-auto pt-8 border-t border-primary/5">
-          <div className="h-1 w-full bg-zinc-800 relative">
-            <div className="absolute inset-0 bg-primary w-2/3" />
-          </div>
-          <p className="text-[8px] mt-2 text-gray-600 font-fragmented">
-            BUFFER_UTILIZATION: 67%
-          </p>
-        </div>
       </aside>
 
       {/* Main content */}
-      <div className="flex-1 p-10 bg-black flex flex-col">
-        <div className="flex flex-col md:flex-row justify-between items-start mb-16 gap-6">
-          <div className="relative">
-            <h2 className="text-white text-5xl font-display font-bold tracking-widest mb-2">
-              IOS_APP_STAGING
-            </h2>
-            <div className="flex items-center gap-4 text-primary/40 text-[10px] font-fragmented">
-              <span>HASH: 0x82F...E92</span>
-              <span className="w-1 h-1 bg-primary/40 rounded-full" />
-              <span>LATENCY: 12ms</span>
+      <div className="flex-1 min-w-0 p-6 md:p-8 flex flex-col gap-6 bg-background">
+        <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+          <div className="space-y-2">
+            <h3 className="pt-display text-lg">ios-app</h3>
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center border border-primary px-2 py-0.5 text-xs text-primary">
+                2.4.0
+              </span>
+              <span className="text-xs text-meta">latest</span>
             </div>
           </div>
-          <div className="flex flex-col gap-2">
-            <div className="bg-primary text-black px-8 py-3 font-display font-bold text-[10px] clip-brutalist text-center">
-              COMMIT_CHANGES
-            </div>
-            <div className="border border-white/10 text-white/50 px-8 py-3 font-display font-bold text-[10px] text-center">
-              LOGS
-            </div>
+          <div className="flex gap-2">
+            <span className="pt-btn pt-btn-secondary h-8 px-3 text-xs">History</span>
+            <span className="pt-btn pt-btn-ghost h-8 px-3 text-xs border-border-strong">
+              Save
+            </span>
           </div>
         </div>
 
         {/* JSON preview */}
-        <div className="flex-1 border border-primary/10 p-6 font-fragmented text-[11px] text-gray-600 leading-relaxed overflow-hidden bg-zinc-950/50">
-          <div className="flex gap-4 mb-2">
-            <span className="text-primary/30">001</span>
-            <span className="text-primary/80">{'{'}</span>
-          </div>
-          <div className="flex gap-4 mb-2">
-            <span className="text-primary/30">002</span>
-            <span className="pl-4">
-              &quot;schema_version&quot;:{' '}
-              <span className="text-white">&quot;3.0.4-build-92&quot;</span>,
-            </span>
-          </div>
-          <div className="flex gap-4 mb-2">
-            <span className="text-primary/30">003</span>
-            <span className="pl-4">
-              &quot;validation_logic&quot;:{' '}
-              <span className="text-primary/40">[...]</span>,
-            </span>
-          </div>
-          <div className="flex gap-4 mb-2">
-            <span className="text-primary/30">004</span>
-            <span className="pl-4">
-              &quot;auto_failover&quot;:{' '}
-              <span className="text-primary">true</span>,
-            </span>
-          </div>
-          <div className="flex gap-4 mb-2 opacity-20">
-            <span className="text-primary/30">005</span>
-            <span className="pl-4">
-              &quot;distributed_nodes&quot;: 12,
-            </span>
-          </div>
-          <div className="mt-8 border-t border-primary/10 pt-4 flex justify-between">
-            <span className="animate-pulse text-primary">READY_FOR_PATCH_03</span>
-            <span className="text-gray-800">UTF-8 // JSON_TYPE</span>
-          </div>
-        </div>
+        <pre className="flex-1 overflow-hidden border border-border bg-surface p-4 text-sm leading-relaxed">
+          <code>
+            <span className={punct}>{'{'}</span>
+            {'\n  '}
+            <span className="text-primary">&quot;@extends&quot;</span>
+            <span className={punct}>: </span>
+            <span className={str}>&quot;ios-app@2.3.x&quot;</span>
+            <span className={punct}>,</span>
+            {'\n  '}
+            <span className={key}>&quot;minSupportedVersion&quot;</span>
+            <span className={punct}>: </span>
+            <span className={str}>&quot;17.0&quot;</span>
+            <span className={punct}>,</span>
+            {'\n  '}
+            <span className={key}>&quot;checkoutV2&quot;</span>
+            <span className={punct}>: </span>
+            <span className={lit}>true</span>
+            <span className={punct}>,</span>
+            {'\n  '}
+            <span className={key}>&quot;maxCartItems&quot;</span>
+            <span className={punct}>: </span>
+            <span className={num}>50</span>
+            {'\n'}
+            <span className={punct}>{'}'}</span>
+          </code>
+        </pre>
       </div>
     </div>
   )

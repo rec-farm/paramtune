@@ -1,0 +1,81 @@
+/* Paramtune Console design tokens (DESIGN.md §2, §4, §7). Dark only. */
+
+:root {
+  color-scheme: dark;
+
+  /* Paramtune Console palette */
+  --pt-bg: #000000;
+  --pt-surface: #0a0a0a;
+  --pt-surface-2: #111111;
+  --pt-surface-3: #1a1a1a;
+  --pt-border: #262626;
+  --pt-border-strong: #404040;
+  --pt-input: #5c5c5c;
+  --pt-fg: #f5f5f5;
+  --pt-muted: #a3a3a3;
+  --pt-meta: #7a7a7a;
+  --pt-accent: #d9f99d;
+  --pt-accent-on: #0a0f02;
+  --pt-accent-dim: rgb(217 249 157 / 0.08);
+  --pt-success: #4ade80;
+  --pt-warn: #facc15;
+  --pt-danger: #f87171;
+  --pt-danger-fill: #dc2626;
+  --pt-info: #7dd3fc;
+  --pt-success-bg: rgb(74 222 128 / 0.1);
+  --pt-warn-bg: rgb(250 204 21 / 0.1);
+  --pt-danger-bg: rgb(248 113 113 / 0.1);
+  --pt-info-bg: rgb(125 211 252 / 0.1);
+
+  --elev-raised: 0 8px 24px rgb(0 0 0 / 0.6);
+
+  /* Motion */
+  --pt-dur-fast: 150ms;
+  --pt-dur-base: 200ms;
+  --pt-dur-slow: 300ms;
+  --pt-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --pt-ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+  /* Exits run at 65% of the enter duration */
+  --pt-dur-fast-exit: calc(var(--pt-dur-fast) * 0.65);
+  --pt-dur-base-exit: calc(var(--pt-dur-base) * 0.65);
+  --pt-dur-slow-exit: calc(var(--pt-dur-slow) * 0.65);
+  --pt-stagger: 40ms;
+
+  /* shadcn semantic aliases, mapped onto the palette above */
+  --background: var(--pt-bg);
+  --foreground: var(--pt-fg);
+  --card: var(--pt-surface);
+  --card-foreground: var(--pt-fg);
+  --popover: var(--pt-surface-2);
+  --popover-foreground: var(--pt-fg);
+  --primary: var(--pt-accent);
+  --primary-foreground: var(--pt-accent-on);
+  --secondary: var(--pt-surface-2);
+  --secondary-foreground: var(--pt-fg);
+  --muted: var(--pt-surface-2);
+  --muted-foreground: var(--pt-muted);
+  --accent: var(--pt-surface-2);
+  --accent-foreground: var(--pt-fg);
+  /* Text/icon red. The #DC2626 fill fails AA as text on black. */
+  --destructive: var(--pt-danger);
+  --destructive-foreground: #ffffff;
+  --border: var(--pt-border);
+  --input: var(--pt-input);
+  --ring: var(--pt-accent);
+  --sidebar: var(--pt-surface);
+  --sidebar-foreground: var(--pt-fg);
+  --sidebar-primary: var(--pt-accent);
+  --sidebar-primary-foreground: var(--pt-accent-on);
+  --sidebar-accent: var(--pt-surface-2);
+  --sidebar-accent-foreground: var(--pt-fg);
+  --sidebar-border: var(--pt-border);
+  --sidebar-ring: var(--pt-accent);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --pt-dur-fast: 0ms;
+    --pt-dur-base: 0ms;
+    --pt-dur-slow: 0ms;
+  }
+}

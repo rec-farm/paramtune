@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useMemo } from 'react'
-import Badge from '@/components/ui/Badge'
+import { ChevronRight } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
@@ -25,27 +25,19 @@ const Version = ({ platform, version }: VersionProps) => {
 
   return (
     <Link
+      aria-current={isActive ? 'page' : undefined}
       className={cn(
-        'block px-3 py-2 text-sm transition-colors duration-200 group border-l',
-        'hover:text-foreground hover:bg-black/30 hover:border-primary/50',
-        isActive ? 'bg-black/30 text-foreground border-primary/60' : 'text-muted-foreground border-transparent'
+        'flex items-center h-8 pl-12 pr-4 text-sm tabular-nums transition-colors duration-150',
+        isActive
+          ? 'bg-accent-dim text-foreground shadow-[inset_2px_0_0_var(--pt-accent)]'
+          : 'text-muted-foreground hover:bg-surface-2'
       )}
       href="/dashboard/[platform]/[version]"
       as={`/dashboard/${encodeURIComponent(platform)}/${encodeURIComponent(
         version
       )}`}
     >
-      <div className="flex items-center justify-between pl-6">
-        <span className="font-mono text-xs">v{version}</span>
-        <div
-          className={cn(
-            'w-1.5 h-1.5 transition-opacity duration-200',
-            isActive
-              ? 'bg-primary/80 opacity-80'
-              : 'bg-primary/60 opacity-0 group-hover:opacity-60'
-          )}
-        />
-      </div>
+      v{version}
     </Link>
   )
 }
@@ -60,7 +52,16 @@ export default function PlatformsList({
   searchQuery,
 }: PlatformsListProps) {
   const pathname = usePathname()
-  const [open, setOpen] = useState<Record<string, boolean>>({})
+  const [open, setOpen] = useState<Record<string, boolean>>(() => {
+    const active: Record<string, boolean> = {}
+    platforms.forEach((p) => {
+      const href = `/dashboard/${encodeURIComponent(p.name)}`
+      if (pathname === href || pathname.startsWith(`${href}/`)) {
+        active[p.name] = true
+      }
+    })
+    return active
+  })
 
   const filteredPlatforms = useMemo(
     () =>
@@ -94,28 +95,35 @@ export default function PlatformsList({
 
   if (filteredPlatforms.length === 0) {
     return (
-      <div className="text-xs text-muted-foreground px-3 py-4 text-center">
-        {searchQuery ? 'No platforms match your search' : 'No platforms found'}
-      </div>
+      <p className="text-sm text-muted-foreground px-4 py-3">
+        {searchQuery
+          ? 'No platforms match your search. Clear it to see all platforms.'
+          : 'No platforms yet. Create one from the dashboard.'}
+      </p>
     )
   }
 
   return (
-    <div className="space-y-2">
+    <ul>
       {filteredPlatforms.map((platform) => {
         const platformHref = `/dashboard/${encodeURIComponent(platform.name)}`
-        const isActivePlatform =
-          pathname === platformHref || pathname.startsWith(`${platformHref}/`)
+        const isCurrentPlatform = pathname === platformHref
+        const isExpanded = !!open[platform.name]
 
         return (
-          <div key={platform.name} className="space-y-1">
-            <div className="flex items-center">
+          <li key={platform.name}>
+            <div
+              className={cn(
+                'flex items-center h-10 transition-colors duration-150',
+                isCurrentPlatform
+                  ? 'bg-accent-dim shadow-[inset_2px_0_0_var(--pt-accent)]'
+                  : 'hover:bg-surface-2'
+              )}
+            >
               <button
-                aria-label="Toggle versions"
-                className={cn(
-                  'mr-1 p-1 text-muted-foreground hover:text-foreground hover:bg-black/30 transition-colors',
-                  'focus:outline-none focus:ring-1 focus:ring-primary/50'
-                )}
+                aria-label={`${isExpanded ? 'Collapse' : 'Expand'} ${platform.name} versions`}
+                aria-expanded={isExpanded}
+                className="flex items-center justify-center h-10 w-10 ml-1 text-muted-foreground hover:text-foreground"
                 onClick={() =>
                   setOpen((prev) => ({
                     ...prev,
@@ -123,50 +131,34 @@ export default function PlatformsList({
                   }))
                 }
               >
-                <svg
+                <ChevronRight
                   className={cn(
-                    'w-4 h-4 transition-transform',
-                    open[platform.name] ? 'rotate-90' : 'rotate-0'
+                    'w-5 h-5 transition-transform duration-200',
+                    isExpanded && 'rotate-90'
                   )}
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M9 5l7 7-7 7"
-                  />
-                </svg>
+                  strokeWidth={1.5}
+                />
               </button>
               <Link
+                aria-current={isCurrentPlatform ? 'page' : undefined}
                 className={cn(
-                  'group flex-1 flex items-center justify-between px-3 py-2 text-sm font-medium uppercase tracking-wider transition-colors duration-200',
-                  'hover:bg-black/30',
-                  isActivePlatform
-                    ? 'bg-black/30 text-foreground'
-                    : 'text-foreground'
+                  'flex-1 min-w-0 flex items-center justify-between gap-2 h-10 pr-4 text-sm',
+                  isCurrentPlatform ? 'text-foreground' : 'text-muted-foreground'
                 )}
                 href="/dashboard/[platform]"
                 as={platformHref}
               >
                 <span className="truncate">{platform.name}</span>
-                <div className="flex items-center gap-2">
-                  {platform.versions && platform.versions.length > 0 && (
-                    <Badge variant="secondary" className="text-xs px-1.5 py-0">
-                      {platform.versions.length}
-                    </Badge>
-                  )}
-                  <div className="w-1.5 h-1.5 bg-primary/60 opacity-0 group-hover:opacity-60 transition-opacity duration-200" />
-                </div>
+                <span className="text-xs text-meta tabular-nums">
+                  {platform.versions?.length ?? 0}
+                </span>
               </Link>
             </div>
 
             {platform.versions &&
               platform.versions.length > 0 &&
-              open[platform.name] && (
-                <ul className="space-y-1">
+              isExpanded && (
+                <ul>
                   {sortVersionsDescending(
                     platform.versions.filter(
                       (version) =>
@@ -182,9 +174,9 @@ export default function PlatformsList({
                   ))}
                 </ul>
               )}
-          </div>
+          </li>
         )
       })}
-    </div>
+    </ul>
   )
 }

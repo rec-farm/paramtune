@@ -15,6 +15,10 @@ interface SchemaHistoryProps {
   onRestore?: (content: Record<string, unknown>) => Promise<void>
 }
 
+function plural(count: number, one: string, many: string) {
+  return `${count} ${count === 1 ? one : many}`
+}
+
 export default function SchemaHistory({
   history,
   onRestore,
@@ -60,9 +64,9 @@ export default function SchemaHistory({
         const prevKeys = Object.keys(prevEntry.content || {})
 
         if (currentKeys.length > prevKeys.length) {
-          return `Added ${currentKeys.length - prevKeys.length} properties`
+          return `Added ${plural(currentKeys.length - prevKeys.length, 'property', 'properties')}`
         } else if (currentKeys.length < prevKeys.length) {
-          return `Removed ${prevKeys.length - currentKeys.length} properties`
+          return `Removed ${plural(prevKeys.length - currentKeys.length, 'property', 'properties')}`
         } else {
           return 'Modified properties'
         }
@@ -171,14 +175,22 @@ export default function SchemaHistory({
                     <p className="mt-1 text-xs text-muted-foreground">
                       {getChangeDescription(index)} ·{' '}
                       <span className="tabular-nums">
-                        {Object.keys(entry.content || {}).length}
-                      </span>{' '}
-                      properties
+                        {plural(
+                          Object.keys(entry.content || {}).length,
+                          'property',
+                          'properties'
+                        )}
+                      </span>
                       {entry.dependencies.length > 0 && (
                         <>
                           {' '}·{' '}
-                          <span className="tabular-nums">{entry.dependencies.length}</span>{' '}
-                          dependencies
+                          <span className="tabular-nums">
+                            {plural(
+                              entry.dependencies.length,
+                              'dependency',
+                              'dependencies'
+                            )}
+                          </span>
                         </>
                       )}
                     </p>

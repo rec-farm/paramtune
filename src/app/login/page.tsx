@@ -5,6 +5,7 @@ import Image from 'next/image'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
 import { signIn, signOut, useSession } from '@/lib/auth-client'
+import { PanelsArt } from '@/components/illustrations'
 
 function LoadingState() {
   return (
@@ -127,6 +128,7 @@ function LoginContent() {
   return (
     <div className="min-h-screen flex items-center justify-center px-4 bg-background">
       <div className="pt-card w-full max-w-md p-8 space-y-8 animate-in">
+        <PanelsArt className="w-full h-auto" />
         <div className="space-y-2">
           <h1 className="pt-display text-xl">Paramtune</h1>
           <p className="text-sm text-muted-foreground">

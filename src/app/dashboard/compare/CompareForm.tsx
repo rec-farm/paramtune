@@ -10,6 +10,8 @@ import SideBySideDiff from '@/components/SchemaDiff/SideBySideDiff'
 import { type Platform } from '@/models/Platform'
 import { type DiffResult } from '@/lib/schemaDiff'
 import { type CompareResult } from './page'
+import EmptyState from '@/components/EmptyState'
+import { CompareArt } from '@/components/illustrations'
 
 interface CompareFormProps {
   platforms: Platform[]
@@ -286,13 +288,11 @@ export default function CompareForm({
       {/* Empty state */}
       {!compareResult && !error && (
         <Card className="p-8">
-          <div className="text-center space-y-2">
-            <p className="font-bold">Nothing to compare yet</p>
-            <p className="text-sm text-muted-foreground">
-              Pick a platform and version for both A and B, then press
-              Compare schemas to see what changed.
-            </p>
-          </div>
+          <EmptyState
+            visual={<CompareArt className="w-[280px] max-w-full h-auto" />}
+            title="Nothing to compare yet"
+            description="Pick a platform and version for both A and B, then press Compare schemas to see what changed."
+          />
         </Card>
       )}
     </div>

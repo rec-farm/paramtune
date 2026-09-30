@@ -207,6 +207,15 @@ describe('diffSchemas', () => {
     expect(result.summary.modified).toBe(1)
   })
 
+  it('treats A as the source and B as the target', () => {
+    const result = diffSchemas(
+      { content: { removedKey: 1, shared: 1 } },
+      { content: { addedKey: 1, shared: 1 } }
+    )
+    expect(result.byType.added.map((c) => c.path)).toEqual(['addedKey'])
+    expect(result.byType.removed.map((c) => c.path)).toEqual(['removedKey'])
+  })
+
   it('returns no changes for identical schemas', () => {
     const schema = { content: { key: 'same' } }
     const result = diffSchemas(schema, schema)

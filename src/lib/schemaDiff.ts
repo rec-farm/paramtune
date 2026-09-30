@@ -265,5 +265,7 @@ export function diffSchemas(
   schemaA: Pick<Schema, 'content'>,
   schemaB: Pick<Schema, 'content'>
 ): DiffResult {
-  return calculateDiff(schemaA.content, schemaB.content)
+  // A is the source (previous), B the target (current): keys only in B are
+  // "added", keys only in A are "removed"
+  return calculateDiff(schemaB.content, schemaA.content)
 }

@@ -3,6 +3,8 @@ import AddVersionForm from '@/components/AddVersionForm'
 import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import Card from '@/components/ui/Card'
+import EmptyState from '@/components/EmptyState'
+import { ExtendsArt } from '@/components/illustrations'
 import { getPlatform } from '@/models/Platform'
 import { sortVersionsDescending } from '@/lib/versionUtils'
 import { createPlatformVersion } from '@/actions/createVersion'
@@ -87,10 +89,16 @@ export default async function Page({
           }
         >
           {(platform.versions ?? []).length === 0 ? (
-            <p className="text-sm text-muted-foreground">
-              This platform has no versions yet. Add one below to start
-              editing its schema.
-            </p>
+            <EmptyState
+              visual={<ExtendsArt className="w-[300px] max-w-full h-auto" />}
+              title="No versions yet"
+              description="Each version holds its own schema. Add one below, or start from an existing version with @extends."
+              action={
+                <a href="#add-version" className="pt-btn pt-btn-secondary">
+                  Add version
+                </a>
+              }
+            />
           ) : (
             <ul className="flex flex-wrap gap-2">
               {sortVersionsDescending(platform.versions ?? []).map(
@@ -108,7 +116,7 @@ export default async function Page({
         </Suspense>
       </Card>
 
-      <Card title="Add version">
+      <Card id="add-version" title="Add version">
         <AddVersionForm action={createVersion} />
       </Card>
     </div>

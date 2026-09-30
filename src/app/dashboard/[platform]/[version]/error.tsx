@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { AlertTriangle, RotateCw } from 'lucide-react'
+import { PeggedDialArt } from '@/components/illustrations'
 
 export default function VersionError({
   error,
@@ -13,6 +14,7 @@ export default function VersionError({
   return (
     <div className="flex min-h-[50vh] items-center justify-center px-4">
       <div role="alert" className="pt-card max-w-xl w-full p-8 space-y-6">
+        <PeggedDialArt className="w-[200px] h-auto" />
         <div className="space-y-2">
           <h2 className="pt-display text-lg flex items-center gap-3">
             <AlertTriangle

@@ -2,6 +2,7 @@
 
 import { AlertTriangle, RotateCw } from 'lucide-react'
 import './globals.css'
+import { PeggedDialArt } from '@/components/illustrations'
 
 // Custom global error page to prevent Next.js auto-generated one
 // from failing during static generation. It replaces the root layout,
@@ -17,6 +18,7 @@ export default function GlobalError({
     <html lang="en">
       <body className="min-h-screen flex items-center justify-center px-4 bg-background text-foreground font-mono">
         <div role="alert" className="pt-card max-w-md w-full p-8 space-y-6">
+          <PeggedDialArt className="w-[200px] h-auto" />
           <h2 className="text-lg font-bold uppercase tracking-[0.08em] flex items-center gap-3">
             <AlertTriangle
               className="w-5 h-5 text-danger shrink-0"

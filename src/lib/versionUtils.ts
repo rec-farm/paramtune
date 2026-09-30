@@ -36,8 +36,14 @@ export function getLatestVersion(versions: string[] | undefined): string | undef
  * without this check a padded version would become a Redis key and URL segment
  * containing spaces that no read path could look up again.
  */
-export function isValidVersion(version: string): boolean {
-  return isValidVersionName(version) && semver.valid(version) !== null
+export function isValidVersion(version: unknown): version is string {
+  // The typeof check is explicit because request bodies are untyped: an array
+  // like ["1.2.3"] would otherwise pass the charset regex via string coercion.
+  return (
+    typeof version === 'string' &&
+    isValidVersionName(version) &&
+    semver.valid(version) !== null
+  )
 }
 
 /**

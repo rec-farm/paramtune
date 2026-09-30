@@ -47,7 +47,7 @@ export function POST(
       yield* validateName(platformName, 'platform name')
       const body = yield* parseJsonBody(request)
 
-      const version = body?.version as string | undefined
+      const version: unknown = body?.version
       if (!version) {
         return yield* failWith('Missing "version" in body', 400)
       }

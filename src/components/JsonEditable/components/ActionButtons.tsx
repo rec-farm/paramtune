@@ -10,7 +10,7 @@ interface ActionButtonsProps {
   onDownload: () => void
 }
 
-const buttonClassName = 'pt-btn pt-btn-secondary h-8 px-3 text-xs'
+const buttonClassName = 'pt-btn pt-btn-secondary h-7 px-2.5 text-[13px]'
 
 export const ActionButtons = memo(function ActionButtons({
   isValid,

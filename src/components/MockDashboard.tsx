@@ -23,10 +23,10 @@ export default function MockDashboard() {
           {PLATFORMS.map(({ name, icon: Icon, versions, current }) => (
             <li
               key={name}
-              className={`flex items-center gap-3 h-10 px-4 text-sm ${
+              className={`flex items-center gap-3 h-10 mx-3 px-3 rounded-sm font-mono text-sm border-[1.5px] ${
                 current
-                  ? 'bg-accent-dim text-foreground shadow-[inset_2px_0_0_var(--pt-accent)]'
-                  : 'text-muted-foreground'
+                  ? 'bg-accent text-accent-foreground font-semibold border-border-strong shadow-hard'
+                  : 'border-transparent text-muted-foreground'
               }`}
             >
               <Icon className="w-5 h-5 shrink-0" strokeWidth={1.5} />
@@ -41,28 +41,31 @@ export default function MockDashboard() {
       <div className="flex-1 min-w-0 p-6 md:p-8 flex flex-col gap-6 bg-background">
         <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
           <div className="space-y-2">
-            <h3 className="pt-display text-lg">ios-app</h3>
+            <p className="pt-eyebrow">Platform</p>
+            <h3 className="font-mono text-2xl font-medium tracking-[-0.02em]">ios-app</h3>
             <div className="flex items-center gap-2">
-              <span className="inline-flex items-center border border-primary px-2 py-0.5 text-xs text-primary">
-                2.4.0
+              <span className="inline-flex items-center h-[22px] px-1.5 rounded-xs bg-surface-2 border border-border font-mono text-[11px] font-semibold">
+                v2.4.0
               </span>
-              <span className="text-xs text-meta">latest</span>
+              <span className="inline-flex items-center h-[18px] px-1 rounded-xs bg-accent-tile text-accent-text text-[11px] font-semibold">
+                latest
+              </span>
             </div>
           </div>
           <div className="flex gap-2">
-            <span className="pt-btn pt-btn-secondary h-8 px-3 text-xs">History</span>
-            <span className="pt-btn pt-btn-ghost h-8 px-3 text-xs border-border-strong">
+            <span className="pt-btn pt-btn-secondary h-7 px-2.5 text-[13px]">History</span>
+            <span className="pt-btn pt-btn-secondary h-7 px-2.5 text-[13px]">
               Save
             </span>
           </div>
         </div>
 
         {/* JSON preview */}
-        <pre className="flex-1 overflow-hidden border border-border bg-surface p-4 text-sm leading-relaxed">
+        <pre className="pt-code flex-1 overflow-hidden">
           <code>
             <span className={punct}>{'{'}</span>
             {'\n  '}
-            <span className="text-primary">&quot;@extends&quot;</span>
+            <span className="text-syntax-extends">&quot;@extends&quot;</span>
             <span className={punct}>: </span>
             <span className={str}>&quot;ios-app@2.3.x&quot;</span>
             <span className={punct}>,</span>

@@ -18,7 +18,7 @@ interface JsonTextareaProps {
   maskText?: boolean
 }
 
-const LINE_HEIGHT = 24
+const LINE_HEIGHT = EDITOR_CONSTANTS.LINE_HEIGHT
 const BUFFER_LINES = 5 // Extra lines to render above/below visible area
 
 export const JsonTextarea = memo(
@@ -80,8 +80,8 @@ export const JsonTextarea = memo(
         lineHeight: `${LINE_HEIGHT}px`,
         tabSize: 2,
         fontFamily: EDITOR_CONSTANTS.FONT_FAMILY,
-        color: maskText ? 'transparent' : 'var(--pt-fg)',
-        caretColor: 'var(--pt-fg)',
+        color: maskText ? 'transparent' : 'var(--fg)',
+        caretColor: 'var(--fg)',
         fontSize: `${EDITOR_CONSTANTS.FONT_SIZE}px`,
         paddingTop: '16px',
         paddingLeft: showLineNumbers ? '48px' : '16px',

@@ -3,6 +3,7 @@
 import { useMemo } from 'react'
 import Card from '@/components/ui/Card'
 import Badge from '@/components/ui/Badge'
+import { CircleCheck } from 'lucide-react'
 import {
   type DiffResult,
   type DiffChange,
@@ -43,14 +44,24 @@ export default function SideBySideDiff({
 
   if (!hasChanges) {
     return (
-      <Card className="p-8">
-        <div className="text-center">
-          <p className="text-foreground">Schemas are identical</p>
+      <div
+        role="status"
+        className="flex gap-3 rounded-sm border border-border border-l-4 border-l-success-icon bg-surface-2 px-5 py-4"
+      >
+        <CircleCheck
+          className="h-4 w-4 mt-0.5 shrink-0 text-success-icon"
+          strokeWidth={1.5}
+          aria-hidden="true"
+        />
+        <div>
+          <p className="text-base font-semibold text-foreground">
+            All in tune. These schemas are identical.
+          </p>
           <p className="text-sm mt-1 text-muted-foreground">
-            No differences found. Pick another version to compare.
+            Pick another version to compare.
           </p>
         </div>
-      </Card>
+      </div>
     )
   }
 

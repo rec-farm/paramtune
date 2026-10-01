@@ -9,56 +9,54 @@ export type StatTile = {
   tone?: 'neutral' | 'success' | 'warn'
 }
 
-// Tints are translucent, so layer them over the opaque surface; otherwise the
-// 1px grid gutter color shows through
+// Dark status tiles are tints, not paint (§3.4): -950 tile, cream number, -400 icon
 const TONE_CLASSES = {
   neutral: 'bg-surface',
-  success:
-    'bg-surface bg-[linear-gradient(var(--pt-success-bg),var(--pt-success-bg))]',
-  warn: 'bg-surface bg-[linear-gradient(var(--pt-warn-bg),var(--pt-warn-bg))]',
+  success: 'bg-success-tile',
+  warn: 'bg-warn-tile',
 } as const
 
 const ICON_CLASSES = {
   neutral: 'text-muted-foreground',
-  success: 'text-success',
-  warn: 'text-warn',
+  success: 'text-success-icon',
+  warn: 'text-warn-icon',
 } as const
 
-// Bento placement (DESIGN.md §6 Stat grid): the first tile is the headline and
-// takes the tall cell, the last one spans the bottom row, the rest sit beside
-// the headline. Works for four tiles.
+// Bento placement: the first tile is the headline and takes the tall cell, the
+// last one spans the bottom row, the rest sit beside the headline. Works for four.
 function placement(index: number, count: number) {
-  if (index === 0) return 'col-span-2 md:col-span-1 md:row-span-2 justify-between'
+  if (index === 0) return 'col-span-2 md:col-span-1 md:row-span-2'
   if (index === count - 1) return 'col-span-2'
   return ''
 }
 
-// Workspace counts. Status tiles use a 10% tint and always carry an icon.
+// Stat tile group (§8): joined tiles, 1px dividers, 1.5px strong outline,
+// radius 0, large hard offset shadow. Status tiles always carry an icon.
 export default function StatTiles({ tiles }: { tiles: StatTile[] }) {
   return (
-    <dl className="grid grid-cols-2 md:grid-cols-[2fr_1fr_1fr] border border-border bg-border gap-px">
+    <dl className="grid grid-cols-2 md:grid-cols-[2fr_1fr_1fr] gap-px bg-border border-[1.5px] border-border-strong shadow-hard-lg">
       {tiles.map(({ label, value, helper, icon: Icon, tone = 'neutral' }, index) => (
         <div
           key={label}
           className={cn(
-            'flex flex-col gap-3 p-4 md:p-6',
+            'flex flex-col justify-between gap-4 p-6 min-h-[136px] text-tile-foreground',
             TONE_CLASSES[tone],
             placement(index, tiles.length)
           )}
         >
-          <dt className="flex items-center justify-between gap-2">
+          <dt className="flex items-start justify-between gap-2">
             <span className="pt-label text-muted-foreground">{label}</span>
             <Icon
-              className={cn('h-4 w-4 shrink-0', ICON_CLASSES[tone])}
+              className={cn('h-5 w-5 shrink-0', ICON_CLASSES[tone])}
               strokeWidth={1.5}
               aria-hidden="true"
             />
           </dt>
-          <dd className="space-y-1">
+          <dd className="space-y-2">
             <span
               className={cn(
-                'block font-bold tabular-nums leading-none',
-                index === 0 ? 'text-2xl md:text-4xl' : 'text-2xl'
+                'pt-stat block',
+                index === 0 ? 'text-[40px] md:text-[64px]' : 'text-[40px]'
               )}
             >
               {value}

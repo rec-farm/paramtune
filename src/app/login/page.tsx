@@ -5,7 +5,7 @@ import Image from 'next/image'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
 import { signIn, signOut, useSession } from '@/lib/auth-client'
-import { PanelsArt } from '@/components/illustrations'
+import Logo from '@/components/Logo'
 
 function LoadingState() {
   return (
@@ -82,9 +82,12 @@ function LoginContent() {
     return (
       <div className="min-h-screen flex items-center justify-center px-4 bg-background">
         <div className="pt-card w-full max-w-md p-8 space-y-8">
-          <div className="space-y-2">
-            <h1 className="pt-display text-xl">Paramtune</h1>
-            <p className="text-sm text-muted-foreground">Welcome back.</p>
+          <Logo height={20} />
+          <div>
+            <p className="pt-eyebrow">Signed in</p>
+            <h1 className="pt-title-2 mt-2">
+              Welcome back<span className="pt-period">.</span>
+            </h1>
           </div>
 
           <div className="flex items-center gap-4 py-6 border-y border-border">
@@ -95,14 +98,14 @@ function LoginContent() {
                 width={48}
                 height={48}
                 unoptimized
-                className="w-12 h-12 border border-border-strong"
+                className="w-12 h-12 rounded-xs border border-border-strong"
               />
             )}
             <div className="min-w-0">
-              <p className="font-bold text-foreground truncate">
+              <p className="text-lg font-semibold text-foreground truncate">
                 {session.user.name}
               </p>
-              <p className="text-sm text-muted-foreground truncate">
+              <p className="font-mono text-sm text-muted-foreground truncate">
                 {session.user.email}
               </p>
             </div>
@@ -128,11 +131,22 @@ function LoginContent() {
   return (
     <div className="min-h-screen flex items-center justify-center px-4 bg-background">
       <div className="pt-card w-full max-w-md p-8 space-y-8 animate-in">
-        <PanelsArt className="w-full h-auto" />
-        <div className="space-y-2">
-          <h1 className="pt-display text-xl">Paramtune</h1>
-          <p className="text-sm text-muted-foreground">
-            Sign in to manage your schemas.
+        <Logo height={20} />
+        {/* eslint-disable-next-line @next/next/no-img-element -- static SVG illustration */}
+        <img
+          src="/brand/header-paramtune-dark.svg"
+          alt=""
+          width={520}
+          height={320}
+          className="w-full h-auto"
+        />
+        <div>
+          <p className="pt-eyebrow">Your configs are waiting</p>
+          <h1 className="pt-title-2 mt-2">
+            Sign in<span className="pt-period">.</span>
+          </h1>
+          <p className="mt-3 text-lg text-muted-foreground">
+            Pick up right where you left off.
           </p>
         </div>
 
@@ -143,7 +157,7 @@ function LoginContent() {
               provider: 'google',
               callbackURL: returnTo
             })}
-            className="pt-btn pt-btn-primary w-full h-12"
+            className="pt-btn pt-btn-primary w-full h-11"
           >
             Sign in with Google
           </button>
@@ -153,8 +167,8 @@ function LoginContent() {
           )}
 
           <p className="text-sm text-muted-foreground">
-            Sign in with your Google account to access your schemas and
-            settings. Your data is stored on this server and never shared.
+            We use your Google account only to sign you in. Your schemas stay
+            on this server and are never shared.
           </p>
         </div>
       </div>

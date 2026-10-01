@@ -15,27 +15,27 @@ export default function DashboardError({
     <div className="flex min-h-screen items-center justify-center px-4">
       <div role="alert" className="pt-card max-w-xl w-full p-8 space-y-6">
         <PeggedDialArt className="w-[200px] h-auto" />
-        <div className="space-y-2">
-          <h2 className="pt-display text-lg flex items-center gap-3">
-            <AlertTriangle
-              className="w-5 h-5 text-danger shrink-0"
-              strokeWidth={1.5}
-              aria-hidden="true"
-            />
-            Something went wrong
-          </h2>
-          <p className="text-sm text-muted-foreground">The dashboard failed to load.</p>
+        <div>
+          <p className="pt-eyebrow">Error</p>
+          <h2 className="pt-title-2 mt-2">We couldn&apos;t load the dashboard</h2>
         </div>
-        <p className="text-sm text-foreground border-l-2 border-danger bg-danger/10 px-4 py-3 break-words">
-          {error.message || 'An unexpected error occurred.'}
-        </p>
-        <p className="text-sm text-muted-foreground">
-          Try again. If the problem persists, reload the page.
+        <div className="flex gap-3 rounded-sm border border-border border-l-4 border-l-danger-icon bg-surface-2 px-5 py-4">
+          <AlertTriangle
+            className="w-4 h-4 mt-0.5 text-danger-icon shrink-0"
+            strokeWidth={1.5}
+            aria-hidden="true"
+          />
+          <p className="font-mono text-sm text-foreground break-words">
+            {error.message || 'An unexpected error occurred.'}
+          </p>
+        </div>
+        <p className="text-base text-muted-foreground">
+          Try again. If it keeps happening, reload the page.
         </p>
         <div className="flex flex-wrap gap-3">
           <button type="button" onClick={reset} className="pt-btn pt-btn-primary">
             <RotateCw className="w-4 h-4" strokeWidth={1.5} aria-hidden="true" />
-            Retry
+            Try again
           </button>
           <Link href="/" className="pt-btn pt-btn-secondary">
             Go home

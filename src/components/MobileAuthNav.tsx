@@ -27,11 +27,11 @@ export default function MobileAuthNav() {
           width={32}
           height={32}
           unoptimized
-          className="h-8 w-8 border border-border-strong"
+          className="h-8 w-8 rounded-xs border border-border-strong"
         />
       ) : (
         <span
-          className="h-8 w-8 flex items-center justify-center border border-border-strong bg-surface-2 text-sm font-bold"
+          className="h-8 w-8 flex items-center justify-center rounded-xs border border-border-strong bg-[var(--lilac-300)] text-sm font-bold text-[var(--ink-950)]"
           aria-hidden="true"
         >
           {initial}
@@ -40,7 +40,7 @@ export default function MobileAuthNav() {
 
       <button
         onClick={() => signOut()}
-        className="flex items-center justify-center h-12 w-12 text-muted-foreground hover:bg-surface-2 transition-colors duration-150"
+        className="flex items-center justify-center h-11 w-11 rounded-sm text-muted-foreground hover:bg-surface-2 hover:text-foreground transition-colors duration-150"
         aria-label="Sign out"
       >
         <LogOut className="h-5 w-5" strokeWidth={1.5} />

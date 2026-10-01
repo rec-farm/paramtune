@@ -24,24 +24,24 @@ export default function QuickStart() {
       aria-labelledby="quickstart-title"
       className="max-w-7xl mx-auto px-4 md:px-6 py-16"
     >
-      <div className="mb-8 space-y-2">
-        <h2 id="quickstart-title" className="pt-display text-xl">
+      <div className="mb-8">
+        <h2 id="quickstart-title" className="pt-title-2">
           Quick start
         </h2>
-        <p className="text-muted-foreground">
-          Run Paramtune locally with one command.
+        <p className="mt-3 text-lg text-muted-foreground">
+          One command, and you&apos;re tuning.
         </p>
       </div>
 
       <div className="max-w-2xl">
-        <div className="flex items-stretch border border-border bg-surface">
+        <div className="flex items-stretch rounded-sm border border-border bg-surface-2 overflow-hidden">
           <span
-            className="flex items-center px-4 border-r border-border text-meta text-sm select-none"
+            className="flex items-center px-4 border-r border-border font-mono text-meta text-[13px] select-none"
             aria-hidden="true"
           >
             $
           </span>
-          <code className="flex-1 flex items-center px-4 py-3 text-sm overflow-x-auto whitespace-nowrap">
+          <code className="flex-1 flex items-center px-4 py-3 text-[13px] overflow-x-auto whitespace-nowrap">
             {DOCKER_COMMAND}
           </code>
           <button
@@ -61,9 +61,9 @@ export default function QuickStart() {
           {copied ? 'Command copied to clipboard' : ''}
         </span>
 
-        <p className="mt-4 text-sm text-muted-foreground">
+        <p className="mt-4 text-base text-muted-foreground">
           Then open{' '}
-          <code className="px-1 border border-border bg-surface text-foreground">
+          <code className="pt-kbd text-foreground">
             http://localhost:3000
           </code>{' '}
           and create your first platform.

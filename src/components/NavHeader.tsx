@@ -3,6 +3,7 @@
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { ArrowUpRight } from 'lucide-react'
+import Logo from './Logo'
 
 const AuthNav = dynamic(() => import('./AuthNav'), { ssr: false })
 
@@ -10,14 +11,9 @@ const REPO_URL = 'https://github.com/RodrigoEspinosa/paramtune'
 
 export default function NavHeader() {
   return (
-    <header className="relative z-50 border-b border-border">
-      <div className="max-w-7xl mx-auto px-4 md:px-6 h-16 flex items-center justify-between gap-4">
-        <Link
-          href="/"
-          className="pt-display text-base text-foreground inline-flex items-center min-h-8"
-        >
-          Paramtune
-        </Link>
+    <header className="relative z-50 bg-background border-b border-border">
+      <div className="max-w-7xl mx-auto px-4 md:px-6 h-14 flex items-center justify-between gap-4">
+        <Logo asLink height={20} />
 
         <nav className="flex items-center gap-2 md:gap-6">
           <Link
@@ -38,7 +34,7 @@ export default function NavHeader() {
 
           <AuthNav />
 
-          <Link href="/dashboard" className="pt-btn pt-btn-secondary h-11 md:h-8 px-3 text-xs">
+          <Link href="/dashboard" className="pt-btn pt-btn-outline h-11 md:h-8 px-3">
             Dashboard
           </Link>
         </nav>

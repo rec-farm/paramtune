@@ -18,14 +18,13 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(
             'pt-btn-secondary': variant === 'secondary',
             'pt-btn-ghost': variant === 'ghost',
             'pt-btn-destructive': variant === 'destructive',
-            'border-border-strong bg-transparent hover:bg-surface-2':
-              variant === 'outline',
+            'pt-btn-outline': variant === 'outline',
           },
           {
-            'h-8 px-3 text-xs': size === 'sm',
-            'h-10 px-4': size === 'md',
-            'h-12 px-6': size === 'lg',
-            'h-10 w-10 p-0': size === 'icon',
+            'h-7 px-2.5 text-[13px]': size === 'sm',
+            'h-9 px-3.5': size === 'md',
+            'h-11 px-[18px] text-[15px]': size === 'lg',
+            'h-9 w-9 p-0': size === 'icon',
           },
           className
         )}

@@ -137,9 +137,9 @@ export default function SchemaEditorForm({
       {dependencyErrors.length > 0 && (
         <div
           role="alert"
-          className="mt-4 border border-danger/40 bg-[var(--pt-danger-bg)] p-4"
+          className="mt-4 rounded-sm border border-border border-l-4 border-l-danger-icon bg-surface-2 px-5 py-4"
         >
-          <p className="flex items-center gap-2 text-sm font-bold text-danger">
+          <p className="flex items-center gap-2 text-base font-semibold text-foreground">
             <AlertCircle className="w-4 h-4 shrink-0" strokeWidth={1.5} aria-hidden="true" />
             Dependency error{dependencyErrors.length > 1 ? 's' : ''}
           </p>

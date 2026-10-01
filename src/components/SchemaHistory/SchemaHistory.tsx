@@ -111,9 +111,12 @@ export default function SchemaHistory({
     <div className="space-y-4">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <h3 className="pt-display text-base">Schema history</h3>
+          <h3 className="pt-heading">Schema history</h3>
           <p className="text-sm text-muted-foreground">
-            {history.length} version{history.length !== 1 ? 's' : ''} saved
+            <span className="font-mono font-medium text-foreground tabular-nums">
+              {history.length}
+            </span>{' '}
+            revision{history.length !== 1 ? 's' : ''} saved
           </p>
         </div>
         <Button
@@ -145,7 +148,7 @@ export default function SchemaHistory({
                     aria-current={isSelected ? 'true' : undefined}
                     className={`w-full text-left px-4 py-3 text-sm transition-colors duration-150 ${
                       isSelected
-                        ? 'bg-accent-dim shadow-[inset_2px_0_0_var(--pt-accent)]'
+                        ? 'bg-surface-3 shadow-[inset_2px_0_0_var(--primary-bg)]'
                         : 'hover:bg-surface-2'
                     }`}
                     onClick={() => setSelectedIndex(index)}
@@ -154,7 +157,7 @@ export default function SchemaHistory({
                       <time
                         dateTime={new Date(entry.timestamp).toISOString()}
                         title={absolute}
-                        className="text-xs text-meta tabular-nums"
+                        className="font-mono text-xs text-meta tabular-nums"
                       >
                         {relative}
                       </time>
@@ -206,14 +209,14 @@ export default function SchemaHistory({
           {selectedEntry ? (
             <div className="space-y-4">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <h4 className="pt-label text-foreground">
-                  Version {history.length - (selectedIndex ?? 0)}
+                <h4 className="font-mono text-lg font-medium text-foreground">
+                  v{history.length - (selectedIndex ?? 0)}
                 </h4>
                 <div className="flex items-center gap-3 text-xs">
                   {renderAuthor(selectedEntry.author, 20)}
                   <time
                     dateTime={new Date(selectedEntry.timestamp).toISOString()}
-                    className="text-meta tabular-nums"
+                    className="font-mono text-meta tabular-nums"
                   >
                     {formatTimestamp(selectedEntry.timestamp).absolute}
                   </time>
@@ -242,7 +245,7 @@ export default function SchemaHistory({
               <div className="space-y-4">
                 <div>
                   <h5 className="pt-label text-muted-foreground mb-2">Content</h5>
-                  <pre className="bg-background border border-border p-3 text-xs font-mono overflow-x-auto text-foreground">
+                  <pre className="pt-code text-xs overflow-x-auto text-foreground">
                     {JSON.stringify(selectedEntry.content, null, 2)}
                   </pre>
                 </div>

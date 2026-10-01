@@ -85,11 +85,11 @@ function SectionHeading({
   subtitle: string
 }) {
   return (
-    <div className="mb-8 space-y-2">
-      <h2 id={id} className="pt-display text-xl">
+    <div className="mb-8">
+      <h2 id={id} className="pt-title-2">
         {title}
       </h2>
-      <p className="text-muted-foreground">{subtitle}</p>
+      <p className="mt-3 max-w-[45ch] text-lg text-muted-foreground">{subtitle}</p>
     </div>
   )
 }
@@ -98,51 +98,45 @@ export default function Home() {
   return (
     <>
       <NavHeader />
-      <main>
-        {/* Hero */}
-        <section className="max-w-7xl mx-auto px-4 md:px-6 pt-16 pb-12 md:pt-24">
-          <ul className="flex flex-wrap gap-2 mb-8" aria-label="Highlights">
-            {['Open source', 'Self-hosted', 'API-first'].map((tag) => (
-              <li
-                key={tag}
-                className="pt-label border border-border-strong px-2 py-1 text-muted-foreground"
+      {/* Marketing uses the 16px base (§4) */}
+      <main className="text-lg">
+        {/* Hero: display-hero with the purple period over a dot grid (§9) */}
+        <section className="pt-dot-grid border-b border-border">
+          <div className="max-w-7xl mx-auto px-4 md:px-6 pt-16 pb-16 md:pt-24 md:pb-24">
+            <p className="pt-eyebrow">Open source · Self-hosted · API-first</p>
+
+            <h1 className="mt-4 max-w-[14ch] font-sans text-[44px] sm:text-[56px] md:text-[72px] font-extrabold leading-[0.95] tracking-[-0.04em] break-words">
+              Every config, finely tuned<span className="pt-period">.</span>
+            </h1>
+
+            <p className="mt-6 max-w-[60ch] text-lg text-muted-foreground">
+              One calm place to manage, version and validate the JSON schemas
+              behind every platform you ship. Self-hosted, so your data stays
+              yours.
+            </p>
+
+            <div className="mt-8 flex flex-wrap gap-4">
+              <a href="#quickstart" className="pt-btn pt-btn-primary h-11 px-[18px] text-[15px]">
+                Get started
+              </a>
+              <Link
+                href={REPO_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="pt-btn pt-btn-secondary h-11 px-[18px] text-[15px]"
               >
-                {tag}
-              </li>
-            ))}
-          </ul>
-
-          <h1 className="pt-display text-2xl sm:text-3xl md:text-4xl leading-none mb-8 break-words">
-            Paramtune
-          </h1>
-
-          <p className="text-base md:text-lg text-muted-foreground max-w-[68ch] mb-8">
-            Stop scattering configs across repos and services. Paramtune gives
-            your team one place to manage, version, and validate JSON schemas
-            for every platform, fully self-hosted so you own your data.
-          </p>
-
-          <div className="flex flex-wrap gap-4">
-            <a href="#quickstart" className="pt-btn pt-btn-primary h-12 px-6">
-              Get started
-            </a>
-            <Link
-              href={REPO_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="pt-btn pt-btn-secondary h-12 px-6"
-            >
-              View on GitHub
-              <ArrowUpRight className="w-4 h-4" strokeWidth={1.5} aria-hidden="true" />
-            </Link>
+                View on GitHub
+                <ArrowUpRight className="w-4 h-4" strokeWidth={1.5} aria-hidden="true" />
+              </Link>
+            </div>
           </div>
         </section>
 
         {/* Product preview */}
-        <section className="max-w-7xl mx-auto px-4 md:px-6 pb-16">
-          <figure className="border border-border bg-surface overflow-hidden">
+        <section className="max-w-7xl mx-auto px-4 md:px-6 py-16">
+          <figure className="rounded-sm border border-border bg-surface overflow-hidden">
             <div className="flex items-center h-10 px-4 border-b border-border">
-              <span className="text-xs text-meta truncate">
+              <span className="font-mono text-xs text-meta truncate">
                 localhost:3000/dashboard/ios-app
               </span>
             </div>
@@ -166,7 +160,7 @@ export default function Home() {
           <SectionHeading
             id="audience-title"
             title="Who it's for"
-            subtitle="Built for teams who need control."
+            subtitle="Teams who want their configs calm and accounted for."
           />
           <ul className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {AUDIENCES.map((item, index) => (
@@ -174,8 +168,8 @@ export default function Home() {
                 key={item.title}
                 className={`pt-card p-6 space-y-2 animate-in ${STAGGER[index]}`}
               >
-                <h3 className="text-base font-bold">{item.title}</h3>
-                <p className="text-sm text-muted-foreground">
+                <h3 className="text-lg font-bold tracking-[-0.005em]">{item.title}</h3>
+                <p className="text-base text-muted-foreground">
                   {item.description}
                 </p>
               </li>
@@ -191,7 +185,7 @@ export default function Home() {
           <SectionHeading
             id="features-title"
             title="Core features"
-            subtitle="Everything you need to safely evolve configs."
+            subtitle="Everything you need to change configs with confidence."
           />
           <ul className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {FEATURES.map((feature, index) => (
@@ -200,8 +194,8 @@ export default function Home() {
                 className={`pt-card p-6 space-y-2 animate-in ${STAGGER[index]}`}
               >
                 <span className="pt-label text-meta">{feature.label}</span>
-                <h3 className="text-base font-bold">{feature.title}</h3>
-                <p className="text-sm text-muted-foreground">
+                <h3 className="text-lg font-bold tracking-[-0.005em]">{feature.title}</h3>
+                <p className="text-base text-muted-foreground">
                   {feature.description}
                 </p>
               </li>
@@ -217,7 +211,7 @@ export default function Home() {
           <SectionHeading
             id="selfhost-title"
             title="Why self-host"
-            subtitle="Keep your data under your control."
+            subtitle="Your configs, on your servers, under your rules."
           />
           <ul className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {COMPARISONS.map((item, index) => (
@@ -226,8 +220,8 @@ export default function Home() {
                 className={`pt-card p-6 space-y-2 animate-in ${STAGGER[index]}`}
               >
                 <span className="pt-label text-meta">{item.label}</span>
-                <h3 className="text-base font-bold">{item.title}</h3>
-                <p className="text-sm text-muted-foreground">
+                <h3 className="text-lg font-bold tracking-[-0.005em]">{item.title}</h3>
+                <p className="text-base text-muted-foreground">
                   {item.description}
                 </p>
               </li>
@@ -239,13 +233,13 @@ export default function Home() {
         <section className="max-w-7xl mx-auto px-4 md:px-6 py-16 border-t border-border">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
             <div className="space-y-2">
-              <h2 className="pt-display text-xl">Ready to start</h2>
-              <p className="text-muted-foreground">
-                Take control of your configuration management today.
+              <h2 className="pt-title-2">Ready when you are</h2>
+              <p className="text-lg text-muted-foreground">
+                Spin it up in a minute. We&apos;ll keep an eye on the rest.
               </p>
             </div>
-            <Link href="/dashboard" className="pt-btn pt-btn-secondary h-12 px-6 self-start md:self-auto">
-              Open dashboard
+            <Link href="/dashboard" className="pt-link-tertiary self-start md:self-auto">
+              Open dashboard <span aria-hidden="true">→</span>
             </Link>
           </div>
         </section>

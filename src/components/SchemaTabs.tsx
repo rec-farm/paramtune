@@ -80,7 +80,7 @@ export default function SchemaTabs({
   return (
     <div className="space-y-4">
       <div className="sticky top-0 z-10 bg-background border-b border-border">
-        <div role="tablist" aria-label="Schema views" className="flex items-center gap-6">
+        <div role="tablist" aria-label="Schema views" className="flex items-center gap-1">
           {TABS.map((tab, index) => {
             const isActive = active === tab
             const count =
@@ -103,16 +103,16 @@ export default function SchemaTabs({
                 tabIndex={isActive ? 0 : -1}
                 onClick={() => setActive(tab)}
                 onKeyDown={(event) => handleKeyDown(event, index)}
-                className={`pt-label relative flex items-center gap-2 h-10 -mb-px border-b-2 transition-colors duration-200 ${
+                className={`relative flex items-center gap-2 h-9 px-3 -mb-px rounded-t-sm border-b-2 text-base transition-colors duration-200 ${
                   isActive
-                    ? 'border-primary text-foreground'
-                    : 'border-transparent text-muted-foreground hover:text-foreground'
+                    ? 'border-primary bg-primary-soft text-link font-semibold'
+                    : 'border-transparent text-muted-foreground font-medium hover:text-foreground'
                 }`}
               >
                 <span>{tab}</span>
                 {typeof count === 'number' && (
-                  <span className="inline-flex items-center justify-center h-5 min-w-5 px-1 border border-border-strong text-xs font-normal tabular-nums text-muted-foreground">
-                    {count}
+                  <span className="font-mono text-xs font-normal tabular-nums text-muted-foreground">
+                    ({count})
                   </span>
                 )}
               </button>
@@ -134,8 +134,8 @@ export default function SchemaTabs({
         <div role="tabpanel" id="schema-panel-Preview" aria-labelledby="schema-tab-Preview" className="grid grid-cols-1 lg:grid-cols-2 gap-4">
           <Card
             title="Live preview"
-            subtitle="See how your configuration will be consumed"
-                        className="p-4"
+            subtitle="Exactly what clients receive, with @extends resolved."
+            className="p-4"
           >
             <JsonOutput
               title=""
@@ -145,50 +145,50 @@ export default function SchemaTabs({
           <Card title="Config guide" className="p-4">
             <div className="space-y-4 text-sm">
               <div>
-                <h4 className="pt-label mb-2">@extends Directive</h4>
+                <h4 className="pt-label mb-2">@extends</h4>
                 <p className="text-muted-foreground mb-2">
                   Use{' '}
-                  <code className="text-xs bg-surface-2 border border-border px-1 font-mono text-foreground">
+                  <code className="pt-kbd text-foreground">
                     @extends
                   </code>{' '}
                   to inherit configuration from other schemas:
                 </p>
-                <pre className="bg-surface border border-border p-3 font-mono text-xs">{`{
+                <pre className="pt-code text-xs">{`{
   "@extends": "ios/1.0.0",
   "customProperty": "value"
 }`}</pre>
               </div>
 
               <div>
-                <h4 className="pt-label mb-2">Version References</h4>
+                <h4 className="pt-label mb-2">Version refs</h4>
                 <ul className="space-y-1 text-muted-foreground list-disc list-inside">
                   <li>
-                    <code className="text-xs bg-surface-2 border border-border px-1 font-mono text-foreground">
+                    <code className="pt-kbd text-foreground">
                       platform/version
                     </code>{' '}
-                    - Exact version
+                    · exact version
                   </li>
                   <li>
-                    <code className="text-xs bg-surface-2 border border-border px-1 font-mono text-foreground">
+                    <code className="pt-kbd text-foreground">
                       platform/latest
                     </code>{' '}
-                    - Latest version
+                    · latest version
                   </li>
                   <li>
-                    <code className="text-xs bg-surface-2 border border-border px-1 font-mono text-foreground">
+                    <code className="pt-kbd text-foreground">
                       platform/^1.0.0
                     </code>{' '}
-                    - Version range
+                    · version range
                   </li>
                 </ul>
               </div>
 
               <div>
-                <h4 className="pt-label mb-2">Best Practices</h4>
+                <h4 className="pt-label mb-2">Good habits</h4>
                 <ul className="space-y-1 text-muted-foreground list-disc list-inside">
                   <li>
                     Start with an empty object{' '}
-                    <code className="text-xs bg-surface-2 border border-border px-1 font-mono text-foreground">{`{}`}</code>
+                    <code className="pt-kbd text-foreground">{`{}`}</code>
                   </li>
                   <li>Use @extends to inherit base configurations</li>
                   <li>Override specific properties as needed</li>

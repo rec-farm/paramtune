@@ -62,7 +62,7 @@ function syntaxHighlight(json: string, indent = 0) {
   ))
 
   return (
-    <div className="font-mono text-sm">
+    <div className="font-mono text-[13px] leading-[1.6]">
       <div className="text-syntax-punct">{'{'}</div>
       {renderer}
       <div className="text-syntax-punct">{'}'}</div>
@@ -79,7 +79,7 @@ export default function JsonOutput({ title, content }: Props) {
           {title}
         </h3>
       )}
-      <div className="bg-surface p-4 border border-border overflow-x-auto">
+      <div className="pt-code overflow-x-auto">
         {syntaxHighlight(json)}
       </div>
     </div>

@@ -51,12 +51,12 @@ export default function SchemaDiff({ current, previous }: SchemaDiffProps) {
         {byType.added.map((change) => (
           <li
             key={`added-${change.path}`}
-            className="flex items-start gap-3 px-3 py-2 bg-[var(--pt-success-bg)]"
+            className="flex items-start gap-3 px-3 py-2 bg-diff-add"
           >
             <span className="w-3 shrink-0 text-success" aria-label="Added">+</span>
             <div className="flex-1 min-w-0 space-y-1">
               <code className="text-foreground break-all">{formatPath(change.path)}</code>
-              <div className="text-success break-all">{getValueDisplay(change.newValue)}</div>
+              <div className="text-diff-add-fg break-all">{getValueDisplay(change.newValue)}</div>
             </div>
           </li>
         ))}
@@ -64,14 +64,14 @@ export default function SchemaDiff({ current, previous }: SchemaDiffProps) {
         {byType.removed.map((change) => (
           <li
             key={`removed-${change.path}`}
-            className="flex items-start gap-3 px-3 py-2 bg-[var(--pt-danger-bg)]"
+            className="flex items-start gap-3 px-3 py-2 bg-diff-del"
           >
             <span className="w-3 shrink-0 text-danger" aria-label="Removed">−</span>
             <div className="flex-1 min-w-0 space-y-1">
               <code className="text-foreground break-all line-through decoration-danger/60">
                 {formatPath(change.path)}
               </code>
-              <div className="text-danger break-all">{getValueDisplay(change.oldValue)}</div>
+              <div className="text-diff-del-fg break-all">{getValueDisplay(change.oldValue)}</div>
             </div>
           </li>
         ))}
@@ -79,7 +79,7 @@ export default function SchemaDiff({ current, previous }: SchemaDiffProps) {
         {byType.modified.map((change) => (
           <li
             key={`modified-${change.path}`}
-            className="flex items-start gap-3 px-3 py-2 bg-[var(--pt-warn-bg)]"
+            className="flex items-start gap-3 px-3 py-2 bg-diff-chg"
           >
             <span className="w-3 shrink-0 text-warn" aria-label="Changed">~</span>
             <div className="flex-1 min-w-0 space-y-1">
@@ -91,11 +91,11 @@ export default function SchemaDiff({ current, previous }: SchemaDiffProps) {
                   </span>
                 )}
               </code>
-              <div className="flex items-start gap-2 text-danger">
+              <div className="flex items-start gap-2 text-diff-del-fg">
                 <span aria-hidden="true">−</span>
                 <span className="break-all">{getValueDisplay(change.oldValue)}</span>
               </div>
-              <div className="flex items-start gap-2 text-success">
+              <div className="flex items-start gap-2 text-diff-add-fg">
                 <span aria-hidden="true">+</span>
                 <span className="break-all">{getValueDisplay(change.newValue)}</span>
               </div>

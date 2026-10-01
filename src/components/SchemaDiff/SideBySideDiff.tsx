@@ -437,11 +437,11 @@ function getLineClassName(highlight: LineHighlight, _side: 'left' | 'right'): st
 
   switch (highlight) {
     case 'added':
-      return `${base} bg-[var(--pt-success-bg)]`
+      return `${base} bg-diff-add`
     case 'removed':
-      return `${base} bg-[var(--pt-danger-bg)]`
+      return `${base} bg-diff-del`
     case 'modified':
-      return `${base} bg-[var(--pt-warn-bg)]`
+      return `${base} bg-diff-chg`
     default:
       return base
   }
@@ -477,10 +477,10 @@ function getSymbolClassName(highlight: LineHighlight): string {
 function ChangeRow({ change }: { change: DiffChange }) {
   const bgClass =
     change.type === 'added'
-      ? 'bg-[var(--pt-success-bg)]'
+      ? 'bg-diff-add'
       : change.type === 'removed'
-        ? 'bg-[var(--pt-danger-bg)]'
-        : 'bg-[var(--pt-warn-bg)]'
+        ? 'bg-diff-del'
+        : 'bg-diff-chg'
 
   const symbolClass =
     change.type === 'added'
@@ -506,13 +506,13 @@ function ChangeRow({ change }: { change: DiffChange }) {
           )}
           {change.type === 'modified' && (
             <div className="mt-2 space-y-1 font-mono text-xs">
-              <div className="flex items-start gap-2 text-danger">
+              <div className="flex items-start gap-2 text-diff-del-fg">
                 <span aria-hidden="true">−</span>
                 <div className="overflow-auto max-w-full">
                   {getValueDisplay(change.oldValue)}
                 </div>
               </div>
-              <div className="flex items-start gap-2 text-success">
+              <div className="flex items-start gap-2 text-diff-add-fg">
                 <span aria-hidden="true">+</span>
                 <div className="overflow-auto max-w-full">
                   {getValueDisplay(change.newValue)}
@@ -521,12 +521,12 @@ function ChangeRow({ change }: { change: DiffChange }) {
             </div>
           )}
           {change.type === 'added' && change.newValue !== undefined && (
-            <div className="mt-1 text-xs font-mono text-success break-all">
+            <div className="mt-1 text-xs font-mono text-diff-add-fg break-all">
               {getValueDisplay(change.newValue)}
             </div>
           )}
           {change.type === 'removed' && change.oldValue !== undefined && (
-            <div className="mt-1 text-xs font-mono text-danger break-all">
+            <div className="mt-1 text-xs font-mono text-diff-del-fg break-all">
               {getValueDisplay(change.oldValue)}
             </div>
           )}

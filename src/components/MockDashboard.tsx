@@ -7,11 +7,11 @@ const PLATFORMS = [
   { name: 'api-gateway', icon: Server, versions: 1, current: false },
 ]
 
-const punct = 'text-meta'
-const key = 'text-foreground'
-const str = 'text-info'
-const num = 'text-warn'
-const lit = 'text-pink-300'
+const punct = 'text-syntax-punct'
+const key = 'text-syntax-key'
+const str = 'text-syntax-string'
+const num = 'text-syntax-number'
+const lit = 'text-syntax-literal'
 
 export default function MockDashboard() {
   return (

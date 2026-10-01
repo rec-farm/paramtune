@@ -10,22 +10,44 @@
   --pt-surface-3: #1a1a1a;
   --pt-border: #262626;
   --pt-border-strong: #404040;
+  --pt-border-hover: #7a7a7a;
   --pt-input: #5c5c5c;
   --pt-fg: #f5f5f5;
+  --pt-fg-2: #d4d4d4;
   --pt-muted: #a3a3a3;
   --pt-meta: #7a7a7a;
   --pt-accent: #d9f99d;
   --pt-accent-on: #0a0f02;
-  --pt-accent-dim: rgb(217 249 157 / 0.08);
+  --pt-accent-hover: #ecfccb;
+  --pt-accent-active: #bef264;
+  --pt-accent-dim: rgb(217 249 157 / 0.1);
+  --pt-accent-line: rgb(217 249 157 / 0.4);
   --pt-success: #4ade80;
   --pt-warn: #facc15;
   --pt-danger: #f87171;
   --pt-danger-fill: #dc2626;
+  --pt-danger-fill-hover: #b91c1c;
   --pt-info: #7dd3fc;
   --pt-success-bg: rgb(74 222 128 / 0.1);
   --pt-warn-bg: rgb(250 204 21 / 0.1);
   --pt-danger-bg: rgb(248 113 113 / 0.1);
   --pt-info-bg: rgb(125 211 252 / 0.1);
+
+  /* Schema diff (DESIGN.md §6): tint + lighter text per change type */
+  --pt-diff-add-bg: rgb(74 222 128 / 0.1);
+  --pt-diff-add-fg: #86efac;
+  --pt-diff-del-bg: rgb(248 113 113 / 0.1);
+  --pt-diff-del-fg: #fca5a5;
+  --pt-diff-chg-bg: rgb(250 204 21 / 0.08);
+  --pt-diff-chg-fg: #fde68a;
+
+  /* JSON syntax (DESIGN.md §6) */
+  --pt-syntax-key: var(--pt-fg);
+  --pt-syntax-string: var(--pt-info);
+  --pt-syntax-number: var(--pt-warn);
+  --pt-syntax-literal: #f0abfc;
+  --pt-syntax-punct: var(--pt-meta);
+  --pt-syntax-extends: var(--pt-accent);
 
   --elev-raised: 0 8px 24px rgb(0 0 0 / 0.6);
 
@@ -34,7 +56,7 @@
   --pt-dur-base: 200ms;
   --pt-dur-slow: 300ms;
   --pt-ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-  --pt-ease-in: cubic-bezier(0.7, 0, 0.84, 0);
+  --pt-ease-in: cubic-bezier(0.4, 0, 1, 1);
   /* Exits run at 65% of the enter duration */
   --pt-dur-fast-exit: calc(var(--pt-dur-fast) * 0.65);
   --pt-dur-base-exit: calc(var(--pt-dur-base) * 0.65);
@@ -77,5 +99,6 @@
     --pt-dur-fast: 0ms;
     --pt-dur-base: 0ms;
     --pt-dur-slow: 0ms;
+    --pt-stagger: 0ms;
   }
 }

@@ -79,6 +79,24 @@
   --color-danger: var(--pt-danger);
   --color-danger-fill: var(--pt-danger-fill);
   --color-info: var(--pt-info);
+  --color-fg-2: var(--pt-fg-2);
+  --color-border-hover: var(--pt-border-hover);
+  --color-accent-hover: var(--pt-accent-hover);
+  --color-accent-active: var(--pt-accent-active);
+  --color-accent-line: var(--pt-accent-line);
+  --color-danger-fill-hover: var(--pt-danger-fill-hover);
+  --color-diff-add: var(--pt-diff-add-bg);
+  --color-diff-add-fg: var(--pt-diff-add-fg);
+  --color-diff-del: var(--pt-diff-del-bg);
+  --color-diff-del-fg: var(--pt-diff-del-fg);
+  --color-diff-chg: var(--pt-diff-chg-bg);
+  --color-diff-chg-fg: var(--pt-diff-chg-fg);
+  --color-syntax-key: var(--pt-syntax-key);
+  --color-syntax-string: var(--pt-syntax-string);
+  --color-syntax-number: var(--pt-syntax-number);
+  --color-syntax-literal: var(--pt-syntax-literal);
+  --color-syntax-punct: var(--pt-syntax-punct);
+  --color-syntax-extends: var(--pt-syntax-extends);
 }
 
 @layer base {

@@ -5,15 +5,15 @@ import type { SyntaxHighlightOptions, SyntaxHighlightTheme } from '../types'
 import { EDITOR_CONSTANTS } from './editorConstants'
 
 export const DEFAULT_THEME: SyntaxHighlightTheme = {
-  extends: 'text-primary',
-  keys: 'text-foreground',
-  strings: 'text-info',
-  booleans: 'text-pink-300',
-  null: 'text-pink-300',
-  numbers: 'text-warn',
-  brackets: 'text-meta',
-  commas: 'text-meta',
-  colons: 'text-meta',
+  extends: 'text-syntax-extends',
+  keys: 'text-syntax-key',
+  strings: 'text-syntax-string',
+  booleans: 'text-syntax-literal',
+  null: 'text-syntax-literal',
+  numbers: 'text-syntax-number',
+  brackets: 'text-syntax-punct',
+  commas: 'text-syntax-punct',
+  colons: 'text-syntax-punct',
 }
 
 /**

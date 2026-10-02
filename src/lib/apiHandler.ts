@@ -24,20 +24,26 @@ type ApiResponseInit = {
 
 const NO_STORE = { 'Cache-Control': 'no-store' } as const
 
+/**
+ * Builds the 500 response for unexpected failures. The real message is only
+ * exposed in development; production clients get a generic body.
+ */
+function internalErrorResponse(message: string) {
+  return NextResponse.json(
+    {
+      error:
+        process.env.NODE_ENV === 'development'
+          ? message
+          : 'Internal Server Error',
+    },
+    { status: 500 }
+  )
+}
+
 function createErrorResponse(error: unknown, fallbackMessage: string) {
   const message = error instanceof Error ? error.message : fallbackMessage
   console.error(message, error)
-  return Effect.succeed(
-    NextResponse.json(
-      {
-        error:
-          process.env.NODE_ENV === 'development'
-            ? message
-            : 'Internal Server Error',
-      },
-      { status: 500 }
-    )
-  )
+  return Effect.succeed(internalErrorResponse(message))
 }
 
 /**
@@ -138,17 +144,7 @@ export function handleApiWithFailures<A>(
       Effect.catchAll((response) =>
         response instanceof NextResponse
           ? Effect.succeed(response)
-          : Effect.succeed(
-              NextResponse.json(
-                {
-                  error:
-                    process.env.NODE_ENV === 'development'
-                      ? String(response)
-                      : 'Internal Server Error',
-                },
-                { status: 500 }
-              )
-            )
+          : Effect.succeed(internalErrorResponse(String(response)))
       ),
       Effect.catchAllDefect((error) => createErrorResponse(error, 'Unknown error'))
     )

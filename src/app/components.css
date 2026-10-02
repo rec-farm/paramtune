@@ -230,6 +230,13 @@
     @apply inline-flex items-center rounded-xs border border-border-strong bg-surface-2 px-1 font-mono text-xs;
   }
 
+  /* JSON editor: the textarea's text is transparent over the highlight layer,
+     so an opaque selection would hide the code. Use a see-through tint. */
+  .pt-editor-input::selection {
+    background: color-mix(in oklab, var(--primary-bg) 35%, transparent);
+    color: transparent;
+  }
+
   /* Loading skeleton shaped like the result */
   .pt-skeleton {
     @apply rounded-sm bg-surface-3;

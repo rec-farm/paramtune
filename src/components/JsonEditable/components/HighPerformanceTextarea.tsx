@@ -99,7 +99,7 @@ export const JsonTextarea = memo(
       <div className="relative">
         <textarea
           ref={ref}
-          className={`w-full font-mono text-sm transition-colors relative z-10`}
+          className={`pt-editor-input w-full font-mono text-sm transition-colors relative z-10`}
           style={textareaStyle}
           value={value}
           onChange={(e) => onChange(e.target.value)}

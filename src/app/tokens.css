@@ -1,4 +1,4 @@
-/* REC Design System v1.2.0 tokens (BRAND.md §3, §6, §7).
+/* REC Design System v1.4.1 tokens (reciam-brand DESIGN.md §3, §6, §7, §14).
  * Dark is the default; Paper is html[data-theme='light'].
  * html[data-product='paramtune'] sets the Mint signature accent.
  * Components use the semantic layer only, never the primitives.
@@ -121,7 +121,7 @@
   --danger-soft: var(--rose-950);
   --info-soft: var(--lilac-950);
   --tile-fg: var(--cream);
-  --danger-solid: #d93f5e;
+  --danger-solid: #d23758;
   --overlay: rgb(10 11 12 / 0.72);
   --pop-shadow: 0 12px 32px -8px rgb(0 0 0 / 0.45);
   --accent-bg: var(--purple-500);

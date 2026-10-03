@@ -70,9 +70,10 @@ export default function Sidebar({ platforms, version }: SidebarProps) {
 
   const sidebarContent = (
     <div className="h-full flex flex-col">
-      {/* Wordmark row (§10.3): 64px, 20px padding-x */}
+      {/* Wordmark row (§10.3): 64px, 20px padding-x. 28px keeps the mark above
+          its 20px minimum (BRAND §2.4) and matches StillUp's lockup size */}
       <div className="h-16 shrink-0 flex items-center px-5">
-        <Logo asLink tone="cream" height={18} />
+        <Logo asLink tone="cream" height={28} />
       </div>
 
       {/* Workspace card (§10.3) */}
@@ -133,7 +134,7 @@ export default function Sidebar({ platforms, version }: SidebarProps) {
         className="flex-1 overflow-y-auto py-4 space-y-6"
       >
         <div className="space-y-1">
-          <div className="pt-eyebrow text-sidebar-muted px-4 pb-1">Workspace</div>
+          <div className="pt-eyebrow text-sidebar-muted px-6 pb-1">Workspace</div>
           <Link
             href="/dashboard"
             aria-current={isOverviewActive ? 'page' : undefined}
@@ -153,7 +154,7 @@ export default function Sidebar({ platforms, version }: SidebarProps) {
         </div>
 
         <div className="space-y-1">
-          <div className="flex items-center justify-between px-4">
+          <div className="flex items-center justify-between pl-6 pr-4">
             <div className="pt-eyebrow text-sidebar-muted">Platforms</div>
             <Link
               href="/dashboard"
@@ -186,7 +187,7 @@ export default function Sidebar({ platforms, version }: SidebarProps) {
         Sign out
       </button>
 
-      <div className="px-4 py-3 border-t border-sidebar-border space-y-3">
+      <div className="px-6 py-3 border-t border-sidebar-border space-y-3">
         <ThemeSwitcher className="md:hidden" />
         <p className="text-xs text-sidebar-muted">
           <span className="font-mono font-medium text-sidebar-foreground tabular-nums">

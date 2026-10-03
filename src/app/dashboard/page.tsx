@@ -123,7 +123,7 @@ export default async function Page() {
   return (
     <div className="space-y-8">
       {/* Header trio (§4): eyebrow → 8px → title → 12px → subtitle, art top-right */}
-      <header className="flex items-start justify-between gap-8 pt-4 md:pt-8">
+      <header className="flex items-start justify-between gap-8 pt-4 md:pt-8 md:mb-4">
         <div className="min-w-0">
           <p className="pt-eyebrow">Your configs, at a glance</p>
           <h1 className="pt-title-1 mt-2">

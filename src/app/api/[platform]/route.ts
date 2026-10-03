@@ -5,6 +5,7 @@ import {
   handleApiWithFailures,
   failWith,
   validateName,
+  decodeParam,
   requireSession,
   parseJsonBody,
 } from '@/lib/apiHandler'
@@ -22,7 +23,7 @@ export function GET(
     Effect.gen(function* () {
       yield* requireSession(request)
       const { platform } = yield* Effect.promise(() => params)
-      const platformName = decodeURIComponent(platform)
+      const platformName = yield* decodeParam(platform, 'platform name')
       yield* validateName(platformName, 'platform name')
       const data = yield* Effect.promise(() => getPlatform(platformName))
 
@@ -43,7 +44,7 @@ export function POST(
     Effect.gen(function* () {
       const session = yield* requireSession(request)
       const { platform } = yield* Effect.promise(() => params)
-      const platformName = decodeURIComponent(platform)
+      const platformName = yield* decodeParam(platform, 'platform name')
       yield* validateName(platformName, 'platform name')
       const body = yield* parseJsonBody(request)
 

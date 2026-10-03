@@ -64,6 +64,18 @@ describe('GET /api/[platform]', () => {
     expect(response._body).toEqual({ error: 'Platform not found' })
   })
 
+  it('returns 400 instead of 500 for malformed percent-encoding', async () => {
+    const response = (await GET(makeGetRequest(), {
+      params: Promise.resolve({ platform: '%E0%A4%A' }),
+    })) as any
+
+    expect(response._init.status).toBe(400)
+    expect(response._body).toEqual({
+      error: 'Invalid platform name: malformed percent-encoding',
+    })
+    expect(mockGetPlatform).not.toHaveBeenCalled()
+  })
+
   it('returns the platform when it exists', async () => {
     mockGetPlatform.mockResolvedValue({ name: 'ios', versions: ['1.0.0'] })
 

@@ -61,38 +61,56 @@ export default async function Page({
   }
 
   return (
-    <div className="space-y-4 mx-auto max-w-5xl">
-      <header className="space-y-2">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+    <div className="space-y-6">
+      <header className="space-y-3">
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
           <PageTitle platform={platformName} version={versionName} />
           <div className="flex items-center gap-2 flex-wrap">
             <Link
               href={`/dashboard/compare?platformA=${encodeURIComponent(platformName)}&versionA=${encodeURIComponent(versionName)}`}
-              className="pt-btn pt-btn-secondary h-10 px-4"
+              className="pt-btn pt-btn-secondary"
             >
               <GitCompare className="h-4 w-4" strokeWidth={1.5} aria-hidden="true" />
               Compare
             </Link>
           </div>
         </div>
-        <p className="text-xs text-meta tabular-nums flex flex-wrap items-center gap-x-2 gap-y-1">
+        {/* Meta line (§4): mono values at weight 500 inside muted sans */}
+        <p className="text-sm text-muted-foreground tabular-nums flex flex-wrap items-center gap-x-2 gap-y-1">
           <span>JSON Schema</span>
           <span aria-hidden="true">·</span>
-          <span title={`sha256 ${contentHash}`}>sha256 {shortHash}</span>
-          <span aria-hidden="true">·</span>
-          <span>
-            {history.length} {history.length === 1 ? 'revision' : 'revisions'}
+          <span title={`sha256 ${contentHash}`}>
+            sha256{' '}
+            <span className="font-mono font-medium text-foreground">{shortHash}</span>
           </span>
           <span aria-hidden="true">·</span>
           <span>
-            {schema?.dependencies?.length ?? 0}{' '}
+            <span className="font-mono font-medium text-foreground">{history.length}</span>{' '}
+            {history.length === 1 ? 'revision' : 'revisions'}
+          </span>
+          <span aria-hidden="true">·</span>
+          <span>
+            <span className="font-mono font-medium text-foreground">
+              {schema?.dependencies?.length ?? 0}
+            </span>{' '}
             {schema?.dependencies?.length === 1 ? 'dependency' : 'dependencies'}
           </span>
           <span aria-hidden="true">·</span>
           <span>
-            {history[0]?.timestamp
-              ? `Updated ${new Date(history[0].timestamp).toLocaleDateString()}`
-              : 'Never saved'}
+            {history[0]?.timestamp ? (
+              <>
+                Updated{' '}
+                <time
+                  dateTime={new Date(history[0].timestamp).toISOString()}
+                  title={new Date(history[0].timestamp).toISOString()}
+                  className="font-mono font-medium text-foreground"
+                >
+                  {new Date(history[0].timestamp).toISOString().slice(0, 10)}
+                </time>
+              </>
+            ) : (
+              'Never saved'
+            )}
           </span>
         </p>
       </header>

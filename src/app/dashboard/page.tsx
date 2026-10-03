@@ -11,13 +11,13 @@ import { getLatestVersion } from '@/lib/versionUtils'
 import { getSchemaHistoryWithTimestamps } from '@/models/Schema'
 import StatTiles from '@/components/StatTiles'
 import EmptyState from '@/components/EmptyState'
-import { PanelsArt, PlatformsArt } from '@/components/illustrations'
 import { requireDashboardSession } from '@/lib/dashboardAuth'
 import { revalidatePath } from 'next/cache'
 import { headers } from 'next/headers'
 import Link from 'next/link'
 import {
   ChevronRight,
+  CircleAlert,
   CircleCheck,
   CircleDashed,
   GitBranch,
@@ -122,15 +122,25 @@ export default async function Page() {
 
   return (
     <div className="space-y-8">
-      <header className="flex items-center justify-between gap-8">
-        <div className="space-y-2 min-w-0">
-          <p className="pt-label text-meta">Your configs, at a glance</p>
-          <h1 className="pt-display text-2xl">Overview</h1>
-          <p className="text-muted-foreground">
-            Every platform, version and schema in this workspace.
+      {/* Header trio (§4): eyebrow → 8px → title → 12px → subtitle, art top-right */}
+      <header className="flex items-start justify-between gap-8 pt-4 md:pt-8 md:mb-4">
+        <div className="min-w-0">
+          <p className="pt-eyebrow">Your configs, at a glance</p>
+          <h1 className="pt-title-1 mt-2">
+            Overview<span className="pt-period">.</span>
+          </h1>
+          <p className="mt-3 max-w-[45ch] text-lg text-muted-foreground">
+            Every platform, version and schema, tuned in one place.
           </p>
         </div>
-        <PanelsArt signature className="hidden md:block w-[320px] shrink-0 h-auto" />
+        {/* eslint-disable-next-line @next/next/no-img-element -- static SVG illustration */}
+        <img
+          src="/brand/header-paramtune-dark.svg"
+          alt=""
+          width={240}
+          height={148}
+          className="hidden md:block shrink-0"
+        />
       </header>
 
       <section aria-label="Workspace stats" className="space-y-3">
@@ -165,24 +175,31 @@ export default async function Page() {
           ]}
         />
         {failed > 0 ? (
-          <p role="alert" className="text-sm text-danger">
-            Couldn&apos;t read {failed} {failed === 1 ? 'version' : 'versions'}{' '}
-            from Redis, so the counts above are incomplete.{' '}
-            <Link href="/dashboard" prefetch={false} className="underline">
-              Retry
-            </Link>
+          <p role="alert" className="flex items-center gap-2 text-sm text-danger">
+            <CircleAlert className="h-4 w-4 shrink-0" strokeWidth={1.5} aria-hidden="true" />
+            <span>
+              We couldn&apos;t read {failed} {failed === 1 ? 'version' : 'versions'}{' '}
+              from Redis, so the counts above are incomplete.{' '}
+              <Link href="/dashboard" prefetch={false} className="underline">
+                Retry
+              </Link>
+            </span>
           </p>
         ) : (
           lastSaved?.savedAt && (
-            <p className="text-sm text-meta">
+            <p className="text-sm text-muted-foreground">
               Last saved{' '}
-              <time dateTime={new Date(lastSaved.savedAt).toISOString()}>
+              <time
+                dateTime={new Date(lastSaved.savedAt).toISOString()}
+                title={new Date(lastSaved.savedAt).toISOString()}
+                className="font-mono font-medium text-foreground"
+              >
                 {formatRelative(lastSaved.savedAt)}
               </time>{' '}
               ·{' '}
               <Link
                 href={`/dashboard/${encodeURIComponent(lastSaved.platform)}/${encodeURIComponent(lastSaved.version)}`}
-                className="font-mono text-muted-foreground hover:text-foreground transition-colors duration-150"
+                className="font-mono font-medium text-foreground underline-offset-4 hover:underline"
               >
                 {lastSaved.platform} v{lastSaved.version}
               </Link>
@@ -192,21 +209,37 @@ export default async function Page() {
         )}
       </section>
 
-      <Card
-        title="All platforms"
-        subtitle="Manage and configure your application platforms"
-      >
+      <section aria-labelledby="platforms-heading" className="space-y-4 pt-2">
+        <div className="flex items-center gap-3">
+          <h2 id="platforms-heading" className="pt-heading">
+            All platforms
+          </h2>
+          <span className="inline-flex items-center justify-center h-5 min-w-5 px-1.5 rounded-xs bg-surface-3 font-mono text-[11px] font-semibold tabular-nums text-foreground">
+            {platforms.length}
+          </span>
+        </div>
+
         {platforms.length === 0 ? (
-          <EmptyState
-            visual={<PlatformsArt className="w-[220px] h-auto" />}
-            title="No platforms yet"
-            description="Platforms group the versions and schemas for one app or service. Create your first one to get started."
-            action={
-              <a href="#create-platform" className="pt-btn pt-btn-secondary">
-                Create platform
-              </a>
-            }
-          />
+          <div className="pt-card">
+            <EmptyState
+              visual={
+                // eslint-disable-next-line @next/next/no-img-element -- static SVG illustration
+                <img
+                  src="/brand/empty-state-paramtune-dark.svg"
+                  alt=""
+                  width={200}
+                  height={120}
+                />
+              }
+              title="Tune your first platform"
+              description="A platform holds the versions and schemas for one app or service."
+              action={
+                <a href="#create-platform" className="pt-link-tertiary">
+                  Create platform <span aria-hidden="true">→</span>
+                </a>
+              }
+            />
+          </div>
         ) : (
           <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {platforms.map((platform: Platform) => {
@@ -215,20 +248,25 @@ export default async function Page() {
               const platformVersions = platform.versions?.length || 0
               return (
                 <li key={platform.name}>
+                  {/* Item card (§8): surface-2, padding 16, mono title, chevron nudges right */}
                   <Link
                     href={href}
-                    className="group flex h-full flex-col justify-between gap-4 border border-border bg-surface p-4 transition-colors duration-150 hover:bg-surface-2 hover:border-border-strong"
+                    className="group flex h-full flex-col justify-between gap-4 rounded-sm border border-border bg-surface-2 paper:bg-surface p-4 transition-colors duration-150 hover:border-border-strong"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0 space-y-1">
-                        <h3 className="font-bold truncate">{platform.name}</h3>
-                        <p className="text-sm text-muted-foreground tabular-nums">
-                          {platformVersions}{' '}
+                        <h3 className="font-mono text-lg font-medium truncate">
+                          {platform.name}
+                        </h3>
+                        <p className="text-sm text-muted-foreground">
+                          <span className="font-mono font-medium text-foreground tabular-nums">
+                            {platformVersions}
+                          </span>{' '}
                           {platformVersions === 1 ? 'version' : 'versions'}
                           {latestVersion && (
                             <>
                               {' · latest '}
-                              <span className="text-foreground">
+                              <span className="font-mono font-medium text-foreground">
                                 v{latestVersion}
                               </span>
                             </>
@@ -236,13 +274,13 @@ export default async function Page() {
                         </p>
                       </div>
                       <ChevronRight
-                        className="h-4 w-4 shrink-0 text-meta"
+                        className="h-4 w-4 shrink-0 text-muted-foreground transition-transform duration-150 group-hover:translate-x-0.5"
                         strokeWidth={1.5}
                         aria-hidden="true"
                       />
                     </div>
-                    <span className="pt-label text-muted-foreground">
-                      Open configs
+                    <span className="pt-label text-muted-foreground group-hover:text-foreground transition-colors duration-150">
+                      Open configs <span aria-hidden="true">→</span>
                     </span>
                   </Link>
                 </li>
@@ -250,12 +288,12 @@ export default async function Page() {
             })}
           </ul>
         )}
-      </Card>
+      </section>
 
       <Card
         id="create-platform"
-        title="Create platform"
-        subtitle="Add a new platform to manage its configurations"
+        title="Create a platform"
+        subtitle="Name it after the app or service it configures."
       >
         <CreatePlatformForm action={createPlatform} />
       </Card>

@@ -53,8 +53,8 @@ const AutocompletePopup = forwardRef<HTMLDivElement, AutocompletePopupProps>(
         ref={ref}
         className={cn(
           'absolute z-50',
-          'bg-popover shadow-[var(--elev-raised)]',
-          'border border-border-strong',
+          'bg-popover shadow-pop',
+          'rounded-md border-[1.5px] border-border-strong',
           'min-w-[200px] max-w-[300px]',
           'overflow-hidden'
         )}
@@ -80,7 +80,7 @@ const AutocompletePopup = forwardRef<HTMLDivElement, AutocompletePopupProps>(
                 'text-sm text-foreground',
                 'transition-colors duration-150',
                 index === selectedIndex
-                  ? 'bg-accent-dim shadow-[inset_2px_0_0_var(--pt-accent)]'
+                  ? 'bg-surface-3 shadow-[inset_2px_0_0_var(--primary-bg)]'
                   : 'hover:bg-surface-3'
               )}
               onClick={() => handleItemClick(suggestion)}
@@ -106,19 +106,19 @@ const AutocompletePopup = forwardRef<HTMLDivElement, AutocompletePopupProps>(
         {/* Keyboard hints */}
         <div className="flex items-center justify-between px-3 py-1.5 border-t border-border bg-surface text-xs text-meta">
           <span>
-            <kbd className="px-1 border border-border-strong text-muted-foreground mr-1">
+            <kbd className="pt-kbd text-muted-foreground mr-1">
               ↑↓
             </kbd>
             navigate
           </span>
           <span>
-            <kbd className="px-1 border border-border-strong text-muted-foreground mr-1">
+            <kbd className="pt-kbd text-muted-foreground mr-1">
               Enter
             </kbd>
             select
           </span>
           <span>
-            <kbd className="px-1 border border-border-strong text-muted-foreground mr-1">
+            <kbd className="pt-kbd text-muted-foreground mr-1">
               Esc
             </kbd>
             close

@@ -5,6 +5,8 @@ const nextConfig = {
   // its own file tracing and does not need it — and under Next 16.3.x the two
   // conflict there, failing the build with a missing next-server.js.nft.json.
   output: process.env.VERCEL ? undefined : 'standalone',
+  // Keep the dev badge off the sidebar footer.
+  devIndicators: { position: 'bottom-right' },
 }
 
 const withBundleAnalyzer = require('@next/bundle-analyzer')({

@@ -215,7 +215,7 @@ function StatusBadge({ status }: { status: number }) {
 
 function StepNumber({ n }: { n: number }) {
   return (
-    <div className="flex-shrink-0 w-8 h-8 border border-border-strong flex items-center justify-center text-xs font-bold tabular-nums text-muted-foreground">
+    <div className="flex-shrink-0 w-8 h-8 rounded-sm border border-border-strong flex items-center justify-center pt-stat text-sm text-muted-foreground">
       {n}
     </div>
   )
@@ -225,7 +225,7 @@ function CodeBlock({ children, label }: { children: string; label?: string }) {
   return (
     <div>
       {label && <span className="pt-label text-meta mb-1 block">{label}</span>}
-      <pre className="text-sm bg-surface border border-border p-3 overflow-x-auto leading-relaxed">
+      <pre className="pt-code overflow-x-auto">
         {children}
       </pre>
     </div>
@@ -234,9 +234,9 @@ function CodeBlock({ children, label }: { children: string; label?: string }) {
 
 function SectionHeading({ title, subtitle }: { title: string; subtitle: string }) {
   return (
-    <div className="mb-6 space-y-2">
-      <h2 className="pt-display text-lg">{title}</h2>
-      <p className="text-sm text-muted-foreground">{subtitle}</p>
+    <div className="mb-6">
+      <h2 className="pt-title-2">{title}</h2>
+      <p className="mt-3 max-w-[45ch] text-lg text-muted-foreground">{subtitle}</p>
     </div>
   )
 }
@@ -263,16 +263,17 @@ export default function ApiDocsPage() {
   return (
     <>
       <NavHeader />
-      <main className="max-w-4xl mx-auto px-4 md:px-6 pt-16 pb-16">
-        <div className="mb-12 space-y-4">
-          <h1 className="pt-display text-xl md:text-3xl">API docs</h1>
-          <p className="text-muted-foreground max-w-[68ch]">
-            Paramtune API for managing platform schemas and versions.
+      {/* Docs use the 16px base (§4) */}
+      <main className="max-w-4xl mx-auto px-4 md:px-6 pt-16 pb-16 text-lg">
+        <div className="mb-12">
+          <p className="pt-eyebrow">Docs</p>
+          <h1 className="pt-title-1 mt-2">
+            API docs<span className="pt-period">.</span>
+          </h1>
+          <p className="mt-3 text-lg text-muted-foreground max-w-[45ch]">
+            Read and write platform schemas and versions over HTTP.
           </p>
-          <a
-            href="/openapi.yaml"
-            className="pt-label inline-flex items-center gap-1 min-h-8 text-foreground underline underline-offset-4 decoration-border-strong hover:decoration-foreground transition-colors duration-150"
-          >
+          <a href="/openapi.yaml" className="pt-link-tertiary mt-4">
             View OpenAPI spec
             <ArrowRight className="w-4 h-4" strokeWidth={1.5} aria-hidden="true" />
           </a>
@@ -296,10 +297,10 @@ export default function ApiDocsPage() {
                 tabIndex={selected ? 0 : -1}
                 onClick={() => setActiveTab(tab.id)}
                 onKeyDown={(event) => handleTabKeyDown(event, index)}
-                className={`pt-label h-10 px-6 border-b-2 -mb-px transition-colors duration-200 ${
+                className={`h-9 px-4 rounded-t-sm border-b-2 -mb-px text-base transition-colors duration-200 ${
                   selected
-                    ? 'border-primary text-foreground'
-                    : 'border-transparent text-muted-foreground hover:bg-surface-2'
+                    ? 'border-primary bg-primary-soft text-link font-semibold'
+                    : 'border-transparent text-muted-foreground font-medium hover:text-foreground'
                 }`}
               >
                 {tab.label}
@@ -327,7 +328,7 @@ export default function ApiDocsPage() {
                     <div className="flex items-start gap-4">
                       <StepNumber n={i + 1} />
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-bold mb-1">
+                        <h3 className="text-lg font-bold tracking-[-0.005em] mb-1">
                           {step.title.replace(/^\d+\.\s*/, '')}
                         </h3>
                         <p className="text-sm text-muted-foreground mb-3 max-w-[68ch]">
@@ -353,7 +354,7 @@ export default function ApiDocsPage() {
               <div className="space-y-4">
                 {compositionExamples.map((ex, i) => (
                   <Card key={i}>
-                    <h3 className="font-bold mb-1">{ex.title}</h3>
+                    <h3 className="text-lg font-bold tracking-[-0.005em] mb-1">{ex.title}</h3>
                     <p className="text-sm text-muted-foreground mb-3 max-w-[68ch]">
                       {ex.description}
                     </p>

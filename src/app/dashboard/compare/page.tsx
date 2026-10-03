@@ -6,7 +6,6 @@ import { sortVersionsDescending } from '@/lib/versionUtils'
 import { requireDashboardSession } from '@/lib/dashboardAuth'
 import { headers } from 'next/headers'
 import CompareForm from './CompareForm'
-import Breadcrumbs from '@/components/Breadcrumbs'
 
 export const dynamic = 'force-dynamic'
 
@@ -40,17 +39,14 @@ export default async function ComparePage() {
   }
 
   return (
-    <div className="space-y-6 mx-auto max-w-6xl">
-      <header className="space-y-2">
-        <Breadcrumbs
-          items={[
-            { label: 'Overview', href: '/dashboard' },
-            { label: 'Compare' },
-          ]}
-        />
-        <h1 className="pt-display text-xl">Compare schemas</h1>
-        <p className="text-sm text-muted-foreground">
-          Compare schemas across different platforms and versions to see what changed
+    <div className="space-y-8">
+      <header className="pt-4 md:pt-8">
+        <p className="pt-eyebrow">Tools</p>
+        <h1 className="pt-title-1 mt-2">
+          Compare<span className="pt-period">.</span>
+        </h1>
+        <p className="mt-3 max-w-[45ch] text-lg text-muted-foreground">
+          Line up any two schemas and see exactly what changed.
         </p>
       </header>
 

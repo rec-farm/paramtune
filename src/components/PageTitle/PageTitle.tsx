@@ -1,32 +1,26 @@
-import Breadcrumbs from '@/components/Breadcrumbs'
-
 type Props = {
   platform: string
   version?: string
   subtitle?: string
 }
 
+// Detail header (§9): eyebrow names the type, the H1 is the identifier in mono
+// with no purple period
 export default function PageTitle({ platform, version, subtitle }: Props) {
-  const platformHref = `/dashboard/${encodeURIComponent(platform)}`
-
   return (
-    <div className="space-y-2">
-      <Breadcrumbs
-        items={[
-          { label: 'Overview', href: '/dashboard' },
-          { label: platform, href: platformHref },
-          ...(version ? [{ label: `v${version}` }] : []),
-        ]}
-      />
-      <h1 className="pt-display text-xl break-words">
+    <div>
+      <p className="pt-eyebrow">{version ? 'Version' : 'Platform'}</p>
+      <h1 className="mt-2 font-mono text-2xl md:text-[40px] md:leading-none font-medium tracking-[-0.02em] break-words">
         {platform}
         {version && (
-          <span className="ml-2 align-middle text-base font-fragmented font-normal normal-case tracking-normal text-muted-foreground">
-            v{version}
-          </span>
+          <span className="ml-3 text-muted-foreground">v{version}</span>
         )}
       </h1>
-      {subtitle && <p className="text-sm text-muted-foreground">{subtitle}</p>}
+      {subtitle && (
+        <p className="mt-3 max-w-[45ch] text-lg text-muted-foreground">
+          {subtitle}
+        </p>
+      )}
     </div>
   )
 }

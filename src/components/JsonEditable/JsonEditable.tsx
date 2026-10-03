@@ -345,7 +345,7 @@ const JsonEditable = memo(function JsonEditable({
                 style={{
                   top: 16 + (errorLine - visibleStart) * lineHeight,
                   height: lineHeight,
-                  background: 'var(--pt-danger-bg)',
+                  background: 'var(--danger-soft)',
                   pointerEvents: 'none',
                 }}
               />
@@ -370,7 +370,7 @@ const JsonEditable = memo(function JsonEditable({
                   width: 6,
                   height: 6,
                   borderRadius: 9999,
-                  background: 'var(--pt-danger)',
+                  background: 'var(--danger-icon)',
                   pointerEvents: 'none',
                 }}
               />
@@ -402,13 +402,13 @@ const JsonEditable = memo(function JsonEditable({
                     left: 0,
                     width: '1ch',
                     height: 2,
-                    background: 'var(--pt-danger)',
+                    background: 'var(--danger-icon)',
                   }}
                 />
                 {/* tooltip - hover only */}
                 <div
                   role="tooltip"
-                  className="absolute text-xs bg-popover border border-border-strong text-danger px-2 py-1 shadow-[var(--elev-raised)] whitespace-pre max-w-sm opacity-0 group-hover:opacity-100 transition-opacity duration-150 font-mono"
+                  className="absolute text-xs bg-popover border border-border-strong text-danger px-2 py-1 shadow-pop rounded-md whitespace-pre max-w-sm opacity-0 group-hover:opacity-100 transition-opacity duration-150 font-mono"
                   style={{
                     top: -28,
                     left: 0,
@@ -435,7 +435,7 @@ const JsonEditable = memo(function JsonEditable({
               <span />
             ) : (
               <span
-                className={`inline-flex items-center gap-1 font-bold uppercase tracking-[0.08em] ${
+                className={`inline-flex items-center gap-1 font-semibold ${
                   state.isValidating
                     ? 'text-muted-foreground'
                     : state.isValid

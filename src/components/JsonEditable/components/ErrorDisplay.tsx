@@ -29,15 +29,15 @@ export const ErrorDisplay = memo(function ErrorDisplay({
       {(errors.length > 0 || hasLegacyError) && (
         <div
           role="alert"
-          className="flex gap-2 border border-danger/40 bg-danger/10 p-3"
+          className="flex gap-3 rounded-sm border border-border border-l-4 border-l-danger-icon bg-surface-2 px-5 py-4"
         >
           <CircleAlert
-            className="w-4 h-4 mt-0.5 shrink-0 text-danger"
+            className="w-4 h-4 mt-0.5 shrink-0 text-danger-icon"
             strokeWidth={1.5}
             aria-hidden="true"
           />
           <div className="min-w-0 space-y-1">
-            <p className="text-sm font-bold text-danger">
+            <p className="text-base font-semibold text-foreground">
               {errors.length > 1 ? 'JSON syntax errors' : 'JSON syntax error'}
             </p>
             {hasLegacyError && (
@@ -46,7 +46,7 @@ export const ErrorDisplay = memo(function ErrorDisplay({
             {errors.map((error, index) => (
               <p key={index} className="text-xs text-foreground">
                 {error.line && error.column && (
-                  <span className="text-muted-foreground tabular-nums">
+                  <span className="font-mono text-muted-foreground tabular-nums">
                     Line {error.line}, col {error.column}:{' '}
                   </span>
                 )}
@@ -62,20 +62,20 @@ export const ErrorDisplay = memo(function ErrorDisplay({
 
       {/* Warnings section */}
       {warnings.length > 0 && (
-        <div className="flex gap-2 border border-warn/40 bg-warn/10 p-3">
+        <div className="flex gap-3 rounded-sm border border-border border-l-4 border-l-warn-icon bg-surface-2 px-5 py-4">
           <TriangleAlert
-            className="w-4 h-4 mt-0.5 shrink-0 text-warn"
+            className="w-4 h-4 mt-0.5 shrink-0 text-warn-icon"
             strokeWidth={1.5}
             aria-hidden="true"
           />
           <div className="min-w-0 space-y-1">
-            <p className="text-sm font-bold text-warn">
+            <p className="text-base font-semibold text-foreground">
               Warning{warnings.length > 1 ? 's' : ''}
             </p>
             {warnings.map((warning, index) => (
               <p key={index} className="text-xs text-foreground">
                 {warning.line && warning.column && (
-                  <span className="text-muted-foreground tabular-nums">
+                  <span className="font-mono text-muted-foreground tabular-nums">
                     Line {warning.line}, col {warning.column}:{' '}
                   </span>
                 )}

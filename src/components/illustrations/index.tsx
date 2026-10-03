@@ -1,23 +1,23 @@
 import type { ReactNode, SVGProps } from 'react'
 
-// Paramtune illustrations (DESIGN.md §10): monotone, geometric, drawn from the
-// product's own objects. 1.5px square strokes, greys only, halftone for tone.
-// No lime: the signal color stays reserved for action, selection and focus.
+// Spot illustrations (BRAND.md §11): instrument motifs drawn from the product's
+// own objects, line art in the theme's ink on its surfaces. Page headers and
+// empty states use the generated files in public/brand instead.
 
-const INK = 'var(--pt-fg)'
-const MUTED = 'var(--pt-muted)'
-const META = 'var(--pt-meta)'
-const EDGE = 'var(--pt-border-strong)'
-const LINE = 'var(--pt-border)'
-const SURFACE = 'var(--pt-surface)'
-const SURFACE_2 = 'var(--pt-surface-2)'
-const SURFACE_3 = 'var(--pt-surface-3)'
-const MONO = 'var(--font-fragmented), ui-monospace, monospace'
+const INK = 'var(--fg)'
+const MUTED = 'var(--fg-muted)'
+const META = 'var(--fg-subtle)'
+const EDGE = 'var(--line-strong)'
+const LINE = 'var(--line)'
+const SURFACE = 'var(--surface-1)'
+const SURFACE_2 = 'var(--surface-2)'
+const SURFACE_3 = 'var(--surface-3)'
+const MONO = 'var(--font-geist-mono), ui-monospace, monospace'
 
 const stroke = {
   strokeWidth: 1.5,
-  strokeLinecap: 'square',
-  strokeLinejoin: 'miter',
+  strokeLinecap: 'round',
+  strokeLinejoin: 'round',
 } as const
 
 type ArtProps = Omit<SVGProps<SVGSVGElement>, 'children'>
@@ -135,54 +135,7 @@ function Dial({
   )
 }
 
-function Braces({ x, y, size = 34 }: { x: number; y: number; size?: number }) {
-  return (
-    <text
-      x={x}
-      y={y}
-      textAnchor="middle"
-      dominantBaseline="central"
-      fontFamily={MONO}
-      fontSize={size}
-      fill={INK}
-    >
-      {'{ }'}
-    </text>
-  )
-}
-
-// Version history: a main line with a dashed draft branch
-function Branch() {
-  const main = 132
-  const up = 104
-  return (
-    <g>
-      <line x1={192} y1={main} x2={304} y2={main} stroke={INK} {...stroke} />
-      <polyline
-        points={`244,${main} 264,${up} 290,${up}`}
-        fill="none"
-        stroke={MUTED}
-        strokeDasharray="3 4"
-        {...stroke}
-      />
-      <rect x={196} y={main - 4} width={8} height={8} fill={SURFACE} stroke={INK} {...stroke} />
-      <rect x={240} y={main - 4} width={8} height={8} fill={SURFACE} stroke={INK} {...stroke} />
-      <rect x={292} y={main - 5} width={10} height={10} fill={INK} />
-      <rect
-        x={290}
-        y={up - 4}
-        width={8}
-        height={8}
-        fill={SURFACE}
-        stroke={MUTED}
-        strokeDasharray="2 2"
-        {...stroke}
-      />
-    </g>
-  )
-}
-
-// A version as a small document card; dashed = draft (DESIGN.md §5 Badge)
+// A version as a small document card; dashed = draft 
 function VersionCard({
   x,
   y,
@@ -277,83 +230,6 @@ function ExtendsArrow({
         @extends
       </text>
     </g>
-  )
-}
-
-/**
- * Overview hero: dial, braces and branch in an off-beat panel grid.
- * `signature` adds the offset edge and the overhanging braces panel. It is
- * reserved for the Overview page (DESIGN.md §4 Elevation).
- */
-export function PanelsArt({
-  signature = false,
-  ...props
-}: ArtProps & { signature?: boolean }) {
-  const pad = signature ? 16 : 4
-  return (
-    <Art viewBox={`${-pad} ${-pad} ${320 + pad * 2} ${160 + pad * 2}`} {...props}>
-      {signature && <rect x={6} y={6} width={320} height={160} fill={EDGE} />}
-      <rect x={0} y={0} width={320} height={160} fill={SURFACE} />
-      <Halftone x={0} y={0} w={176} h={160} />
-      <Halftone x={176} y={80} w={144} h={80} step={6} max={1.4} color={LINE} reverse />
-      <rect x={0.75} y={0.75} width={318.5} height={158.5} fill="none" stroke={EDGE} strokeWidth={1.5} />
-      <line x1={176} y1={0} x2={176} y2={160} stroke={EDGE} strokeWidth={1.5} />
-      <line x1={176} y1={80} x2={320} y2={80} stroke={EDGE} strokeWidth={1.5} />
-      <Dial cx={88} cy={84} />
-      {signature ? (
-        <g>
-          <rect x={190} y={-8} width={144} height={80} fill={EDGE} />
-          <rect x={184} y={-14} width={144} height={80} fill={SURFACE_3} stroke={INK} {...stroke} />
-          <Braces x={256} y={26} />
-        </g>
-      ) : (
-        <Braces x={248} y={40} />
-      )}
-      <Branch />
-    </Art>
-  )
-}
-
-// No platforms: three platform layers, the front one ready to fill
-export function PlatformsArt(props: ArtProps) {
-  const layers = [
-    { x: 48, y: 8, label: 'web' },
-    { x: 28, y: 24, label: 'android' },
-  ]
-  return (
-    <Art viewBox="0 0 220 124" {...props}>
-      {layers.map(({ x, y, label }) => (
-        <g key={label}>
-          <rect x={x} y={y} width={160} height={76} fill={SURFACE} />
-          <Halftone x={x} y={y} w={160} h={76} step={6} max={1.4} color={LINE} />
-          <rect x={x} y={y} width={160} height={76} fill="none" stroke={EDGE} {...stroke} />
-          <text x={x + 12} y={y + 14} fontFamily={MONO} fontSize={10} fill={META}>
-            {label}
-          </text>
-        </g>
-      ))}
-      <rect x={8} y={40} width={160} height={76} fill={SURFACE} stroke={INK} {...stroke} />
-      <text x={20} y={60} fontFamily={MONO} fontSize={12} fill={INK}>
-        ios
-      </text>
-      <text x={156} y={60} textAnchor="end" fontFamily={MONO} fontSize={12} fill={META}>
-        0
-      </text>
-      {[64, 48, 56].map((w, i) => (
-        <rect key={i} x={20} y={74 + i * 10} width={w} height={3} fill={EDGE} />
-      ))}
-    </Art>
-  )
-}
-
-// No versions: a draft that @extends an existing version
-export function ExtendsArt(props: ArtProps) {
-  return (
-    <Art viewBox="-12 8 340 104" {...props}>
-      <VersionCard x={16} y={24} label="v1.0.0" tone />
-      <ExtendsArrow from={192} to={126} y={60} />
-      <VersionCard x={196} y={24} label="v1.1.0" draft />
-    </Art>
   )
 }
 

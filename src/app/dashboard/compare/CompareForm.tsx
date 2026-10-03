@@ -121,7 +121,7 @@ export default function CompareForm({
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <Badge variant="secondary">A</Badge>
-              <span className="text-sm font-bold">Source schema</span>
+              <span className="text-lg font-bold">Source schema</span>
             </div>
 
             <div className="space-y-4">
@@ -136,7 +136,7 @@ export default function CompareForm({
                   id="platformA"
                   value={schemaA.platform}
                   onChange={(e) => handlePlatformChangeA(e.target.value)}
-                  className="pt-select"
+                  className="pt-select font-mono"
                 >
                   <option value="">Select platform...</option>
                   {platforms.map((p) => (
@@ -161,7 +161,7 @@ export default function CompareForm({
                     setSchemaA((prev) => ({ ...prev, version: e.target.value }))
                   }
                   disabled={!schemaA.platform}
-                  className="pt-select"
+                  className="pt-select font-mono"
                 >
                   <option value="">Select version...</option>
                   {versionsA.map((v) => (
@@ -180,7 +180,7 @@ export default function CompareForm({
           <div className="space-y-4">
             <div className="flex items-center gap-2">
               <Badge variant="secondary">B</Badge>
-              <span className="text-sm font-bold">Target schema</span>
+              <span className="text-lg font-bold">Target schema</span>
             </div>
 
             <div className="space-y-4">
@@ -195,7 +195,7 @@ export default function CompareForm({
                   id="platformB"
                   value={schemaB.platform}
                   onChange={(e) => handlePlatformChangeB(e.target.value)}
-                  className="pt-select"
+                  className="pt-select font-mono"
                 >
                   <option value="">Select platform...</option>
                   {platforms.map((p) => (
@@ -220,7 +220,7 @@ export default function CompareForm({
                     setSchemaB((prev) => ({ ...prev, version: e.target.value }))
                   }
                   disabled={!schemaB.platform}
-                  className="pt-select"
+                  className="pt-select font-mono"
                 >
                   <option value="">Select version...</option>
                   {versionsB.map((v) => (
@@ -236,7 +236,7 @@ export default function CompareForm({
       </div>
 
       {/* Compare button */}
-      <div className="flex justify-center">
+      <div className="flex">
         <Button
           onClick={handleCompare}
           disabled={!canCompare || isPending}
@@ -254,12 +254,12 @@ export default function CompareForm({
       {error && (
         <div
           role="alert"
-          className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border border-danger/40 bg-[var(--pt-danger-bg)] p-4"
+          className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-sm border border-border border-l-4 border-l-danger-icon bg-surface-2 px-5 py-4"
         >
           <div className="flex items-start gap-2 text-sm">
-            <AlertCircle className="h-4 w-4 mt-1 shrink-0 text-danger" strokeWidth={1.5} aria-hidden="true" />
+            <AlertCircle className="h-4 w-4 mt-0.5 shrink-0 text-danger-icon" strokeWidth={1.5} aria-hidden="true" />
             <div>
-              <p className="font-bold text-danger">Comparison failed</p>
+              <p className="text-base font-semibold text-foreground">We couldn&apos;t compare those schemas</p>
               <p className="text-muted-foreground">{error}</p>
             </div>
           </div>
@@ -269,7 +269,7 @@ export default function CompareForm({
             onClick={handleCompare}
             disabled={!canCompare || isPending}
           >
-            Retry
+            Try again
           </Button>
         </div>
       )}
@@ -287,11 +287,11 @@ export default function CompareForm({
 
       {/* Empty state */}
       {!compareResult && !error && (
-        <Card className="p-8">
+        <Card className="p-0">
           <EmptyState
-            visual={<CompareArt className="w-[280px] max-w-full h-auto" />}
-            title="Nothing to compare yet"
-            description="Pick a platform and version for both A and B, then press Compare schemas to see what changed."
+            visual={<CompareArt className="w-[200px] max-w-full h-auto" />}
+            title="Pick two schemas"
+            description="Choose a platform and version for A and B, then compare them."
           />
         </Card>
       )}

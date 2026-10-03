@@ -1,18 +1,18 @@
 // Constants for consistent editor styling
 export const EDITOR_CONSTANTS = {
-  LINE_HEIGHT: 24, // pixels
-  FONT_SIZE: 14, // pixels
-  // Space Mono (DESIGN.md). The textarea and the highlight overlay must share
+  LINE_HEIGHT: 21, // pixels (13 / 1.6, BRAND.md §8 Code)
+  FONT_SIZE: 13, // pixels
+  // Geist Mono (BRAND.md §4). The textarea and the highlight overlay must share
   // this exact value or the colored text drifts from the caret.
   FONT_FAMILY:
-    'var(--font-fragmented), ui-monospace, SFMono-Regular, Menlo, monospace',
+    'var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace',
   PADDING_TOP: 16, // pixels
   PADDING_LEFT: 48, // pixels - space for line numbers
   PADDING_LEFT_COMPACT: 16, // pixels - without line numbers
   PADDING_RIGHT: 16, // pixels
   PADDING_BOTTOM: 16, // pixels
   MIN_HEIGHT: 400, // pixels
-  CHAR_WIDTH: 8.57, // Space Mono advance (0.612em) at FONT_SIZE
+  CHAR_WIDTH: 7.8, // Geist Mono advance (0.6em) at FONT_SIZE
   BUFFER_LINES: 5, // extra lines for virtualization buffer
   CACHE_SIZE_LIMIT: 1000, // syntax highlight cache limit
   DEBOUNCE_MS: 100, // autocomplete debounce delay

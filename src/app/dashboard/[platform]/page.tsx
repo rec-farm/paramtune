@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { cn } from '@/lib/utils'
 import Card from '@/components/ui/Card'
 import EmptyState from '@/components/EmptyState'
-import { ExtendsArt } from '@/components/illustrations'
 import { getPlatform } from '@/models/Platform'
 import { sortVersionsDescending } from '@/lib/versionUtils'
 import { createPlatformVersion } from '@/actions/createVersion'
@@ -22,12 +21,18 @@ const VersionTag = ({ version, latest }: VersionTagProps) => (
   <Link
     href={`/dashboard/${encodeURIComponent(version.platform)}/${encodeURIComponent(version.name)}`}
     className={cn(
-      'inline-flex items-center gap-2 h-8 px-3 border text-sm normal-case tabular-nums transition-colors duration-150 hover:bg-surface-2',
-      latest ? 'border-primary text-foreground' : 'border-border-strong text-muted-foreground'
+      'inline-flex items-center gap-2 h-8 px-3 rounded-sm border font-mono text-sm tabular-nums transition-colors duration-150 hover:border-border-strong',
+      latest
+        ? 'border-border-strong bg-surface-2 text-foreground'
+        : 'border-border bg-surface-2 text-muted-foreground hover:text-foreground'
     )}
   >
     v{version.name}
-    {latest && <span className="pt-label text-meta">latest</span>}
+    {latest && (
+      <span className="inline-flex items-center h-[18px] px-1 rounded-xs bg-accent-tile text-accent-text text-[11px] font-semibold">
+        latest
+      </span>
+    )}
   </Link>
 )
 
@@ -45,16 +50,17 @@ export default async function Page({
       <div className="space-y-6">
         <PageTitle platform={platformName} />
         <Card
-          title="Platform not found"
-          subtitle="The platform you're looking for doesn't exist"
+          title="We couldn't find that platform"
+          subtitle="It may have been deleted, or the link has a typo."
         >
           <div className="space-y-4">
             <p className="text-muted-foreground">
-              Platform &quot;{platformName}&quot; could not be found. It may
-              have been deleted or never existed.
+              No platform named{' '}
+              <code className="pt-kbd text-foreground">{platformName}</code>{' '}
+              exists in this workspace.
             </p>
             <Link href="/dashboard" className="pt-btn pt-btn-secondary">
-              Back to platforms
+              Back to overview
             </Link>
           </div>
         </Card>
@@ -75,7 +81,7 @@ export default async function Page({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <PageTitle platform={platformName} />
 
       <Card title="Versions">
@@ -90,12 +96,20 @@ export default async function Page({
         >
           {(platform.versions ?? []).length === 0 ? (
             <EmptyState
-              visual={<ExtendsArt className="w-[300px] max-w-full h-auto" />}
-              title="No versions yet"
-              description="Each version holds its own schema. Add one below, or start from an existing version with @extends."
+              visual={
+                // eslint-disable-next-line @next/next/no-img-element -- static SVG illustration
+                <img
+                  src="/brand/empty-state-paramtune-dark.svg"
+                  alt=""
+                  width={200}
+                  height={120}
+                />
+              }
+              title="Add your first version"
+              description="Each version holds its own schema. Start fresh, or build on another with @extends."
               action={
-                <a href="#add-version" className="pt-btn pt-btn-secondary">
-                  Add version
+                <a href="#add-version" className="pt-link-tertiary">
+                  Add version <span aria-hidden="true">→</span>
                 </a>
               }
             />
@@ -116,7 +130,7 @@ export default async function Page({
         </Suspense>
       </Card>
 
-      <Card id="add-version" title="Add version">
+      <Card id="add-version" title="Add a version">
         <AddVersionForm action={createVersion} />
       </Card>
     </div>

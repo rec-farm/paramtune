@@ -41,7 +41,7 @@ export default function AddVersionForm({ action }: Props) {
         await action(formData)
         setVersion('')
         setTouched(false)
-        setMessage({ kind: 'success', text: 'Version created' })
+        setMessage({ kind: 'success', text: 'Version created. Its schema starts at {}.' })
         // Keep focus ready for quick entry
         inputRef.current?.focus()
         // Ensure the server-rendered version list updates
@@ -50,7 +50,7 @@ export default function AddVersionForm({ action }: Props) {
         console.error('Failed to create version:', err)
         setMessage({
           kind: 'error',
-          text: `Failed to create version: ${
+          text: `We couldn't create the version: ${
             err instanceof Error ? err.message : 'Unknown error'
           }`,
         })
@@ -63,8 +63,10 @@ export default function AddVersionForm({ action }: Props) {
 
   return (
     <form onSubmit={onSubmit} className="space-y-2" noValidate>
-      <label htmlFor="versionName" className="pt-label block text-foreground">
-        Version <span className="text-primary" aria-hidden="true">*</span>
+      <label htmlFor="versionName" className="pt-label block text-foreground mb-2">
+        Version
+          <span className="ml-1.5 inline-block h-1.5 w-1.5 rounded-full bg-accent align-middle" aria-hidden="true" />
+          <span className="sr-only">(required)</span>
       </label>
       <div className="flex gap-2">
         <Input
@@ -73,7 +75,7 @@ export default function AddVersionForm({ action }: Props) {
           type="text"
           name="versionName"
           placeholder="1.2.3"
-          className="max-w-md"
+          className="font-mono max-w-md"
           value={version}
           onChange={(e) => {
             setVersion(e.target.value)

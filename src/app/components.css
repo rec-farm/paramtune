@@ -1,67 +1,150 @@
-/* Paramtune Console component classes (DESIGN.md §5). Prefix: pt- */
+/* REC component classes (BRAND.md §4, §6, §8). Prefix: pt- */
 
 @layer components {
-  /* Uppercase 12px label with 0.08em tracking */
+  /* Stamp: 1-4 word uppercase label in Archivo Expanded (§4 label) */
   .pt-label {
-    font-size: 0.75rem;
+    font-family: var(--font-display);
+    font-stretch: 125%;
+    font-variation-settings: 'wdth' 125;
+    font-size: 11px;
+    line-height: 1.2;
     font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.1em;
   }
 
-  /* Syncopate display type: wordmark, page and section titles only */
+  /* Eyebrow above a page title (§4 eyebrow) */
+  .pt-eyebrow {
+    @apply text-muted-foreground;
+    font-family: var(--font-display);
+    font-stretch: 125%;
+    font-variation-settings: 'wdth' 125;
+    font-size: 11px;
+    line-height: 1.2;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+  }
+
+  /* Archivo Expanded for wordmark-like stamps and stat numbers. Never sentences */
   .pt-display {
     font-family: var(--font-display);
+    font-stretch: 125%;
+    font-variation-settings: 'wdth' 125;
     font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
   }
 
+  .pt-stat {
+    font-family: var(--font-display);
+    font-stretch: 125%;
+    font-variation-settings: 'wdth' 125;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+
+  /* Page H1 (§4 title-1): Figtree 800, 56px, 40px below 768px */
+  .pt-title-1 {
+    font-family: var(--font-sans);
+    font-weight: 800;
+    font-size: 40px;
+    line-height: 1;
+    letter-spacing: -0.035em;
+  }
+  @media (min-width: 768px) {
+    .pt-title-1 {
+      font-size: 56px;
+    }
+  }
+
+  .pt-title-2 {
+    font-family: var(--font-sans);
+    font-weight: 800;
+    font-size: 28px;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+  }
+
+  .pt-heading {
+    font-family: var(--font-sans);
+    font-weight: 700;
+    font-size: 20px;
+    line-height: 1.25;
+    letter-spacing: -0.01em;
+  }
+
+  /* The purple period on H1 and hero lines only */
+  .pt-period {
+    color: var(--primary-bg);
+  }
+
+  /* Buttons (§8): 28 / 36 / 44px, radius 4, Figtree 600, sentence case */
   .pt-btn {
-    @apply inline-flex items-center justify-center gap-2 whitespace-nowrap border border-transparent px-4 disabled:pointer-events-none disabled:opacity-40;
-    height: 40px;
-    font-size: 0.875rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
+    @apply inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-sm border border-transparent px-3.5 font-sans disabled:pointer-events-none disabled:opacity-40 disabled:shadow-none;
+    height: 36px;
+    font-size: 14px;
+    font-weight: 600;
     transition:
-      background-color var(--pt-dur-fast) var(--pt-ease-out),
-      border-color var(--pt-dur-fast) var(--pt-ease-out),
-      color var(--pt-dur-fast) var(--pt-ease-out);
+      background-color var(--duration-fast) var(--ease-out),
+      border-color var(--duration-fast) var(--ease-out),
+      color var(--duration-fast) var(--ease-out),
+      transform var(--duration-instant) var(--ease-snap),
+      box-shadow var(--duration-instant) var(--ease-snap);
   }
 
+  /* One per view: purple, strong border, hard offset shadow, presses like a key */
   .pt-btn-primary {
-    @apply bg-primary text-primary-foreground;
+    @apply bg-primary text-primary-foreground shadow-hard;
+    border: 1.5px solid var(--line-strong);
   }
   .pt-btn-primary:active {
-    background-color: #c5e87f;
+    transform: translate(2px, 2px);
+    box-shadow: 0 0 0 0 var(--shadow-hard-color);
   }
   @media (hover: hover) {
     .pt-btn-primary:hover {
-      background-color: #e6fbbd;
+      @apply bg-primary-hover;
     }
   }
 
   .pt-btn-secondary {
-    @apply bg-surface-2 text-foreground border-border-strong;
+    @apply bg-surface text-foreground border-input;
   }
   .pt-btn-secondary:active {
     @apply bg-surface-3;
   }
   @media (hover: hover) {
     .pt-btn-secondary:hover {
-      @apply border-input;
+      @apply bg-surface-2;
     }
   }
 
   .pt-btn-ghost {
-    @apply bg-transparent text-foreground;
+    @apply bg-transparent text-muted-foreground;
   }
   .pt-btn-ghost:active {
-    @apply bg-surface-3;
+    @apply bg-surface-3 text-foreground;
   }
   @media (hover: hover) {
     .pt-btn-ghost:hover {
+      @apply bg-surface-2 text-foreground;
+    }
+  }
+
+  /* Label-style outline button (DASHBOARD) */
+  .pt-btn-outline {
+    @apply bg-transparent text-foreground border-border-strong;
+    font-family: var(--font-display);
+    font-stretch: 125%;
+    font-variation-settings: 'wdth' 125;
+    font-size: 11px;
+    line-height: 1.2;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  @media (hover: hover) {
+    .pt-btn-outline:hover {
       @apply bg-surface-2;
     }
   }
@@ -69,16 +152,36 @@
   /* Destructive fill: only inside a confirmation step */
   .pt-btn-destructive {
     @apply bg-danger-fill text-white;
+    border: 1.5px solid var(--line-strong);
   }
   @media (hover: hover) {
     .pt-btn-destructive:hover {
-      background-color: #b91c1c;
+      filter: brightness(1.08);
     }
   }
 
+  /* Tertiary: label style plus arrow, underline on hover (OPEN CONFIGS →) */
+  .pt-link-tertiary {
+    @apply inline-flex items-center gap-1.5 min-h-8 text-foreground underline-offset-4;
+    font-family: var(--font-display);
+    font-stretch: 125%;
+    font-variation-settings: 'wdth' 125;
+    font-size: 11px;
+    line-height: 1.2;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  @media (hover: hover) {
+    .pt-link-tertiary:hover {
+      @apply underline;
+    }
+  }
+
+  /* Cards stay flat: surface-1, hairline, radius 4, no offset shadow */
   .pt-card {
-    @apply border border-border bg-surface text-card-foreground;
-    transition: border-color var(--pt-dur-fast) var(--pt-ease-out);
+    @apply rounded-sm border border-border bg-surface text-card-foreground;
+    transition: border-color var(--duration-fast) var(--ease-out);
   }
 
   .pt-card-elevated {
@@ -88,46 +191,90 @@
   .pt-card-interactive {
     @apply cursor-pointer;
     transition:
-      border-color var(--pt-dur-fast) var(--pt-ease-out),
-      background-color var(--pt-dur-fast) var(--pt-ease-out);
+      border-color var(--duration-fast) var(--ease-out),
+      background-color var(--duration-fast) var(--ease-out);
   }
   @media (hover: hover) {
     .pt-card-interactive:hover {
-      @apply bg-surface-2 border-border-strong;
+      @apply border-border-strong;
     }
   }
 
+  /* Inputs (§8): 36px, field surface, input border, radius 4, purple focus ring */
   .pt-input,
   .pt-select {
-    @apply flex w-full border border-input bg-surface px-3 text-sm text-foreground disabled:cursor-not-allowed disabled:opacity-40;
-    height: 40px;
-    transition: border-color var(--pt-dur-fast) var(--pt-ease-out);
+    @apply flex w-full rounded-sm border border-input bg-field px-3 text-base text-foreground disabled:cursor-not-allowed disabled:opacity-40;
+    height: 36px;
+    transition:
+      border-color var(--duration-fast) var(--ease-out),
+      box-shadow var(--duration-fast) var(--ease-out);
   }
   .pt-input {
-    @apply file:border-0 file:bg-transparent file:text-sm file:font-bold file:text-foreground placeholder:text-meta;
+    @apply file:border-0 file:bg-transparent file:text-sm file:font-semibold file:text-foreground placeholder:text-meta;
   }
   .pt-input:focus,
   .pt-select:focus {
     @apply border-primary;
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--primary-bg) 25%, transparent);
   }
 
-  /* Loading skeleton: a static block shaped like the result */
+  /* Code and JSON blocks (§8): surface-2, 13/1.6 mono, padding 16 */
+  .pt-code {
+    @apply rounded-sm border border-border bg-surface-2 p-4 font-mono;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+
+  /* Inline machine value: 12px mono chip */
+  .pt-kbd {
+    @apply inline-flex items-center rounded-xs border border-border-strong bg-surface-2 px-1 font-mono text-xs;
+  }
+
+  /* JSON editor: the textarea's text is transparent over the highlight layer,
+     so an opaque selection would hide the code. Use a see-through tint. */
+  .pt-editor-input::selection {
+    background: color-mix(in oklab, var(--primary-bg) 35%, transparent);
+    color: transparent;
+  }
+
+  /* Loading skeleton shaped like the result */
   .pt-skeleton {
-    @apply bg-surface-2;
+    @apply rounded-sm bg-surface-3;
+  }
+
+  /* Dot grid texture behind illustrations and empty states, never behind text */
+  .pt-dot-grid {
+    background-image: radial-gradient(
+      circle at 1px 1px,
+      color-mix(in oklab, var(--line) 60%, transparent) 1px,
+      transparent 0
+    );
+    background-size: 8px 8px;
+  }
+
+  /* Theme-specific logo files: -cream on dark, -ink on Paper */
+  .pt-on-paper {
+    display: none;
+  }
+  [data-theme='light'] .pt-on-paper {
+    display: revert;
+  }
+  [data-theme='light'] .pt-on-dark {
+    display: none;
   }
 
   /* List entrance: opacity + transform only, 40ms stagger */
   .animate-in {
-    animation: animate-in var(--pt-dur-slow) var(--pt-ease-out) backwards;
+    animation: animate-in var(--duration-slow) var(--ease-out) backwards;
   }
   .stagger-1 {
-    animation-delay: var(--pt-stagger);
+    animation-delay: var(--stagger);
   }
   .stagger-2 {
-    animation-delay: calc(var(--pt-stagger) * 2);
+    animation-delay: calc(var(--stagger) * 2);
   }
   .stagger-3 {
-    animation-delay: calc(var(--pt-stagger) * 3);
+    animation-delay: calc(var(--stagger) * 3);
   }
 
   @keyframes animate-in {
@@ -141,9 +288,13 @@
     }
   }
 
+  /* Reduced motion: no translate, keep color transitions (§7) */
   @media (prefers-reduced-motion: reduce) {
     .animate-in {
       animation: none;
+    }
+    .pt-btn-primary:active {
+      transform: none;
     }
   }
 }

@@ -6,6 +6,7 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { sortVersionsDescending } from '@/lib/versionUtils'
+import { NAV_ITEM_ACTIVE, NAV_ITEM_IDLE } from './navItem'
 
 type Platform = {
   name: string
@@ -27,10 +28,8 @@ const Version = ({ platform, version }: VersionProps) => {
     <Link
       aria-current={isActive ? 'page' : undefined}
       className={cn(
-        'flex items-center h-8 pl-12 pr-4 text-sm tabular-nums transition-colors duration-150',
-        isActive
-          ? 'bg-accent-dim text-foreground shadow-[inset_2px_0_0_var(--pt-accent)]'
-          : 'text-muted-foreground hover:bg-surface-2'
+        'flex items-center h-8 ml-10 mr-3 px-3 rounded-sm font-mono text-sm tabular-nums transition-colors duration-150',
+        isActive ? NAV_ITEM_ACTIVE : NAV_ITEM_IDLE
       )}
       href="/dashboard/[platform]/[version]"
       as={`/dashboard/${encodeURIComponent(platform)}/${encodeURIComponent(
@@ -95,16 +94,16 @@ export default function PlatformsList({
 
   if (filteredPlatforms.length === 0) {
     return (
-      <p className="text-sm text-muted-foreground px-4 py-3">
+      <p className="text-sm text-sidebar-muted px-4 py-3">
         {searchQuery
-          ? 'No platforms match your search. Clear it to see all platforms.'
-          : 'No platforms yet. Create one from the dashboard.'}
+          ? 'Nothing matches that search. Clear it to see every platform.'
+          : 'No platforms yet. Create your first one from the overview.'}
       </p>
     )
   }
 
   return (
-    <ul>
+    <ul className="space-y-0.5">
       {filteredPlatforms.map((platform) => {
         const platformHref = `/dashboard/${encodeURIComponent(platform.name)}`
         const isCurrentPlatform = pathname === platformHref
@@ -114,16 +113,14 @@ export default function PlatformsList({
           <li key={platform.name}>
             <div
               className={cn(
-                'flex items-center h-10 transition-colors duration-150',
-                isCurrentPlatform
-                  ? 'bg-accent-dim shadow-[inset_2px_0_0_var(--pt-accent)]'
-                  : 'hover:bg-surface-2'
+                'flex items-center h-10 mx-3 rounded-sm transition-colors duration-150',
+                isCurrentPlatform ? NAV_ITEM_ACTIVE : NAV_ITEM_IDLE
               )}
             >
               <button
                 aria-label={`${isExpanded ? 'Collapse' : 'Expand'} ${platform.name} versions`}
                 aria-expanded={isExpanded}
-                className="flex items-center justify-center h-10 w-10 ml-1 text-muted-foreground hover:text-foreground"
+                className="flex items-center justify-center h-9 w-8 shrink-0 opacity-80 hover:opacity-100"
                 onClick={() =>
                   setOpen((prev) => ({
                     ...prev,
@@ -133,7 +130,7 @@ export default function PlatformsList({
               >
                 <ChevronRight
                   className={cn(
-                    'w-5 h-5 transition-transform duration-200',
+                    'w-4 h-4 transition-transform duration-200',
                     isExpanded && 'rotate-90'
                   )}
                   strokeWidth={1.5}
@@ -142,14 +139,13 @@ export default function PlatformsList({
               <Link
                 aria-current={isCurrentPlatform ? 'page' : undefined}
                 className={cn(
-                  'flex-1 min-w-0 flex items-center justify-between gap-2 h-10 pr-4 text-sm',
-                  isCurrentPlatform ? 'text-foreground' : 'text-muted-foreground'
+                  'flex-1 min-w-0 flex items-center justify-between gap-2 h-9 pr-3 font-mono text-sm'
                 )}
                 href="/dashboard/[platform]"
                 as={platformHref}
               >
                 <span className="truncate">{platform.name}</span>
-                <span className="text-xs text-meta tabular-nums">
+                <span className="font-mono text-xs tabular-nums opacity-80">
                   {platform.versions?.length ?? 0}
                 </span>
               </Link>
@@ -158,7 +154,7 @@ export default function PlatformsList({
             {platform.versions &&
               platform.versions.length > 0 &&
               isExpanded && (
-                <ul>
+                <ul className="mt-0.5 space-y-0.5">
                   {sortVersionsDescending(
                     platform.versions.filter(
                       (version) =>

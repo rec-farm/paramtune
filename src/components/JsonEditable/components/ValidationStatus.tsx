@@ -16,8 +16,9 @@ interface ValidationStatusProps {
   isValidating?: boolean
 }
 
+// Status pill (§8): 24px, full radius, status tile + text, icon as second signal
 const badgeClassName =
-  'inline-flex items-center gap-1 border px-2 py-0.5 text-xs font-bold uppercase tracking-[0.08em]'
+  'inline-flex items-center gap-1.5 h-6 rounded-full px-2.5 text-xs font-semibold'
 
 export const ValidationStatus = memo(function ValidationStatus({
   isValid,
@@ -31,10 +32,10 @@ export const ValidationStatus = memo(function ValidationStatus({
     return (
       <div
         role="status"
-        className={`${badgeClassName} border-border-strong text-muted-foreground`}
+        className={`${badgeClassName} bg-surface-3 text-muted-foreground`}
       >
         <LoaderCircle
-          className="w-4 h-4 animate-spin motion-reduce:animate-none"
+          className="w-3.5 h-3.5 animate-spin motion-reduce:animate-none"
           strokeWidth={1.5}
           aria-hidden="true"
         />
@@ -48,9 +49,9 @@ export const ValidationStatus = memo(function ValidationStatus({
     return (
       <div
         role="status"
-        className={`${badgeClassName} border-danger/40 bg-danger/10 text-danger`}
+        className={`${badgeClassName} bg-danger-soft text-danger`}
       >
-        <CircleX className="w-4 h-4" strokeWidth={1.5} aria-hidden="true" />
+        <CircleX className="w-3.5 h-3.5" strokeWidth={1.5} aria-hidden="true" />
         Invalid JSON
       </div>
     )
@@ -61,9 +62,9 @@ export const ValidationStatus = memo(function ValidationStatus({
     return (
       <div
         role="status"
-        className={`${badgeClassName} border-warn/40 bg-warn/10 text-warn`}
+        className={`${badgeClassName} bg-warn-soft text-warn`}
       >
-        <TriangleAlert className="w-4 h-4" strokeWidth={1.5} aria-hidden="true" />
+        <TriangleAlert className="w-3.5 h-3.5" strokeWidth={1.5} aria-hidden="true" />
         Valid JSON · {warningCount} warning{warningCount > 1 ? 's' : ''}
       </div>
     )
@@ -73,9 +74,9 @@ export const ValidationStatus = memo(function ValidationStatus({
   return (
     <div
       role="status"
-      className={`${badgeClassName} border-success/40 bg-success/10 text-success`}
+      className={`${badgeClassName} bg-success-soft text-success`}
     >
-      <CircleCheck className="w-4 h-4" strokeWidth={1.5} aria-hidden="true" />
+      <CircleCheck className="w-3.5 h-3.5" strokeWidth={1.5} aria-hidden="true" />
       Valid JSON
     </div>
   )

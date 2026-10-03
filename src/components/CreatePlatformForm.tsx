@@ -44,7 +44,7 @@ export default function CreatePlatformForm({ action }: Props) {
         await action(formData)
         setName('')
         setTouched(false)
-        setMessage({ kind: 'success', text: 'Platform created' })
+        setMessage({ kind: 'success', text: 'Platform created. Add its first version next.' })
         // Keep focus ready for quick entry
         inputRef.current?.focus()
         // Ensure the server-rendered list updates
@@ -53,7 +53,7 @@ export default function CreatePlatformForm({ action }: Props) {
         console.error('Failed to create platform:', err)
         setMessage({
           kind: 'error',
-          text: `Failed to create platform: ${
+          text: `We couldn't create the platform: ${
             err instanceof Error ? err.message : 'Unknown error'
           }`,
         })
@@ -69,9 +69,11 @@ export default function CreatePlatformForm({ action }: Props) {
       <div className="space-y-2">
         <label
           htmlFor="platformName"
-          className="pt-label block text-foreground"
+          className="pt-label block text-foreground mb-2"
         >
-          Platform name <span className="text-primary" aria-hidden="true">*</span>
+          Platform name
+          <span className="ml-1.5 inline-block h-1.5 w-1.5 rounded-full bg-accent align-middle" aria-hidden="true" />
+          <span className="sr-only">(required)</span>
         </label>
         <Input
           ref={inputRef}
@@ -79,7 +81,7 @@ export default function CreatePlatformForm({ action }: Props) {
           type="text"
           name="platformName"
           placeholder="ios"
-          className="max-w-md"
+          className="font-mono max-w-md"
           value={name}
           onChange={(e) => {
             setName(e.target.value)

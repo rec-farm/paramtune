@@ -1,4 +1,4 @@
-// RECIAM themes (BRAND.md §9 Settings): Dark (default) · Paper · System
+// REC themes (BRAND.md §9 Settings): Dark (default) · Paper · System
 
 export type ThemeChoice = 'dark' | 'light' | 'system'
 

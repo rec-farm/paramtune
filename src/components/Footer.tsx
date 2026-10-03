@@ -12,7 +12,7 @@ export default function Footer() {
     <footer className="border-t border-border">
       <div className="max-w-7xl mx-auto px-4 md:px-6 py-12 grid grid-cols-1 md:grid-cols-12 gap-8">
         <div className="md:col-span-6 space-y-4">
-          <Logo variant="endorsed" height={34} />
+          <Logo variant="endorsed" height={25} />
           <p className="text-base text-muted-foreground max-w-[45ch]">
             Self-hosted, API-first configuration management. Open source.
           </p>

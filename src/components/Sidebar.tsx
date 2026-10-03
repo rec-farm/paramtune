@@ -198,14 +198,21 @@ export default function Sidebar({ platforms, version }: SidebarProps) {
           </span>{' '}
           {totalVersions === 1 ? 'version' : 'versions'}
         </p>
-        {/* Endorsement (§2): Product vX.Y.Z · by RECIAM with a 16px eye */}
-        <p className="flex items-center gap-1.5 text-xs text-sidebar-muted">
+        {/* Endorsement (§2): Product vX.Y.Z · by REC, the chain at 8px cap height */}
+        <p className="flex items-center gap-1 text-xs text-sidebar-muted">
           <span>
             Paramtune <span className="font-mono">v{version}</span> · by
           </span>
+          {/* Chain cap is 13.5u of the 48u box, so 28px renders an 8px cap.
+              Negative margins trim the box's empty top and bottom. */}
           {/* eslint-disable-next-line @next/next/no-img-element -- static SVG mark */}
-          <img src="/brand/reciam-micro-cream.svg" alt="" width={16} height={16} />
-          <span className="font-semibold tracking-wide">RECIAM</span>
+          <img
+            src="/brand/rec-mark-cream.svg"
+            alt="R.E.C."
+            width={28}
+            height={28}
+            className="-my-2.5 opacity-70"
+          />
         </p>
       </div>
     </div>

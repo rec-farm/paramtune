@@ -5,11 +5,11 @@ import { cn } from '@/lib/utils'
 
 type LogoVariant = 'lockup' | 'endorsed' | 'mark'
 
-// Real RECIAM logo files (BRAND.md §2.1): -cream on dark, -ink on Paper.
+// Real REC logo files (BRAND.md §2.1): -cream on dark, -ink on Paper.
 // Never set the wordmark in live text.
 const FILES: Record<LogoVariant, { name: string; ratio: number }> = {
   lockup: { name: 'paramtune-lockup', ratio: 346 / 48 },
-  endorsed: { name: 'paramtune-endorsed', ratio: 346 / 72 },
+  endorsed: { name: 'paramtune-endorsed', ratio: 346 / 53 },
   mark: { name: 'paramtune-mark', ratio: 1 },
 }
 
@@ -36,7 +36,7 @@ const Logo = forwardRef<HTMLDivElement, LogoProps>(
   ) => {
     const { name, ratio } = FILES[variant]
     const width = Math.round(height * ratio)
-    const label = variant === 'endorsed' ? 'Paramtune by RECIAM' : 'Paramtune'
+    const label = variant === 'endorsed' ? 'Paramtune by R.E.C.' : 'Paramtune'
 
     const content = (
       <div

@@ -1,4 +1,4 @@
-/* RECIAM Design System v1.1.0 tokens (BRAND.md §3, §6, §7).
+/* REC Design System v1.2.0 tokens (BRAND.md §3, §6, §7).
  * Dark is the default; Paper is html[data-theme='light'].
  * html[data-product='paramtune'] sets the Mint signature accent.
  * Components use the semantic layer only, never the primitives.
@@ -31,7 +31,7 @@
   --deep-800: #1b323c;
   --deep-700: #25424e;
   --deep-300: #a9b8b9;
-  /* RECIAM Purple */
+  /* REC Purple */
   --purple-50: #f2edff;
   --purple-100: #e4d9ff;
   --purple-300: #ac8bff;

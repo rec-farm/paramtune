@@ -47,6 +47,22 @@ function createErrorResponse(error: unknown, fallbackMessage: string) {
 }
 
 /**
+ * Percent-decodes a URL path parameter, failing with 400 on malformed escapes
+ * (e.g. "%E0%A4%A"). A bare decodeURIComponent throws a URIError there, which
+ * surfaces as a 500 for what is a client mistake.
+ */
+export function decodeParam(value: string, label: string) {
+  return Effect.try({
+    try: () => decodeURIComponent(value),
+    catch: () =>
+      NextResponse.json(
+        { error: `Invalid ${label}: malformed percent-encoding` },
+        { status: 400 },
+      ),
+  })
+}
+
+/**
  * Validates a platform or version name from URL parameters.
  */
 export function validateName(name: string, label: string) {

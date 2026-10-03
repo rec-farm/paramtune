@@ -5,6 +5,7 @@ import {
   handleApiWithFailures,
   failWith,
   validateName,
+  decodeParam,
   validateVersionName,
   requireSession,
 } from '@/lib/apiHandler'
@@ -20,8 +21,8 @@ export function GET(
     Effect.gen(function* () {
       yield* requireSession(request)
       const { platform, version } = yield* Effect.promise(() => params)
-      const platformName = decodeURIComponent(platform)
-      const versionName = decodeURIComponent(version)
+      const platformName = yield* decodeParam(platform, 'platform name')
+      const versionName = yield* decodeParam(version, 'version name')
       yield* validateName(platformName, 'platform name')
       yield* validateVersionName(versionName)
       const data = yield* Effect.promise(() =>

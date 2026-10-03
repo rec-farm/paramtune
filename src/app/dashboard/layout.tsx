@@ -1,6 +1,5 @@
 import Sidebar from '@/components/Sidebar'
-import MobileHeader from '@/components/MobileHeader'
-import NavHeader from '@/components/NavHeader'
+import DashboardTopBar from '@/components/DashboardTopBar'
 import { SidebarProvider } from '@/contexts/SidebarContext'
 import { getPlatforms, type Platform } from '@/models/Platform'
 import { auth } from '@/lib/auth'
@@ -65,24 +64,14 @@ export default async function DashboardLayout({ children }: PageProps) {
     )
   }
 
+  // App shell (§5.3): full-height sidebar left, top bar + content right
   return (
     <SidebarProvider>
-      <div className="hidden md:flex flex-col h-screen">
-        <div className="shrink-0 bg-background z-50">
-          <NavHeader />
-        </div>
-        <div className="flex flex-1 min-h-0">
-          <Sidebar platforms={platforms} version={version} />
+      <div className="flex h-screen">
+        <Sidebar platforms={platforms} version={version} />
+        <div className="flex flex-1 min-w-0 flex-col">
+          <DashboardTopBar />
           <main className="flex-1 overflow-y-auto">
-            <div className="mx-auto max-w-[1200px] px-4 py-6 md:px-8 md:py-8 xl:px-12">{children}</div>
-          </main>
-        </div>
-      </div>
-      <div className="md:hidden">
-        <MobileHeader />
-        <div className="flex min-h-screen">
-          <Sidebar platforms={platforms} version={version} />
-          <main className="flex-1">
             <div className="mx-auto max-w-[1200px] px-4 py-6 md:px-8 md:py-8 xl:px-12">{children}</div>
           </main>
         </div>

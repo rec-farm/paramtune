@@ -3,12 +3,22 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { GitCompare, Search, X } from 'lucide-react'
+import {
+  GitCompare,
+  LayoutDashboard,
+  LogOut,
+  Search,
+  ShieldCheck,
+  Terminal,
+  X,
+} from 'lucide-react'
 import PlatformsList from '@/components/NavigationPlatforms/PlatformsList'
 import { cn } from '@/lib/utils'
 import { useSidebar } from '@/contexts/SidebarContext'
 import { NAV_ITEM_ACTIVE, NAV_ITEM_IDLE } from '@/components/NavigationPlatforms/navItem'
 import ThemeSwitcher from '@/components/ThemeSwitcher'
+import Logo from '@/components/Logo'
+import { signOut } from '@/lib/auth-client'
 
 type Platform = {
   name: string
@@ -50,12 +60,35 @@ export default function Sidebar({ platforms, version }: SidebarProps) {
     (sum, p) => sum + p.versions.length,
     0
   )
+  const isOverviewActive = pathname === '/dashboard'
   const isCompareActive = pathname === '/dashboard/compare'
+  const navItem = (active: boolean) =>
+    cn(
+      'flex items-center gap-3 h-10 mx-3 px-3 rounded-sm text-base font-medium transition-colors duration-150',
+      active ? NAV_ITEM_ACTIVE : NAV_ITEM_IDLE
+    )
 
   const sidebarContent = (
     <div className="h-full flex flex-col">
-      {/* Search header */}
-      <div className="p-3 border-b border-sidebar-border">
+      {/* Wordmark row (§10.3): 64px, 20px padding-x */}
+      <div className="h-16 shrink-0 flex items-center px-5">
+        <Logo asLink tone="cream" height={18} />
+      </div>
+
+      {/* Workspace card (§10.3) */}
+      <div className="mx-3 flex items-center gap-3 rounded-sm border border-sidebar-border p-3">
+        <span className="h-8 w-8 shrink-0 flex items-center justify-center rounded-xs bg-[var(--lilac-300)] text-sm font-bold text-[var(--ink-950)]">
+          M
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-semibold truncate">My workspace</p>
+          <p className="text-xs text-sidebar-muted truncate">Self-hosted installation</p>
+        </div>
+        <ShieldCheck className="h-4 w-4 shrink-0 text-sidebar-muted" strokeWidth={1.5} aria-hidden="true" />
+      </div>
+
+      {/* Global search lives at the top of the sidebar (§10.2) */}
+      <div className="px-3 pt-3">
         <div className="relative">
           <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-sidebar-muted">
             <Search className="h-4 w-4" strokeWidth={1.5} aria-hidden="true" />
@@ -99,16 +132,20 @@ export default function Sidebar({ platforms, version }: SidebarProps) {
         aria-label="Dashboard"
         className="flex-1 overflow-y-auto py-4 space-y-6"
       >
-        {/* Tools section */}
         <div className="space-y-1">
-          <div className="pt-eyebrow text-sidebar-muted px-4 pb-1">Tools</div>
+          <div className="pt-eyebrow text-sidebar-muted px-4 pb-1">Workspace</div>
+          <Link
+            href="/dashboard"
+            aria-current={isOverviewActive ? 'page' : undefined}
+            className={navItem(isOverviewActive)}
+          >
+            <LayoutDashboard className="h-5 w-5 shrink-0" strokeWidth={1.5} />
+            Overview
+          </Link>
           <Link
             href="/dashboard/compare"
             aria-current={isCompareActive ? 'page' : undefined}
-            className={cn(
-              'flex items-center gap-3 h-10 mx-3 px-3 rounded-sm text-base font-medium transition-colors duration-150',
-              isCompareActive ? NAV_ITEM_ACTIVE : NAV_ITEM_IDLE
-            )}
+            className={navItem(isCompareActive)}
           >
             <GitCompare className="h-5 w-5 shrink-0" strokeWidth={1.5} />
             Compare schemas
@@ -129,6 +166,25 @@ export default function Sidebar({ platforms, version }: SidebarProps) {
           <PlatformsList platforms={platforms} searchQuery={searchQuery} />
         </div>
       </nav>
+
+      {/* Promo card (§10.3): one per sidebar */}
+      <div className="hidden md:block mx-3 mb-2 rounded-sm border border-sidebar-border border-t-[3px] border-t-accent p-4 space-y-2">
+        <Terminal className="h-5 w-5 text-sidebar-muted" strokeWidth={1.5} aria-hidden="true" />
+        <p className="text-sm font-semibold">Built to be yours.</p>
+        <p className="text-xs text-sidebar-muted leading-relaxed">
+          Open source. Self hosted.
+          <br />
+          Always in tune.
+        </p>
+      </div>
+
+      <button
+        onClick={() => signOut()}
+        className={cn(navItem(false), 'mb-2 text-left')}
+      >
+        <LogOut className="h-5 w-5 shrink-0" strokeWidth={1.5} aria-hidden="true" />
+        Sign out
+      </button>
 
       <div className="px-4 py-3 border-t border-sidebar-border space-y-3">
         <ThemeSwitcher className="md:hidden" />

@@ -6,7 +6,6 @@ import { sortVersionsDescending } from '@/lib/versionUtils'
 import { requireDashboardSession } from '@/lib/dashboardAuth'
 import { headers } from 'next/headers'
 import CompareForm from './CompareForm'
-import Breadcrumbs from '@/components/Breadcrumbs'
 
 export const dynamic = 'force-dynamic'
 
@@ -42,13 +41,7 @@ export default async function ComparePage() {
   return (
     <div className="space-y-8">
       <header className="pt-4 md:pt-8">
-        <Breadcrumbs
-          items={[
-            { label: 'Overview', href: '/dashboard' },
-            { label: 'Compare' },
-          ]}
-        />
-        <p className="pt-eyebrow mt-4">Tools</p>
+        <p className="pt-eyebrow">Tools</p>
         <h1 className="pt-title-1 mt-2">
           Compare<span className="pt-period">.</span>
         </h1>

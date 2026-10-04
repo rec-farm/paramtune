@@ -1,28 +1,11 @@
-'use client'
-
-import { useMemo, useRef, useState } from 'react'
+import { lazy, Suspense, useMemo, useRef, useState } from 'react'
 import type { KeyboardEvent } from 'react'
-import dynamic from 'next/dynamic'
 import Card from '@/components/ui/Card'
-import type { Schema, SchemaHistoryEntry } from '@/models/Schema'
+import type { Schema, SchemaHistoryEntry } from '@/shared/contracts'
 
-const SchemaEditorForm = dynamic(
-  () => import('@/components/SchemaEditorForm'),
-  {
-    ssr: false,
-    loading: () => <div className="pt-skeleton min-h-64" />,
-  }
-)
-
-const SchemaHistory = dynamic(() => import('@/components/SchemaHistory'), {
-  ssr: false,
-  loading: () => <div className="pt-skeleton min-h-64" />,
-})
-
-const JsonOutput = dynamic(() => import('@/components/JsonOutput'), {
-  ssr: false,
-  loading: () => <div className="pt-skeleton min-h-64" />,
-})
+const SchemaEditorForm = lazy(() => import('@/components/SchemaEditorForm'))
+const SchemaHistory = lazy(() => import('@/components/SchemaHistory'))
+const JsonOutput = lazy(() => import('@/components/JsonOutput'))
 
 type SchemaTabsProps = {
   defaultValue: string
@@ -121,9 +104,11 @@ export default function SchemaTabs({
         </div>
       </div>
 
+      <Suspense fallback={<div className="pt-skeleton min-h-64" aria-label="Loading schema view" />}>
       {active === 'Editor' && (
         <div role="tabpanel" id="schema-panel-Editor" aria-labelledby="schema-tab-Editor" className="space-y-3">
           <SchemaEditorForm
+            key={defaultValue}
             defaultValue={defaultValue}
             updateSchema={updateSchema}
           />
@@ -208,6 +193,7 @@ export default function SchemaTabs({
           />
         </div>
       )}
+      </Suspense>
     </div>
   )
 }

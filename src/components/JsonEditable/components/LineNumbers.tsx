@@ -1,5 +1,3 @@
-'use client'
-
 import { memo, useMemo } from 'react'
 import type { ReactElement } from 'react'
 

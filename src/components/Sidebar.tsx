@@ -1,8 +1,6 @@
-'use client'
-
 import { useState, useEffect, useRef } from 'react'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { Link } from 'react-router'
+import { useLocation } from 'react-router'
 import {
   GitCompare,
   LayoutDashboard,
@@ -32,7 +30,7 @@ type SidebarProps = {
 
 export default function Sidebar({ platforms, version }: SidebarProps) {
   const { isOpen, close } = useSidebar()
-  const pathname = usePathname()
+  const { pathname } = useLocation()
   const [searchQuery, setSearchQuery] = useState('')
   const [isSearchFocused, setIsSearchFocused] = useState(false)
   const searchInputRef = useRef<HTMLInputElement | null>(null)
@@ -136,7 +134,7 @@ export default function Sidebar({ platforms, version }: SidebarProps) {
         <div className="space-y-1">
           <div className="pt-eyebrow text-sidebar-muted px-6 pb-1">Workspace</div>
           <Link
-            href="/dashboard"
+            to="/dashboard"
             aria-current={isOverviewActive ? 'page' : undefined}
             className={navItem(isOverviewActive)}
           >
@@ -144,7 +142,7 @@ export default function Sidebar({ platforms, version }: SidebarProps) {
             Overview
           </Link>
           <Link
-            href="/dashboard/compare"
+            to="/dashboard/compare"
             aria-current={isCompareActive ? 'page' : undefined}
             className={navItem(isCompareActive)}
           >
@@ -157,7 +155,7 @@ export default function Sidebar({ platforms, version }: SidebarProps) {
           <div className="flex items-center justify-between pl-6 pr-4">
             <div className="pt-eyebrow text-sidebar-muted">Platforms</div>
             <Link
-              href="/dashboard"
+              to="/dashboard"
               onClick={() => setSearchQuery('')}
               className="inline-flex items-center min-h-8 text-xs text-sidebar-muted underline underline-offset-4 hover:text-sidebar-foreground"
             >
@@ -206,7 +204,7 @@ export default function Sidebar({ platforms, version }: SidebarProps) {
           </span>
           {/* Chain cap is 13.5u of the 48u box, so 28px renders an 8px cap.
               Negative margins trim the box's empty top and bottom. */}
-          {/* eslint-disable-next-line @next/next/no-img-element -- static SVG mark */}
+
           <img
             src="/brand/rec-mark-cream.svg"
             alt="R.E.C."

@@ -1,11 +1,8 @@
-'use client'
-
-import dynamic from 'next/dynamic'
-import Link from 'next/link'
+import { Link } from 'react-router'
 import { ArrowUpRight } from 'lucide-react'
 import Logo from './Logo'
 
-const AuthNav = dynamic(() => import('./AuthNav'), { ssr: false })
+import AuthNav from './AuthNav'
 
 const REPO_URL = 'https://github.com/RodrigoEspinosa/paramtune'
 
@@ -17,13 +14,13 @@ export default function NavHeader() {
 
         <nav className="flex items-center gap-2 md:gap-6">
           <Link
-            href="/api-docs"
+            to="/api-docs"
             className="pt-label hidden sm:inline-flex items-center min-h-8 text-muted-foreground hover:text-foreground transition-colors duration-150"
           >
             API docs
           </Link>
           <Link
-            href={REPO_URL}
+            to={REPO_URL}
             target="_blank"
             rel="noopener noreferrer"
             className="pt-label hidden sm:inline-flex items-center gap-1 min-h-8 text-muted-foreground hover:text-foreground transition-colors duration-150"
@@ -34,7 +31,7 @@ export default function NavHeader() {
 
           <AuthNav />
 
-          <Link href="/dashboard" className="pt-btn pt-btn-outline h-11 md:h-8 px-3">
+          <Link to="/dashboard" className="pt-btn pt-btn-outline h-11 md:h-8 px-3">
             Dashboard
           </Link>
         </nav>

@@ -1,9 +1,6 @@
-'use client'
-
-import Image from 'next/image'
 import { ChevronDown, LogOut } from 'lucide-react'
 import { signOut, useSession } from '@/lib/auth-client'
-import { displayEmail } from '@/lib/oidc'
+import { displayEmail } from '@/shared/auth'
 import { useState, useRef, useEffect } from 'react'
 import ThemeSwitcher from './ThemeSwitcher'
 
@@ -54,12 +51,11 @@ export default function UserMenu() {
         aria-label={`Account menu for ${user.name ?? 'current user'}`}
       >
         {user.image ? (
-          <Image
+          <img
             src={user.image}
             alt=""
             width={32}
             height={32}
-            unoptimized
             className="h-8 w-8 rounded-xs border border-border-strong"
           />
         ) : (

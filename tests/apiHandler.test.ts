@@ -1,26 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { Effect } from 'effect'
-import { NextResponse } from 'next/server'
 import { failWith, handleApiWithFailures, validateName, validateVersionName, parseJsonBody } from '@/lib/apiHandler'
 
-vi.mock('next/server', () => {
-  class MockNextResponse {
-    _body: any
-    _init: any
-
-    constructor(body?: any, init?: any) {
-      this._body = body
-      this._init = init
-    }
-
-    static json(body: any, init?: any) {
-      const response = new MockNextResponse(body, init)
-      ;(response as any).json = async () => body
-      return response
-    }
-  }
-  return { NextResponse: MockNextResponse }
-})
 
 describe('apiHandler', () => {
   let consoleErrorSpy: ReturnType<typeof vi.spyOn>
@@ -35,7 +16,7 @@ describe('apiHandler', () => {
   })
 
   describe('failWith', () => {
-    it('creates an Effect that fails with a NextResponse', async () => {
+    it('creates an Effect that fails with a Response', async () => {
       const effect = failWith('Validation failed', 400)
 
       const result = await Effect.runPromise(Effect.either(effect))
@@ -43,8 +24,8 @@ describe('apiHandler', () => {
       expect(result._tag).toBe('Left')
       if (result._tag === 'Left') {
         const response = result.left as any
-        expect(response._body).toEqual({ error: 'Validation failed' })
-        expect(response._init.status).toBe(400)
+        expect((await response.json())).toEqual({ error: 'Validation failed' })
+        expect(response.status).toBe(400)
       }
     })
   })
@@ -77,9 +58,9 @@ describe('apiHandler', () => {
       expect(result._tag).toBe('Left')
       if (result._tag === 'Left') {
         const response = result.left as any
-        expect(response._init.status).toBe(400)
-        expect(response._body.error).toContain('platform')
-        expect(response._body.error).toContain('characters')
+        expect(response.status).toBe(400)
+        expect((await response.clone().json()).error).toContain('platform')
+        expect((await response.json()).error).toContain('characters')
       }
     })
 
@@ -89,8 +70,8 @@ describe('apiHandler', () => {
       expect(result._tag).toBe('Left')
       if (result._tag === 'Left') {
         const response = result.left as any
-        expect(response._init.status).toBe(400)
-        expect(response._body.error).toContain('characters')
+        expect(response.status).toBe(400)
+        expect((await response.json()).error).toContain('characters')
       }
     })
 
@@ -99,8 +80,8 @@ describe('apiHandler', () => {
       expect(result._tag).toBe('Left')
       if (result._tag === 'Left') {
         const response = result.left as any
-        expect(response._init.status).toBe(400)
-        expect(response._body.error).toContain('alphanumeric')
+        expect(response.status).toBe(400)
+        expect((await response.json()).error).toContain('alphanumeric')
       }
     })
 
@@ -109,7 +90,7 @@ describe('apiHandler', () => {
       expect(result._tag).toBe('Left')
       if (result._tag === 'Left') {
         const response = result.left as any
-        expect(response._init.status).toBe(400)
+        expect(response.status).toBe(400)
       }
     })
 
@@ -118,7 +99,7 @@ describe('apiHandler', () => {
       expect(result._tag).toBe('Left')
       if (result._tag === 'Left') {
         const response = result.left as any
-        expect(response._init.status).toBe(400)
+        expect(response.status).toBe(400)
       }
     })
 
@@ -127,7 +108,7 @@ describe('apiHandler', () => {
       expect(result._tag).toBe('Left')
       if (result._tag === 'Left') {
         const response = result.left as any
-        expect(response._body.error).toContain('version name')
+        expect((await response.json()).error).toContain('version name')
       }
     })
   })
@@ -160,8 +141,8 @@ describe('apiHandler', () => {
       expect(result._tag).toBe('Left')
       if (result._tag === 'Left') {
         const response = result.left as any
-        expect(response._init.status).toBe(400)
-        expect(response._body.error).toContain('characters')
+        expect(response.status).toBe(400)
+        expect((await response.json()).error).toContain('characters')
       }
     })
 
@@ -170,7 +151,7 @@ describe('apiHandler', () => {
       expect(result._tag).toBe('Left')
       if (result._tag === 'Left') {
         const response = result.left as any
-        expect(response._init.status).toBe(400)
+        expect(response.status).toBe(400)
       }
     })
 
@@ -179,7 +160,7 @@ describe('apiHandler', () => {
       expect(result._tag).toBe('Left')
       if (result._tag === 'Left') {
         const response = result.left as any
-        expect(response._init.status).toBe(400)
+        expect(response.status).toBe(400)
       }
     })
 
@@ -188,7 +169,7 @@ describe('apiHandler', () => {
       expect(result._tag).toBe('Left')
       if (result._tag === 'Left') {
         const response = result.left as any
-        expect(response._init.status).toBe(400)
+        expect(response.status).toBe(400)
       }
     })
   })
@@ -216,17 +197,17 @@ describe('apiHandler', () => {
       const effect = Effect.succeed({ data: 'success' })
       const response = await handleApiWithFailures(effect) as any
 
-      expect(response._body).toEqual({ data: 'success' })
-      expect(response._init.status).toBe(200)
-      expect(response._init.headers).toEqual({ 'Cache-Control': 'no-store' })
+      expect((await response.json())).toEqual({ data: 'success' })
+      expect(response.status).toBe(200)
+      expect(response.headers.get('Cache-Control')).toBe('no-store')
     })
 
-    it('handles expected NextResponse failure', async () => {
+    it('handles expected Response failure', async () => {
       const effect = failWith('Validation error', 422)
       const response = await handleApiWithFailures(effect) as any
 
-      expect(response._body).toEqual({ error: 'Validation error' })
-      expect(response._init.status).toBe(422)
+      expect((await response.json())).toEqual({ error: 'Validation error' })
+      expect(response.status).toBe(422)
     })
 
     it('handles unexpected string failure in development', async () => {
@@ -234,8 +215,8 @@ describe('apiHandler', () => {
       const effect = Effect.fail('Unexpected string failure' as any)
       const response = await handleApiWithFailures(effect) as any
 
-      expect(response._body).toEqual({ error: 'Unexpected string failure' })
-      expect(response._init.status).toBe(500)
+      expect((await response.json())).toEqual({ error: 'Unexpected string failure' })
+      expect(response.status).toBe(500)
     })
 
     it('handles unexpected string failure in production', async () => {
@@ -243,8 +224,8 @@ describe('apiHandler', () => {
       const effect = Effect.fail('Unexpected string failure' as any)
       const response = await handleApiWithFailures(effect) as any
 
-      expect(response._body).toEqual({ error: 'Internal Server Error' })
-      expect(response._init.status).toBe(500)
+      expect((await response.json())).toEqual({ error: 'Internal Server Error' })
+      expect(response.status).toBe(500)
     })
 
     it('handles die(Error) in development', async () => {
@@ -252,8 +233,8 @@ describe('apiHandler', () => {
       const effect = Effect.die(new Error('Fatal error'))
       const response = await handleApiWithFailures(effect) as any
 
-      expect(response._body).toEqual({ error: 'Fatal error' })
-      expect(response._init.status).toBe(500)
+      expect((await response.json())).toEqual({ error: 'Fatal error' })
+      expect(response.status).toBe(500)
       expect(consoleErrorSpy).toHaveBeenCalledWith('Fatal error', expect.any(Error))
     })
 
@@ -262,8 +243,8 @@ describe('apiHandler', () => {
       const effect = Effect.die(new Error('Fatal error'))
       const response = await handleApiWithFailures(effect) as any
 
-      expect(response._body).toEqual({ error: 'Internal Server Error' })
-      expect(response._init.status).toBe(500)
+      expect((await response.json())).toEqual({ error: 'Internal Server Error' })
+      expect(response.status).toBe(500)
       expect(consoleErrorSpy).toHaveBeenCalledWith('Fatal error', expect.any(Error))
     })
   })

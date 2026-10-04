@@ -1,35 +1,24 @@
 # Deployment
 
-## Prerequisites
+## Node and Docker
 
-- A GitHub or GitLab repository for the project
-- Redis
-- A writable persistent volume for the SQLite auth database, unless you replace auth storage
+Use Node 22.12+ and persistent Redis/SQLite storage. Preserve BETTER_AUTH_URL, BETTER_AUTH_SECRET, AUTH_DB_PATH, and data volumes when upgrading.
 
-## Docker
-
-Docker Compose is the recommended self-hosted deployment path because it provides persistent volumes for Redis and auth data.
-
-```bash
-export REDIS_PASSWORD="$(openssl rand -base64 24)"
-export BETTER_AUTH_SECRET="$(openssl rand -base64 32)"
-export BETTER_AUTH_URL="https://paramtune.example.com"
-export CORS_ORIGIN="https://paramtune.example.com"
-docker-compose up --build -d
+```sh
+pnpm install --frozen-lockfile
+pnpm build
+# Optional preflight migration after taking a backup:
+NODE_ENV=production pnpm auth:migrate:production
+pnpm start
 ```
 
-## Environment Variables
+The start command defaults to production. PORT defaults to 3000 and HOST to 0.0.0.0. The server serves dist/client and authenticated APIs. /healthz checks process liveness, not Redis readiness.
 
-- `CORS_ORIGIN` = your production domain (e.g. `https://paramtune.example.com`)
-- `REDIS_URL` or host/port/password/db variables
-- `BETTER_AUTH_SECRET` = a strong random secret (generate with `openssl rand -base64 32`)
-- `BETTER_AUTH_URL` = your production domain (e.g. `https://paramtune.example.com`)
-- `AUTH_DB_PATH` = SQLite database path for auth data (default Docker value: `/app/data/auth.db`)
-- `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` = Google OAuth credentials
-- `OIDC_*` = optional "Sign in with Handstamp" (any OpenID Connect provider works), see below
+For Docker: build with docker compose build, docker compose up -d. Provide REDIS_PASSWORD, BETTER_AUTH_SECRET, BETTER_AUTH_URL, and Google or OIDC credentials. Existing redis_data and auth_data volumes remain compatible. The image runs unprivileged.
 
-The auth tables in `AUTH_DB_PATH` are created, and new columns added, automatically when the
-server starts. There is no separate migration step.
+Terminate HTTPS at a reverse proxy. Set TRUST_PROXY=true only when it sanitizes client-IP headers. CORS_ORIGIN controls API reads; browser mutations originate from BETTER_AUTH_URL. Non-browser clients may omit Origin but still require a session and application/json.
+
+The server creates and updates authentication tables before accepting requests, including the OIDC role column. Back up SQLite before upgrades.
 
 ## Sign in with Handstamp (OIDC)
 
@@ -59,16 +48,20 @@ Handstamp session (RP-initiated logout), and signing out at Handstamp ends every
 session of that person through the back-channel logout URI, which must be reachable from the
 Handstamp server.
 
-## Vercel
+## Vercel frontend
 
-Vercel can be used for preview deployments or for production deployments that replace the default local SQLite auth database with persistent auth storage. The default `better-sqlite3` database is file-based and requires writable persistent storage, which serverless deployments do not provide by default.
+vercel.json runs pnpm build:vercel to generate Build Output API assets/routes.
 
-## Project Settings
+1. Deploy the Node backend with persistent SQLite and Redis.
+2. Set PARAMTUNE_API_ORIGIN in Vercel to the backend HTTPS origin, without a path.
+3. Set backend BETTER_AUTH_URL and provider callback URLs to the public frontend origin.
+4. Deploy. /api/* and /healthz proxy to the backend; browser requests stay same-origin.
+5. Verify OAuth, cookies, deep-link reload, and saving on the actual deployment.
 
-- `vercel.json` provides security headers globally.
-- API routes run on the Node.js runtime.
-- Use Vercel Analytics/Monitoring as needed.
+The build fails explicitly without a backend origin. Preview deployments need matching backend/auth origins and separate data. VITE_* variables are public and must never contain secrets. SQLite cannot persist durably in a stateless Vercel function.
 
-## Static Assets
+Public routes retain prerendered HTML. Dashboard shells are uncached, and API requests enforce authorization. Unknown API paths never fall through to frontend HTML.
 
-- Place static assets under `public/` to leverage Vercel CDN.
+## Rollback
+
+Keep the previous image. No stored-data format changes are introduced. Roll back application code with the same volumes, signing secret, and public URL. Preserve post-cutover writes rather than restoring stale database snapshots.

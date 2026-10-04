@@ -42,10 +42,8 @@ export class MissingPlatformError extends Data.TaggedError(
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
-export type Platform = {
-  name: string
-  versions: string[]
-}
+import type { Platform } from '@/shared/contracts'
+export type { Platform } from '@/shared/contracts'
 
 // ── In-process cache ────────────────────────────────────────────────────────
 // Invalidated on every successful savePlatform() so reads never see a stale
@@ -151,12 +149,7 @@ const savePlatformEffect = (
   })
 
 // ── Public API ───────────────────────────────────────────────────────────────
-// Plain server-side functions, not Server Actions: they must stay callable
-// only from already-authenticated code paths (API routes via requireSession,
-// dashboard pages via requireDashboardSession). A `'use server'` directive on
-// any of these would turn it into a standalone, publicly invocable endpoint
-// with none of those checks — see src/lib/dashboardAuth.ts for why that
-// distinction matters here.
+// Server-only functions. HTTP routes and services validate sessions before calling.
 
 export async function getPlatforms(): Promise<Platform[]> {
   return Effect.runPromise(getPlatformsEffect)

@@ -1,23 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-vi.mock('next/server', () => {
-  class MockNextResponse {
-    _body: any
-    _init: any
-
-    constructor(body?: any, init?: any) {
-      this._body = body
-      this._init = init
-    }
-
-    static json(body: any, init?: any) {
-      const response = new MockNextResponse(body, init)
-      ;(response as any).json = async () => body
-      return response
-    }
-  }
-  return { NextResponse: MockNextResponse }
-})
 
 const mockAuth = vi.hoisted(() => ({
   api: { getSession: vi.fn() },
@@ -29,7 +11,7 @@ vi.mock('@/models/Platform', () => ({
   getPlatforms: mockGetPlatforms,
 }))
 
-import { GET } from '@/app/api/schemas/route'
+import { GET } from '@/server/routes/schemas'
 
 function makeGetRequest() {
   return { headers: new Headers() } as unknown as Request
@@ -45,8 +27,8 @@ describe('GET /api/schemas', () => {
 
     const response = (await GET(makeGetRequest())) as any
 
-    expect(response._init.status).toBe(401)
-    expect(response._body).toEqual({ error: 'Unauthorized' })
+    expect(response.status).toBe(401)
+    expect((await response.json())).toEqual({ error: 'Unauthorized' })
     expect(mockGetPlatforms).not.toHaveBeenCalled()
   })
 
@@ -59,8 +41,8 @@ describe('GET /api/schemas', () => {
 
     const response = (await GET(makeGetRequest())) as any
 
-    expect(response._init.status).toBe(200)
-    expect(response._body).toEqual([
+    expect(response.status).toBe(200)
+    expect((await response.json())).toEqual([
       { name: 'ios', versions: ['1.0.0'] },
       { name: 'android', versions: ['2.0.0', '2.1.0'] },
     ])
@@ -72,7 +54,7 @@ describe('GET /api/schemas', () => {
 
     const response = (await GET(makeGetRequest())) as any
 
-    expect(response._init.status).toBe(200)
-    expect(response._body).toEqual([])
+    expect(response.status).toBe(200)
+    expect((await response.json())).toEqual([])
   })
 })

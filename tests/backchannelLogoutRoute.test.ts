@@ -25,7 +25,7 @@ vi.mock('@/lib/oidcLogoutToken', async (importOriginal) => ({
   verifyLogoutTokenWithDiscovery: mocks.verify,
 }))
 
-import { POST } from '@/app/api/auth/backchannel-logout/route'
+import { POST } from '@/server/routes/backchannel-logout'
 import { LogoutTokenError } from '@/lib/oidcLogoutToken'
 
 function logoutRequest(body: string, contentType = 'application/x-www-form-urlencoded') {

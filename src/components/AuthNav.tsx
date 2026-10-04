@@ -1,9 +1,7 @@
-'use client'
-
 import UserMenu from './UserMenu'
 
 // Auth-aware navigation component for header
-// Dynamically imported with ssr: false to avoid React context issues during static generation
+// Session state loads in the browser; public pages can be prerendered without a database.
 export default function AuthNav() {
   return <UserMenu />
 }

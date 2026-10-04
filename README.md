@@ -1,15 +1,16 @@
 # Paramtune
 
-Paramtune is a Next.js application for managing platform schemas and versioned feature configuration with dependency resolution and Redis persistence.
+Paramtune is a React application with a Vite frontend and Node/Hono API for managing platform schemas and versioned feature configuration with dependency resolution and Redis persistence.
 
 ## Overview
 
-- **Next.js 16** (App Router), **React 19**, **TypeScript 5.9**
+- **Vite**, **React 19**, **React Router**, **TypeScript**
+- **Hono** on **Node.js 22.12+**
 - **Tailwind CSS 4** for styling with shadcn/ui components
 - **Redis** (via ioredis) for schema and platform persistence
 - **SQLite** (via better-sqlite3) for authentication data
 - **JSON schema composition** with `@extends` and semver-aware dependency resolution
-- **Authentication** via better-auth (Google OAuth in production, email/password in development)
+- **Authentication** via better-auth (Google or Handstamp/OIDC in production, email/password in development)
 - **Real-time JSON editing** with live preview, validation, and schema diffing
 - **Audit logging** for all schema and platform changes
 - **Rate limiting** on API and auth routes
@@ -17,7 +18,7 @@ Paramtune is a Next.js application for managing platform schemas and versioned f
 
 ## Requirements
 
-- Node.js 20+ (LTS recommended)
+- Node.js 22.12+ (LTS recommended)
 - pnpm 10.x
 - Redis accessible locally or through a cloud provider
 
@@ -50,14 +51,16 @@ npm install -g portless
 pnpm dev
 ```
 
-If you don't want portless, run `pnpm dev:next` (or `PORTLESS=0 pnpm dev`) to start plain `next dev` on `http://localhost:3000`, and set `BETTER_AUTH_URL` / `CORS_ORIGIN` in `.env.local` to match.
+If you don't want portless, run `pnpm dev:direct` (or `PORTLESS=0 pnpm dev`) to start the frontend and API directly on `http://localhost:3000`, and set `BETTER_AUTH_URL` / `CORS_ORIGIN` in `.env.local` to match.
+
+Authentication tables are created and upgraded automatically at startup. `pnpm auth:migrate` is available for explicit preflight migrations.
 
 In development, email/password login is enabled with credentials configured in `.env.local` (`DEV_USER_EMAIL` / `DEV_USER_PASSWORD`).
 
 ## Development Commands
 
 - `pnpm dev` – start development server with hot reload through `portless` (`paramtune.localhost`)
-- `pnpm dev:next` – start development server directly on `localhost:3000`, without `portless`
+- `pnpm dev:direct` – start development server directly on `localhost:3000`, without `portless`
 - `pnpm build` – production build
 - `pnpm start` – run production server locally
 - `pnpm lint` – lint with ESLint
@@ -65,7 +68,7 @@ In development, email/password login is enabled with credentials configured in `
 - `pnpm test` – run tests with Vitest
 - `pnpm test:watch` – run tests in watch mode
 - `pnpm test:coverage` – run tests with coverage report
-- `pnpm analyze` – bundle analysis with webpack-bundle-analyzer
+- `pnpm analyze` – build and list JavaScript/CSS asset sizes
 
 ## Environment Variables
 
@@ -94,7 +97,7 @@ In development, email/password login is enabled with credentials configured in `
 - Session-based authentication via better-auth with SQLite storage
 - All API endpoints require authentication
 - Rate limiting on API and auth routes
-- Security headers (CSP, HSTS, X-Frame-Options) via proxy
+- Security headers (CSP, HSTS, X-Frame-Options) via HTTP middleware
 - CORS configuration with same-origin default in production
 
 ### Dashboard
@@ -108,7 +111,7 @@ In development, email/password login is enabled with credentials configured in `
 ### API
 - RESTful endpoints for platform and schema management
 - Interactive API documentation at `/api-docs`
-- CORS support via proxy
+- CORS support via HTTP middleware
 - JSON responses with structured error handling
 
 ## Deployment
@@ -128,19 +131,27 @@ docker-compose up --build -d
 
 ### Vercel
 
-Vercel works for previews and deployments that replace the local SQLite auth database with a persistent auth store. The default `better-sqlite3` auth database is file-based and should be deployed on infrastructure with a writable persistent volume.
+Vercel hosts the frontend and proxies APIs to a persistent Node backend. Set
+PARAMTUNE_API_ORIGIN to its HTTPS origin and set backend BETTER_AUTH_URL to the
+public frontend origin. Builds fail without a backend origin. See
+[Deployment](docs/DEPLOYMENT.md).
 
 ## Architecture
 
-- `src/app/` – App Router pages, API routes, and API docs
-- `src/models/` – Server-side Redis access and business logic (Platform, Schema, Version)
-- `src/components/` – React components (editors, navigation, diff viewer, UI primitives)
-- `src/lib/` – Shared utilities (auth, audit logging, rate limiting, schema diffing, validation)
-- `src/actions/` – Server actions for schema validation
-- `src/connections/redis.ts` – Redis client configuration
-- `src/proxy.ts` – Request proxy for CORS, security headers, auth gating, and rate limiting
-- `tests/` – Vitest test suite
-- `docs/` – Extended documentation (API, architecture, deployment, Docker, troubleshooting)
+- src/client: React Router pages, API client, styles, prerendering
+- src/server: Hono routes, middleware, authenticated services, auth configuration
+- src/shared: browser-safe JSON contracts
+- src/models: existing server-only Redis and schema/version logic
+- src/components: reusable UI
+- tests: unit/HTTP contracts and browser integration
+
+Production serves frontend and API on one port. Development uses PORT (default
+3000) and API_PORT (default 3001) with a same-origin proxy. Both ports must be
+free. The existing portless workflow remains available. Use herdr-run for
+long-running processes inside Herdr.
+
+Public pages are prerendered without database access. Dashboard reads and writes
+use authenticated APIs. Browser builds reject server-only imports.
 
 ## Documentation
 
@@ -171,3 +182,10 @@ Please report vulnerabilities privately using the guidance in [SECURITY.md](SECU
 ## License
 
 Paramtune is released under the [MIT License](LICENSE).
+
+## Browser integration
+
+After building, install a browser with `pnpm exec playwright install chromium`.
+Run `E2E_REDIS_URL=redis://127.0.0.1:6379/15 pnpm test:e2e:ci` against dedicated
+Redis. The bounded suite owns ports 4481/4482 and disposable SQLite storage.
+Use E2E_CHROME=1 for installed Chrome. See [Migration and reuse](docs/VITE_MIGRATION.md).

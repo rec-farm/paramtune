@@ -1,14 +1,11 @@
-'use client'
-
 import { useState, useTransition } from 'react'
-import Image from 'next/image'
 import { formatDistanceToNow } from 'date-fns'
 import { FilePlus2, GitCommitHorizontal, History, Loader2, RotateCcw } from 'lucide-react'
 import Card from '@/components/ui/Card'
 import Badge from '@/components/ui/Badge'
 import Button from '@/components/ui/Button'
 import SchemaDiff from './SchemaDiff'
-import type { SchemaHistoryEntry } from '@/models/Schema'
+import type { SchemaHistoryEntry } from '@/shared/contracts'
 
 interface SchemaHistoryProps {
   history: Array<SchemaHistoryEntry & { timestamp: number }>
@@ -25,12 +22,17 @@ export default function SchemaHistory({
 }: SchemaHistoryProps) {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
   const [showDiff, setShowDiff] = useState(false)
+  const [restoreError, setRestoreError] = useState<string | null>(null)
   const [isPending, startTransition] = useTransition()
 
   const handleRestore = (content: Record<string, unknown>) => {
     startTransition(async () => {
-      if (onRestore) {
-        await onRestore(content)
+      setRestoreError(null)
+      try {
+        await onRestore?.(content)
+        setSelectedIndex(null)
+      } catch (error) {
+        setRestoreError(error instanceof Error ? error.message : 'Restore failed')
       }
     })
   }
@@ -58,7 +60,7 @@ export default function SchemaHistory({
         return 'Current version'
       case 'initial':
         return 'Initial schema'
-      default:
+      default: {
         const prevEntry = history[index - 1]
         const currentKeys = Object.keys(entry.content || {})
         const prevKeys = Object.keys(prevEntry.content || {})
@@ -70,6 +72,7 @@ export default function SchemaHistory({
         } else {
           return 'Modified properties'
         }
+      }
     }
   }
 
@@ -86,12 +89,11 @@ export default function SchemaHistory({
     return (
       <span className="flex items-center gap-2 min-w-0 text-muted-foreground">
         {author.image ? (
-          <Image
+          <img
             src={author.image}
             alt=""
             width={size}
             height={size}
-            unoptimized
             className={`${box} shrink-0`}
           />
         ) : (
@@ -109,6 +111,7 @@ export default function SchemaHistory({
 
   return (
     <div className="space-y-4">
+      {restoreError && <p role="alert" className="text-danger">{restoreError}</p>}
       <div className="flex items-center justify-between gap-4">
         <div>
           <h3 className="pt-heading">Schema history</h3>

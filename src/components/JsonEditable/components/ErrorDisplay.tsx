@@ -1,5 +1,3 @@
-'use client'
-
 import { memo } from 'react'
 import { CircleAlert, TriangleAlert } from 'lucide-react'
 import type { ValidationIssue } from '../types'

@@ -6,7 +6,7 @@ export const MAX_NAME_LENGTH = 128
  * Checks whether a platform name matches the format API routes enforce via
  * validateName in apiHandler.ts: 1-MAX_NAME_LENGTH characters, alphanumeric
  * plus underscores/hyphens/dots. Kept free of server-only dependencies
- * (unlike apiHandler.ts, which pulls in next/server and lib/auth) so client
+ * (unlike apiHandler.ts, which pulls in response handling and lib/auth) so client
  * components can import it directly.
  */
 export function isValidName(name: string): boolean {

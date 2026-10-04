@@ -1,5 +1,3 @@
-'use client'
-
 import { memo, useCallback, useEffect, useMemo, useState } from 'react'
 import { CircleCheck, CircleX, LoaderCircle } from 'lucide-react'
 import { useOptimizedJsonEditor } from './hooks/useOptimizedJsonEditor'
@@ -266,7 +264,7 @@ const JsonEditable = memo(function JsonEditable({
 
   return (
     <div className={`space-y-4 animate-in ${className}`}>
-      <input type="hidden" name={name} value={JSON.stringify(state.data)} />
+      <input type="hidden" name={name} value={state.jsonText} />
 
       {/* Header / Toolbar */}
       {showHeader && (

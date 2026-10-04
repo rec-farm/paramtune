@@ -1,7 +1,7 @@
 // Settings and claim mapping for "Sign in with <OIDC_DISPLAY_NAME>". Kept free
 // of Better Auth imports so the login page and tests can use it on their own.
 
-export const OIDC_PROVIDER_ID = 'oidc'
+export { OIDC_PROVIDER_ID, displayEmail } from '@/shared/auth'
 
 export type UserRole = 'admin' | 'member'
 
@@ -51,11 +51,6 @@ export function roleFromClaims(
   const value = claims[settings.rolesClaim]
   const groups = Array.isArray(value) ? value.filter((group) => typeof group === 'string') : []
   return settings.adminGroup && groups.includes(settings.adminGroup) ? 'admin' : 'member'
-}
-
-// Placeholder addresses identify the account but aren't worth showing anyone
-export function displayEmail(email: string | null | undefined) {
-  return email && !email.endsWith('.invalid') ? email : null
 }
 
 export function stringClaim(value: unknown) {

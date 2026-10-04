@@ -1,10 +1,8 @@
-'use client'
-
 import { useCallback, useState, useTransition } from 'react'
 import { JsonEditable } from '@/components/JsonEditable'
 import { AlertCircle, Loader2 } from 'lucide-react'
 import Button from '@/components/ui/Button'
-import { validateSchemaContent } from '@/actions/validateSchema'
+import { validateSchemaContent } from '@/client/api'
 
 type Props = {
   defaultValue: string
@@ -84,7 +82,7 @@ export default function SchemaEditorForm({
   const handleFormAction = useCallback(
     (formData: FormData) => {
       startTransition(() => {
-        handleSubmit(formData)
+        return handleSubmit(formData)
       })
     },
     [handleSubmit]
@@ -92,6 +90,7 @@ export default function SchemaEditorForm({
 
   return (
     <form action={handleFormAction}>
+      <fieldset disabled={isPending} className="contents">
       <JsonEditable
         title=""
         name="content"
@@ -156,6 +155,7 @@ export default function SchemaEditorForm({
           </ul>
         </div>
       )}
+      </fieldset>
     </form>
   )
 }

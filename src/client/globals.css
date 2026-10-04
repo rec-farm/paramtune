@@ -1,0 +1,171 @@
+/* REC Design System v1.4.1 (reciam-brand DESIGN.md). Tokens in tokens.css, components in components.css */
+@import 'tailwindcss';
+@import './tokens.css';
+@import './components.css';
+
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *, :root:not([data-theme='light']) *));
+@custom-variant paper (&:where([data-theme='light'], [data-theme='light'] *));
+
+@theme inline {
+  /* Archivo Expanded for stamps and stats, Figtree for people, Geist Mono for machines (§4) */
+  --font-display: var(--font-archivo), 'Arial Black', system-ui, sans-serif;
+  --font-sans: var(--font-figtree), ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+
+  /* Nearly square: 2px badges, 4px controls and cards, 6px overlays. Nothing above 6px (§6) */
+  --radius-xs: 2px;
+  --radius-sm: 4px;
+  --radius: 4px;
+  --radius-md: 6px;
+  --radius-lg: 6px;
+  --radius-xl: 6px;
+  --radius-2xl: 6px;
+  --radius-3xl: 6px;
+  --radius-4xl: 6px;
+
+  /* Type scale (§4): caption 12 · body-sm 13 · body 14 · body-lg 16 · heading 20 ·
+     title-2 28 · stat 40 · title-1 56 · stat-xl 64 · display-hero 72 */
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1.4;
+  --text-sm: 0.8125rem;
+  --text-sm--line-height: 1.45;
+  --text-base: 0.875rem;
+  --text-base--line-height: 1.5;
+  --text-lg: 1rem;
+  --text-lg--line-height: 1.55;
+  --text-xl: 1.25rem;
+  --text-xl--line-height: 1.25;
+  --text-2xl: 1.75rem;
+  --text-2xl--line-height: 1.15;
+  --text-3xl: 2.5rem;
+  --text-3xl--line-height: 1;
+  --text-4xl: 3.5rem;
+  --text-4xl--line-height: 1;
+  --text-5xl: 4rem;
+  --text-5xl--line-height: 1;
+  --text-6xl: 4.5rem;
+  --text-6xl--line-height: 0.95;
+
+  --shadow-hard-sm: 2px 2px 0 0 var(--shadow-hard-color);
+  --shadow-hard: 3px 3px 0 0 var(--shadow-hard-color);
+  --shadow-hard-lg: 5px 5px 0 0 var(--shadow-hard-color);
+  --shadow-pop: var(--pop-shadow);
+
+  --ease-snap: cubic-bezier(0.3, 1.4, 0.5, 1);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-hover: var(--primary-bg-hover);
+  --color-primary-soft: var(--primary-soft);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-link: var(--link);
+
+  /* Product signature accent: active place only, never action (§3.4) */
+  --color-accent: var(--accent-bg);
+  --color-accent-foreground: var(--accent-fg);
+  --color-accent-tile: var(--accent-tile);
+  --color-accent-text: var(--accent-text);
+
+  --color-sidebar: var(--sidebar-bg);
+  --color-sidebar-foreground: var(--sidebar-fg);
+  --color-sidebar-muted: var(--sidebar-fg-muted);
+  --color-sidebar-hover: var(--sidebar-hover);
+  --color-sidebar-border: var(--sidebar-line);
+  --color-sidebar-field: var(--sidebar-field);
+
+  --color-surface: var(--surface-1);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: var(--surface-3);
+  --color-field: var(--field);
+  --color-border-strong: var(--line-strong);
+  --color-meta: var(--fg-subtle);
+  --color-tile-foreground: var(--tile-fg);
+
+  /* Status: pastels mean status, always with an icon or word (§3.2) */
+  --color-success: var(--success-text);
+  --color-success-icon: var(--success-icon);
+  --color-success-tile: var(--success-tile);
+  --color-warn: var(--warning-text);
+  --color-warn-icon: var(--warning-icon);
+  --color-warn-tile: var(--warning-tile);
+  --color-danger: var(--danger-text);
+  --color-danger-icon: var(--danger-icon);
+  --color-danger-tile: var(--danger-tile);
+  --color-danger-fill: var(--danger-solid);
+  --color-info: var(--info-text);
+  --color-info-icon: var(--info-icon);
+  --color-info-tile: var(--info-tile);
+  --color-success-soft: var(--success-soft);
+  --color-warn-soft: var(--warning-soft);
+  --color-danger-soft: var(--danger-soft);
+  --color-info-soft: var(--info-soft);
+
+  /* Schema diff: status tile + status text per change type */
+  --color-diff-add: var(--success-soft);
+  --color-diff-add-fg: var(--success-text);
+  --color-diff-del: var(--danger-soft);
+  --color-diff-del-fg: var(--danger-text);
+  --color-diff-chg: var(--warning-soft);
+  --color-diff-chg-fg: var(--warning-text);
+
+  --color-syntax-key: var(--syntax-key);
+  --color-syntax-string: var(--syntax-string);
+  --color-syntax-number: var(--syntax-number);
+  --color-syntax-literal: var(--syntax-literal);
+  --color-syntax-punct: var(--syntax-punct);
+  --color-syntax-extends: var(--syntax-extends);
+
+  --color-overlay: var(--overlay);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html {
+    scroll-behavior: smooth;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+  code,
+  kbd,
+  samp,
+  pre {
+    font-family: var(--font-mono);
+  }
+  ::selection {
+    background: var(--selection);
+  }
+  :focus-visible {
+    outline: 2px solid var(--focus-ring);
+    outline-offset: 2px;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+}
+
+:root {
+  --font-archivo: "Archivo Variable";
+  --font-figtree: "Figtree Variable";
+  --font-geist-mono: "Geist Mono Variable";
+}

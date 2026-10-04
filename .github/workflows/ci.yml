@@ -59,5 +59,18 @@ jobs:
       - name: Build
         run: pnpm build
 
+      - name: Install browser
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Production browser integration
+        run: pnpm test:e2e:ci
+
+      - name: Upload browser failure artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-failures
+          path: test-results/
+
       - name: Audit
         run: pnpm audit --audit-level moderate

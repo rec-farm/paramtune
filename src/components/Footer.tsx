@@ -1,4 +1,4 @@
-import Link from 'next/link'
+import { Link } from 'react-router'
 import Logo from './Logo'
 import ThemeSwitcher from './ThemeSwitcher'
 
@@ -22,17 +22,17 @@ export default function Footer() {
         <div className="md:col-span-6 flex flex-wrap md:justify-end gap-x-16 gap-y-8">
           <div className="flex flex-col gap-2">
             <span className="pt-eyebrow">Documentation</span>
-            <Link href="#quickstart" className={linkClass}>
+            <Link to="#quickstart" className={linkClass}>
               Quick start
             </Link>
-            <Link href="/api-docs" className={linkClass}>
+            <Link to="/api-docs" className={linkClass}>
               API reference
             </Link>
           </div>
           <div className="flex flex-col gap-2">
             <span className="pt-eyebrow">Project</span>
             <Link
-              href={REPO_URL}
+              to={REPO_URL}
               target="_blank"
               rel="noopener noreferrer"
               className={linkClass}
@@ -40,7 +40,7 @@ export default function Footer() {
               GitHub
             </Link>
             <Link
-              href={`${REPO_URL}/blob/master/LICENSE`}
+              to={`${REPO_URL}/blob/master/LICENSE`}
               target="_blank"
               rel="noopener noreferrer"
               className={linkClass}

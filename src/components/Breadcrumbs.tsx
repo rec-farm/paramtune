@@ -1,4 +1,4 @@
-import Link from 'next/link'
+import { Link } from 'react-router'
 import { cn } from '@/lib/utils'
 
 export type Crumb = {
@@ -18,7 +18,7 @@ export default function Breadcrumbs({ items }: { items: Crumb[] }) {
             <li key={`${item.label}-${index}`} className="flex items-center gap-2 min-w-0">
               {item.href && !isLast ? (
                 <Link
-                  href={item.href}
+                  to={item.href}
                   className={cn(
                     'inline-flex items-center min-h-8 text-muted-foreground hover:text-foreground transition-colors duration-150 truncate',
                     item.mono && 'font-mono'

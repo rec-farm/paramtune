@@ -1,6 +1,5 @@
-/* eslint-disable @next/next/no-img-element -- static SVG logo files */
 import React, { forwardRef } from 'react'
-import Link from 'next/link'
+import { Link } from 'react-router'
 import { cn } from '@/lib/utils'
 
 type LogoVariant = 'lockup' | 'endorsed' | 'mark'
@@ -66,7 +65,7 @@ const Logo = forwardRef<HTMLDivElement, LogoProps>(
     if (asLink) {
       return (
         <Link
-          href="/"
+          to="/"
           aria-label="Paramtune home"
           className="inline-flex items-center min-h-8"
         >

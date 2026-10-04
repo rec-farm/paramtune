@@ -13,16 +13,21 @@
   },
   "homepage": "https://github.com/RodrigoEspinosa/paramtune#readme",
   "scripts": {
-    "dev": "portless paramtune next dev",
-    "dev:next": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "dev": "portless paramtune pnpm dev:direct",
+    "dev:direct": "tsx scripts/dev.ts",
+    "build": "vite build && vite build --config vite.server.config.ts && vite build --config vite.prerender.config.ts && node scripts/prerender.mjs",
+    "start": "node scripts/start.mjs",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "analyze": "ANALYZE=true next build --webpack",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "analyze": "pnpm build && node scripts/analyze.mjs",
+    "auth:migrate": "tsx src/server/migrate-auth.ts",
+    "auth:migrate:production": "node --import ./scripts/env.mjs dist/server/migrate-auth.js",
+    "test:e2e:ci": "node scripts/e2e.mjs",
+    "build:vercel": "pnpm build && node scripts/vercel.mjs"
   },
   "dependencies": {
     "better-auth": "^1.7.7",
@@ -35,30 +40,41 @@
     "ioredis": "^6.0.0",
     "jose": "^6.2.12",
     "lucide-react": "^1.49.0",
-    "next": "16.3.8",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "semver": "^7.8.5",
     "tailwind-merge": "^3.7.0",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "hono": "^4.0.0",
+    "@hono/node-server": "^1.0.0",
+    "react-router": "^7.0.0",
+    "dotenv": "^17.0.0",
+    "@fontsource-variable/archivo": "^5.0.0",
+    "@fontsource-variable/figtree": "^5.0.0",
+    "@fontsource-variable/geist-mono": "^5.0.0"
   },
   "devDependencies": {
-    "@next/bundle-analyzer": "^16.3.8",
-    "@tailwindcss/postcss": "^4.3.3",
     "@types/better-sqlite3": "^9.6.0",
     "@types/node": "^26.6.3",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
     "@types/semver": "^7.8.0",
     "@vitest/coverage-v8": "^4.1.11",
-    "autoprefixer": "^10.6.1",
     "eslint": "^9.39.5",
-    "eslint-config-next": "16.3.8",
     "postcss": "8.5.28",
     "tailwindcss": "^4.3.3",
     "typescript": "^6.0.3",
     "vite": "8.3.2",
-    "vitest": "^4.1.11"
+    "vitest": "^4.1.11",
+    "@vitejs/plugin-react": "^6.0.0",
+    "@tailwindcss/vite": "^4.3.3",
+    "tsx": "^4.0.0",
+    "typescript-eslint": "^8.0.0",
+    "@eslint/js": "^9.0.0",
+    "eslint-plugin-react-hooks": "^7.0.0",
+    "eslint-plugin-jsx-a11y": "^6.0.0",
+    "globals": "^16.0.0",
+    "@playwright/test": "^1.0.0"
   },
   "packageManager": "pnpm@10.19.0+sha512.c9fc7236e92adf5c8af42fd5bf1612df99c2ceb62f27047032f4720b33f8eacdde311865e91c411f2774f618d82f320808ecb51718bfa82c060c4ba7c76a32b8",
   "pnpm": {
@@ -79,5 +95,9 @@
         "GHSA-vfj7-8cjw-p6xm"
       ]
     }
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=22.12.0"
   }
 }

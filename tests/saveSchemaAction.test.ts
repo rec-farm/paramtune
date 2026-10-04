@@ -5,8 +5,6 @@ const mockAuth = vi.hoisted(() => ({
 }))
 vi.mock('@/lib/auth', () => ({ auth: mockAuth }))
 
-const mockHeaders = vi.hoisted(() => vi.fn())
-vi.mock('next/headers', () => ({ headers: mockHeaders }))
 
 const mockSaveSchema = vi.hoisted(() => vi.fn())
 vi.mock('@/models/Schema', () => ({
@@ -16,19 +14,18 @@ vi.mock('@/models/Schema', () => ({
 const mockLogAudit = vi.hoisted(() => vi.fn())
 vi.mock('@/lib/auditLog', () => ({ logAudit: mockLogAudit }))
 
-import { saveSchemaContent } from '@/actions/saveSchema'
+import { saveSchemaContent } from '@/server/services/saveSchema'
 
 describe('saveSchemaContent action', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    mockHeaders.mockResolvedValue(new Headers())
   })
 
   it('throws when there is no session, without saving or logging', async () => {
     mockAuth.api.getSession.mockResolvedValue(null)
 
     await expect(
-      saveSchemaContent('ios', '1.0.0', { foo: 'bar' })
+      saveSchemaContent(new Headers(), 'ios', '1.0.0', { foo: 'bar' })
     ).rejects.toThrow('Unauthorized')
     expect(mockSaveSchema).not.toHaveBeenCalled()
     expect(mockLogAudit).not.toHaveBeenCalled()
@@ -40,7 +37,7 @@ describe('saveSchemaContent action', () => {
     })
 
     await expect(
-      saveSchemaContent('ios/../etc', '1.0.0', { foo: 'bar' })
+      saveSchemaContent(new Headers(), 'ios/../etc', '1.0.0', { foo: 'bar' })
     ).rejects.toThrow('Invalid platform name')
     expect(mockSaveSchema).not.toHaveBeenCalled()
     expect(mockLogAudit).not.toHaveBeenCalled()
@@ -52,7 +49,7 @@ describe('saveSchemaContent action', () => {
     })
 
     await expect(
-      saveSchemaContent('ios', 'not a version', { foo: 'bar' })
+      saveSchemaContent(new Headers(), 'ios', 'not a version', { foo: 'bar' })
     ).rejects.toThrow('Invalid version name')
     expect(mockSaveSchema).not.toHaveBeenCalled()
     expect(mockLogAudit).not.toHaveBeenCalled()
@@ -66,7 +63,7 @@ describe('saveSchemaContent action', () => {
     // Mirrors a direct server-action call sending a non-string platform,
     // which a form-derived caller would normally coerce to a string first.
     await expect(
-      saveSchemaContent(null as unknown as string, '1.0.0', { foo: 'bar' })
+      saveSchemaContent(new Headers(), null as unknown as string, '1.0.0', { foo: 'bar' })
     ).rejects.toThrow('Invalid platform name')
     expect(mockSaveSchema).not.toHaveBeenCalled()
     expect(mockLogAudit).not.toHaveBeenCalled()
@@ -78,7 +75,7 @@ describe('saveSchemaContent action', () => {
     })
 
     await expect(
-      saveSchemaContent('ios', null as unknown as string, { foo: 'bar' })
+      saveSchemaContent(new Headers(), 'ios', null as unknown as string, { foo: 'bar' })
     ).rejects.toThrow('Invalid version name')
     expect(mockSaveSchema).not.toHaveBeenCalled()
     expect(mockLogAudit).not.toHaveBeenCalled()
@@ -90,7 +87,7 @@ describe('saveSchemaContent action', () => {
     })
 
     const content = { foo: 'bar' }
-    await saveSchemaContent('ios', '1.0.0', content)
+    await saveSchemaContent(new Headers(), 'ios', '1.0.0', content)
 
     expect(mockSaveSchema).toHaveBeenCalledWith('ios', '1.0.0', content, {
       id: 'u1',
@@ -104,7 +101,7 @@ describe('saveSchemaContent action', () => {
       user: { id: 'u1', email: 'a@b.com', name: 'Alice' },
     })
 
-    await saveSchemaContent('ios', '1.0.0', { foo: 'bar' })
+    await saveSchemaContent(new Headers(), 'ios', '1.0.0', { foo: 'bar' })
 
     expect(mockLogAudit).toHaveBeenCalledWith({
       action: 'update',
@@ -118,7 +115,7 @@ describe('saveSchemaContent action', () => {
   it('falls back to "Unknown" name and "unknown" email/id when the session omits them', async () => {
     mockAuth.api.getSession.mockResolvedValue({ user: {} })
 
-    await saveSchemaContent('ios', '1.0.0', { foo: 'bar' })
+    await saveSchemaContent(new Headers(), 'ios', '1.0.0', { foo: 'bar' })
 
     expect(mockSaveSchema).toHaveBeenCalledWith('ios', '1.0.0', { foo: 'bar' }, {
       id: undefined,

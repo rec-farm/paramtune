@@ -1,13 +1,10 @@
-'use client'
-
-import dynamic from 'next/dynamic'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { Link } from 'react-router'
+import { useLocation } from 'react-router'
 import { ArrowUpRight, Menu } from 'lucide-react'
 import Breadcrumbs, { type Crumb } from '@/components/Breadcrumbs'
 import { useSidebar } from '@/contexts/SidebarContext'
 
-const AuthNav = dynamic(() => import('./AuthNav'), { ssr: false })
+import AuthNav from './AuthNav'
 
 const REPO_URL = 'https://github.com/RodrigoEspinosa/paramtune'
 
@@ -39,7 +36,7 @@ function crumbsFor(pathname: string): Crumb[] {
 // The wordmark lives in the sidebar, so it is not repeated here.
 export default function DashboardTopBar() {
   const { open } = useSidebar()
-  const pathname = usePathname()
+  const { pathname } = useLocation()
 
   return (
     <header className="sticky top-0 z-30 shrink-0 h-14 bg-background border-b border-border">
@@ -57,13 +54,13 @@ export default function DashboardTopBar() {
 
         <nav aria-label="Utility" className="flex items-center gap-2 md:gap-6 shrink-0">
           <Link
-            href="/api-docs"
+            to="/api-docs"
             className="pt-label hidden sm:inline-flex items-center min-h-8 text-muted-foreground hover:text-foreground transition-colors duration-150"
           >
             API docs
           </Link>
           <Link
-            href={REPO_URL}
+            to={REPO_URL}
             target="_blank"
             rel="noopener noreferrer"
             className="pt-label hidden sm:inline-flex items-center gap-1 min-h-8 text-muted-foreground hover:text-foreground transition-colors duration-150"

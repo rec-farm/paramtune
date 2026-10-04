@@ -13,7 +13,7 @@ services:
       timeout: 3s
       retries: 3
 
-  # Next.js development server
+  # Vite frontend with Node API
   app:
     build:
       context: .
@@ -22,6 +22,7 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=development
+      - VITE_HOST=0.0.0.0
       - CORS_ORIGIN=http://localhost:3000
       - REDIS_URL=redis://redis:6379/2
       - AUTH_DB_PATH=/app/data/auth.db
@@ -36,10 +37,9 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
-      - /app/.next
       - auth_data:/app/data
     restart: unless-stopped
-    command: pnpm dev -- --hostname 0.0.0.0
+    command: sh -c "pnpm auth:migrate && pnpm dev:direct"
 
 volumes:
   redis_data:

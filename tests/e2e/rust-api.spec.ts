@@ -1,5 +1,7 @@
 import { test, expect } from '@playwright/test'
 
+test.skip(process.env.PARAMTUNE_BACKEND === 'node', 'Rust compatibility probes require the Rust backend; the browser workflow suite covers Node rollback')
+
 const authURL = process.env.E2E_AUTH_URL || 'http://localhost:4380'
 const nodeURL = process.env.E2E_NODE_URL
 const prefix = `rust-${Date.now()}`

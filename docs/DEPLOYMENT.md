@@ -1,8 +1,8 @@
 # Deployment
 
-## Node and Docker
+## Rust, Node auth, and Docker
 
-Use Node 22.12+ and persistent Redis/SQLite storage. Preserve BETTER_AUTH_URL, BETTER_AUTH_SECRET, AUTH_DB_PATH, and data volumes when upgrading.
+Use Rust 1.92+ for builds, Node 22.12+ for authentication, and persistent Redis/SQLite storage. See [Rust migration](RUST_MIGRATION.md) for runtime settings and compatibility checks. Preserve BETTER_AUTH_URL, BETTER_AUTH_SECRET, AUTH_DB_PATH, and data volumes when upgrading.
 
 ```sh
 pnpm install --frozen-lockfile
@@ -12,7 +12,7 @@ NODE_ENV=production pnpm auth:migrate:production
 pnpm start
 ```
 
-The start command defaults to production. PORT defaults to 3000 and HOST to 0.0.0.0. The server serves dist/client and authenticated APIs. /healthz checks process liveness, not Redis readiness.
+The start command defaults to production. PORT defaults to 3000 and HOST to 0.0.0.0. Rust serves dist/client and authenticated APIs. The supervisor starts auth on an automatically allocated loopback port. /healthz checks Rust and auth readiness, not Redis readiness.
 
 For Docker: build with docker compose build, docker compose up -d. Provide REDIS_PASSWORD, BETTER_AUTH_SECRET, BETTER_AUTH_URL, and Google or OIDC credentials. Existing redis_data and auth_data volumes remain compatible. The image runs unprivileged.
 
@@ -51,7 +51,7 @@ Handstamp server.
 ## rec-farm hosting
 
 Deploy the Docker image on rec-farm with persistent Redis and SQLite volumes.
-Route the public HTTPS origin to the Node application on port 3000; it serves
+Route the public HTTPS origin to the Rust application on port 3000; it serves
 both the frontend and API. Set BETTER_AUTH_URL and CORS_ORIGIN to that public
 origin and register matching Google/OIDC callback URLs.
 
@@ -65,4 +65,4 @@ requests enforce authorization. Unknown API paths never fall through to frontend
 
 ## Rollback
 
-Keep the previous image. No stored-data format changes are introduced. Roll back application code with the same volumes, signing secret, and public URL. Preserve post-cutover writes rather than restoring stale database snapshots.
+Set PARAMTUNE_BACKEND=node and restart to use the included Node backend with the same data. Keep the previous image. No stored-data format changes are introduced. Roll back application code with the same volumes, signing secret, and public URL. Preserve post-cutover writes rather than restoring stale database snapshots.

@@ -1,3 +1,10 @@
+FROM rust:1.92-alpine AS rust-builder
+RUN apk add --no-cache musl-dev
+WORKDIR /app
+COPY backend/Cargo.toml backend/Cargo.lock ./backend/
+COPY backend/src ./backend/src
+RUN cargo build --release --locked --manifest-path backend/Cargo.toml
+
 FROM node:22-alpine AS base
 WORKDIR /app
 RUN corepack enable
@@ -9,7 +16,7 @@ RUN pnpm install --frozen-lockfile
 
 FROM dependencies AS builder
 COPY . .
-RUN pnpm build
+RUN pnpm build:web
 RUN pnpm prune --prod
 
 FROM base AS runner
@@ -21,7 +28,9 @@ COPY --from=builder /app/package.json ./
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/dist/client ./dist/client
 COPY --from=builder /app/dist/server ./dist/server
-COPY --from=builder /app/scripts/env.mjs /app/scripts/start.mjs ./scripts/
+COPY --from=builder /app/scripts/env.mjs /app/scripts/start.mjs /app/scripts/backend.mjs ./scripts/
+COPY --from=rust-builder /app/backend/target/release/paramtune-api /app/bin/paramtune-api
+ENV PARAMTUNE_API_BINARY=/app/bin/paramtune-api
 RUN mkdir data && chown paramtune:nodejs data
 USER paramtune
 EXPOSE 3000

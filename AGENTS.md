@@ -5,6 +5,8 @@
 - Lint: `pnpm lint`
 - Type check: `pnpm typecheck`
 - Build: `pnpm build`
+- Rust checks: `pnpm backend:check`
+- Rust tests: `pnpm backend:test`
 - Dev server: `pnpm dev`
 - Bundle analysis: `pnpm analyze`
 
@@ -21,7 +23,7 @@
 
 ## Runtime boundaries
 
-- Vite builds the browser app; Hono on Node serves authenticated APIs and production assets.
+- Vite builds the browser app; Axum on Rust serves authenticated APIs and production assets; the loopback-only Hono/Node sidecar handles Better Auth. The Node API remains as a rollback reference.
 - Keep Redis, SQLite, auth configuration, and audit logging server-only.
 - Shared JSON contracts and browser-safe validation live in src/shared and src/lib.
 - Every dashboard endpoint must validate its session; browser redirects are not authorization.

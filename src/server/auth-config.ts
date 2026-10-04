@@ -97,6 +97,9 @@ export const authOptions = {
   baseURL,
   secret,
   socialProviders,
+  ...(process.env.PARAMTUNE_AUTH_SIDECAR === 'true' ? {
+    advanced: { ipAddress: { ipAddressHeaders: ['x-paramtune-client-ip'] } },
+  } : {}),
   emailAndPassword: isDev ? { enabled: true } : undefined,
   user: {
     additionalFields: {

@@ -1,6 +1,6 @@
 import './env.mjs'
 import { createServer } from 'vite'
-import { spawn } from 'node:child_process'
+import { compileRust, startBackend } from './backend.mjs'
 import { selectApiPort } from './dev-port'
 
 process.env.NODE_ENV = 'development'
@@ -10,33 +10,25 @@ let apiPort = await selectApiPort(process.env.API_PORT)
 if (process.env.API_PORT && apiPort === port) throw new Error('PORT and API_PORT must be different')
 while (apiPort === port) apiPort = await selectApiPort()
 process.env.API_PORT = String(apiPort)
+if ((process.env.PARAMTUNE_BACKEND || 'rust') === 'rust') await compileRust()
 const devServer = await createServer({ server: { port } })
-await devServer.listen()
-const api = spawn('pnpm', ['exec', 'tsx', 'watch', '--import', './scripts/env.mjs', 'src/server/index.ts'], {
-  stdio: 'inherit', env: { ...process.env, PORT: String(apiPort), HOST: '127.0.0.1' },
-})
+let backend: Awaited<ReturnType<typeof startBackend>> | undefined
 let closing = false
 async function close(code = 0) {
   if (closing) return
   closing = true
-  api.kill('SIGTERM')
+  await backend?.close()
   await devServer.close()
   process.exitCode = code
 }
-api.once('exit', (code) => { void close(code || 0) })
-api.once('error', (error) => { console.error(error); void close(1) })
 for (const signal of ['SIGINT', 'SIGTERM']) process.once(signal, () => { void close() })
 try {
-  let ready = false
-  for (let attempt = 0; attempt < 100 && !closing; attempt++) {
-    try {
-      ready = (await fetch(`http://127.0.0.1:${apiPort}/healthz`, { signal: AbortSignal.timeout(500) })).ok
-    } catch { /* API is starting */ }
-    if (ready) break
-    await new Promise((resolve) => setTimeout(resolve, 100))
+  backend = await startBackend({ watch: true, env: { ...process.env, PORT: String(apiPort), HOST: '127.0.0.1' }, onExit: (code: number) => { void close(code) } })
+  if (closing) await backend.close()
+  else {
+    await devServer.listen()
+    devServer.printUrls()
   }
-  if (!ready) throw new Error('API did not become ready')
-  devServer.printUrls()
 } catch (error) {
   console.error(error)
   await close(1)

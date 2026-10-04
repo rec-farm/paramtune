@@ -6,7 +6,8 @@ Thanks for taking the time to improve Paramtune.
 
 Requirements:
 
-- Node.js 20 or newer
+- Node.js 22.12 or newer
+- Rust 1.92 or newer
 - pnpm 10.x
 - Redis
 
@@ -29,7 +30,7 @@ Start the app (requires a global `portless` install: `npm install -g portless`):
 pnpm dev
 ```
 
-Use `pnpm dev:direct` to skip portless and run on `localhost:3000`.
+Use `pnpm dev:direct` to skip portless and run on `localhost:3000`. Rust compiles at startup; restart after Rust changes. See [Rust migration](docs/RUST_MIGRATION.md).
 
 ## Checks
 
@@ -39,7 +40,10 @@ Run these before opening a pull request:
 pnpm lint
 pnpm typecheck
 pnpm test
+pnpm backend:check
+pnpm backend:test
 pnpm build
+pnpm test:e2e:ci
 pnpm audit --audit-level moderate
 ```
 

@@ -1,9 +1,7 @@
-'use client'
-
 import { useState, useMemo } from 'react'
 import { ChevronRight } from 'lucide-react'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { Link } from 'react-router'
+import { useLocation } from 'react-router'
 import { cn } from '@/lib/utils'
 import { sortVersionsDescending } from '@/lib/versionUtils'
 import { NAV_ITEM_ACTIVE, NAV_ITEM_IDLE } from './navItem'
@@ -19,7 +17,7 @@ type VersionProps = {
 }
 
 const Version = ({ platform, version }: VersionProps) => {
-  const pathname = usePathname()
+  const { pathname } = useLocation()
   const isActive =
     pathname ===
     `/dashboard/${encodeURIComponent(platform)}/${encodeURIComponent(version)}`
@@ -31,8 +29,7 @@ const Version = ({ platform, version }: VersionProps) => {
         'flex items-center h-8 ml-10 mr-3 px-3 rounded-sm font-mono text-sm tabular-nums transition-colors duration-150',
         isActive ? NAV_ITEM_ACTIVE : NAV_ITEM_IDLE
       )}
-      href="/dashboard/[platform]/[version]"
-      as={`/dashboard/${encodeURIComponent(platform)}/${encodeURIComponent(
+      to={`/dashboard/${encodeURIComponent(platform)}/${encodeURIComponent(
         version
       )}`}
     >
@@ -50,7 +47,7 @@ export default function PlatformsList({
   platforms,
   searchQuery,
 }: PlatformsListProps) {
-  const pathname = usePathname()
+  const { pathname } = useLocation()
   const [open, setOpen] = useState<Record<string, boolean>>(() => {
     const active: Record<string, boolean> = {}
     platforms.forEach((p) => {
@@ -141,8 +138,7 @@ export default function PlatformsList({
                 className={cn(
                   'flex-1 min-w-0 flex items-center justify-between gap-2 h-9 pr-3 font-mono text-sm'
                 )}
-                href="/dashboard/[platform]"
-                as={platformHref}
+                to={platformHref}
               >
                 <span className="truncate">{platform.name}</span>
                 <span className="font-mono text-xs tabular-nums opacity-80">

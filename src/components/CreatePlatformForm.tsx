@@ -1,7 +1,4 @@
-'use client'
-
 import { useCallback, useMemo, useRef, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import Button from '@/components/ui/Button'
 import { AlertCircle, CheckCircle2, Loader2, Plus } from 'lucide-react'
 import Input from '@/components/ui/Input'
@@ -20,7 +17,6 @@ export default function CreatePlatformForm({ action }: Props) {
     text: string
   } | null>(null)
   const inputRef = useRef<HTMLInputElement | null>(null)
-  const router = useRouter()
 
   const isValid = useMemo(() => {
     const trimmed = name.trim()
@@ -38,7 +34,7 @@ export default function CreatePlatformForm({ action }: Props) {
       e.preventDefault()
       setSubmitting(true)
       try {
-        // Build FormData and call server action
+        // Submit the mutation supplied by the route
         const formData = new FormData()
         formData.set('platformName', name.trim())
         await action(formData)
@@ -47,8 +43,6 @@ export default function CreatePlatformForm({ action }: Props) {
         setMessage({ kind: 'success', text: 'Platform created. Add its first version next.' })
         // Keep focus ready for quick entry
         inputRef.current?.focus()
-        // Ensure the server-rendered list updates
-        router.refresh()
       } catch (err) {
         console.error('Failed to create platform:', err)
         setMessage({
@@ -61,7 +55,7 @@ export default function CreatePlatformForm({ action }: Props) {
         setSubmitting(false)
       }
     },
-    [action, isValid, name, router]
+    [action, isValid, name]
   )
 
   return (

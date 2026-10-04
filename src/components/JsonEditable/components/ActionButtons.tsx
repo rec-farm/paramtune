@@ -1,5 +1,3 @@
-'use client'
-
 import { memo } from 'react'
 import { Braces, Copy, Download } from 'lucide-react'
 

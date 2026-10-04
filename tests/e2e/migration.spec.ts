@@ -1,0 +1,103 @@
+import { test, expect } from '@playwright/test'
+
+const authURL = process.env.E2E_AUTH_URL || 'http://localhost:4380'
+const platform = `migration-${Date.now()}`
+const version = '1.0.0+build.5'
+const detailPath = `/dashboard/${platform}/${encodeURIComponent(version)}`
+const schemaAPI = `/api/_ui/v1/platforms/${platform}/versions/${encodeURIComponent(version)}/schema`
+
+test('public HTML, assets, API errors, and protected deep links', async ({ page, request }) => {
+  const home = await request.get('/')
+  expect(home.status()).toBe(200)
+  if (process.env.E2E_PRODUCTION) expect(await home.text()).toContain('Every config,')
+  const docs = await request.get('/api-docs')
+  expect(docs.status()).toBe(200)
+  if (process.env.E2E_PRODUCTION) expect(await docs.text()).toContain('API')
+  expect((await request.get('/api/schemas')).status()).toBe(401)
+  const unknown = await request.get('/api/unknown/extra/path')
+  expect(unknown.status()).toBe(404)
+  expect(unknown.headers()['content-type']).toContain('application/json')
+  await page.goto('/dashboard/ios/1.0.0?check=deep-link')
+  await expect(page).toHaveURL(/\/login\?returnTo=/)
+  await expect(page.getByRole('heading', { name: 'Sign in.' })).toBeVisible()
+  if (process.env.E2E_PRODUCTION) {
+    await expect(page.getByRole('button', { name: 'Sign in with Google' })).toHaveCount(0)
+    await expect(page.getByText('No sign-in method is set up.', { exact: false })).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Dev login (skip OAuth)' })).toHaveCount(0)
+    expect((await request.post('/api/auth/dev-login')).status()).toBe(404)
+  }
+})
+
+test('create, edit, compose, compare, restore, reload, and sign out', async ({ page, context }) => {
+  const errors: string[] = []
+  page.on('pageerror', (error) => errors.push(error.message))
+  const login = await context.request.post(`${authURL}/api/auth/dev-login`, { headers: { Origin: authURL } })
+  expect(login.ok()).toBe(true)
+  expect(login.headers()['set-cookie']).toContain('session_token')
+  await page.goto('/dashboard')
+  await expect(page.getByRole('heading', { name: 'Overview.' })).toBeVisible()
+  await page.getByLabel('Platform name').fill(platform)
+  await page.getByRole('button', { name: 'Create platform', exact: true }).click()
+  await expect(page.getByText('Platform created. Add its first version next.')).toBeVisible()
+  await page.goto(`/dashboard/${platform}`)
+  await page.locator('#versionName').fill(version)
+  await page.getByRole('button', { name: 'Create', exact: true }).click()
+  await expect(page.getByText('Version created. Its schema starts at {}.')).toBeVisible()
+  await page.goto(detailPath)
+  const editor = page.locator('textarea')
+  await expect(editor).toBeVisible()
+  await editor.fill('{"enabled":true,"limit":5}')
+  await page.getByRole('button', { name: /Save/ }).click()
+  await expect.poll(async () => {
+    const response = await context.request.get(schemaAPI)
+    return (await response.json()).schema.content
+  }).toEqual({ enabled: true, limit: 5 })
+  await expect(page.getByText('1 revision', { exact: false }).first()).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Save changes' })).toBeEnabled()
+  await editor.fill('{"enabled":false,"limit":10}')
+  await page.getByRole('button', { name: /Save/ }).click()
+  await expect.poll(async () => (await (await context.request.get(schemaAPI)).json()).history.length).toBe(2)
+  await page.getByRole('tab', { name: /Preview/ }).click()
+  await expect(page.getByText('Live preview')).toBeVisible()
+  await page.getByRole('tab', { name: /History/ }).click()
+  await expect(page.getByText('Schema history', { exact: true })).toBeVisible()
+  // Select the older revision and restore it through the same authenticated save path.
+  const revisions = page.getByRole('list', { name: 'Versions' }).getByRole('button')
+  await revisions.last().click()
+  await page.getByRole('button', { name: /Restore/ }).click()
+  await expect.poll(async () => (await (await context.request.get(schemaAPI)).json()).schema.content).toEqual({ enabled: true, limit: 5 })
+  await page.reload()
+  await expect(editor).toHaveValue(/"enabled": true/)
+  const detail = await (await context.request.get(schemaAPI)).json()
+  // Redis history preserves existing sorted-set deduplication for identical content.
+  expect(detail.history).toHaveLength(2)
+  expect(detail.history[0].content).toEqual({ enabled: true, limit: 5 })
+  expect(detail.schema.author.name).toBe('Reviewer')
+  const legacy = await context.request.get(`/api/${platform}/${encodeURIComponent(version)}`)
+  expect(legacy.status()).toBe(200)
+  // Exercise composition and comparison through the real Redis-backed HTTP services.
+  await context.request.post(`/api/_ui/v1/platforms/${platform}/versions`, { data: { version: '2.0.0' } })
+  const composed = await context.request.put(`/api/_ui/v1/platforms/${platform}/versions/2.0.0/schema`, { data: { content: { '@extends': `${platform}/${version}`, limit: 20 } } })
+  expect(composed.ok()).toBe(true)
+  const resolved = await (await context.request.get(`/api/_ui/v1/platforms/${platform}/versions/2.0.0/schema`)).json()
+  expect(resolved.schema.output).toEqual({ enabled: true, limit: 20 })
+  const comparison = await context.request.post('/api/_ui/v1/compare', { data: { platformA: platform, versionA: version, platformB: platform, versionB: '2.0.0' } })
+  expect(comparison.ok()).toBe(true)
+  expect(await comparison.json()).toHaveProperty('diffResult')
+  await page.goto(`/dashboard/compare?platformA=${platform}&versionA=${encodeURIComponent(version)}`)
+  await expect(page.getByRole('heading', { name: 'Compare.' })).toBeVisible()
+  await page.locator('#platformB').selectOption(platform)
+  await expect(page.locator('#versionB option', { hasText: '2.0.0' })).toHaveCount(1)
+  await page.locator('#versionB').selectOption('2.0.0')
+  await page.getByRole('button', { name: 'Compare schemas' }).click()
+  await expect(page.getByText('Pick two schemas', { exact: true })).toHaveCount(0)
+  await expect(page.getByRole('alert')).toHaveCount(0)
+  await expect(page.getByText(`${platform}/2.0.0`, { exact: true }).filter({ visible: true })).toBeVisible()
+  await page.setViewportSize({ width: 390, height: 844 })
+  await expect(page.getByRole('button', { name: 'Open menu' })).toBeVisible()
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  await page.getByRole('button', { name: 'Open menu' }).click()
+  await page.getByRole('button', { name: 'Sign out', exact: true }).first().click()
+  await expect.poll(async () => (await context.request.get('/api/schemas')).status()).toBe(401)
+  expect(errors).toEqual([])
+})

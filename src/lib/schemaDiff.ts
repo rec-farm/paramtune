@@ -256,7 +256,7 @@ export function calculateDiff(
 
 // Schema-specific helpers (for Phase 7 cross-schema comparison)
 
-import type { Schema } from '@/models/Schema'
+import type { Schema } from '@/shared/contracts'
 
 /**
  * Compare two Schema objects by their content

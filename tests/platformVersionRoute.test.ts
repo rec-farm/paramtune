@@ -1,23 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-vi.mock('next/server', () => {
-  class MockNextResponse {
-    _body: any
-    _init: any
-
-    constructor(body?: any, init?: any) {
-      this._body = body
-      this._init = init
-    }
-
-    static json(body: any, init?: any) {
-      const response = new MockNextResponse(body, init)
-      ;(response as any).json = async () => body
-      return response
-    }
-  }
-  return { NextResponse: MockNextResponse }
-})
 
 const mockAuth = vi.hoisted(() => ({
   api: { getSession: vi.fn() },
@@ -27,7 +9,7 @@ vi.mock('@/lib/auth', () => ({ auth: mockAuth }))
 const mockGetVersion = vi.hoisted(() => vi.fn())
 vi.mock('@/models/Version', () => ({ getVersion: mockGetVersion }))
 
-import { GET } from '@/app/api/[platform]/[version]/route'
+import { GET } from '@/server/routes/version'
 
 function makeRequest() {
   return { headers: new Headers() } as unknown as Request
@@ -50,8 +32,8 @@ describe('GET /api/[platform]/[version]', () => {
 
     const response = await get('ios', '1.2.3')
 
-    expect(response._init.status).toBe(200)
-    expect(response._body).toEqual({ content: '{}' })
+    expect(response.status).toBe(200)
+    expect((await response.json())).toEqual({ content: '{}' })
   })
 
   it('reads back a version with build metadata that POST /versions accepts', async () => {
@@ -63,7 +45,7 @@ describe('GET /api/[platform]/[version]', () => {
 
     const response = await get('ios', '1.2.3+build.5')
 
-    expect(response._init.status).toBe(200)
+    expect(response.status).toBe(200)
     expect(mockGetVersion).toHaveBeenCalledWith('ios', '1.2.3+build.5')
   })
 
@@ -73,7 +55,7 @@ describe('GET /api/[platform]/[version]', () => {
 
     const response = await get('ios', '1.2.3%2Bbuild.5')
 
-    expect(response._init.status).toBe(200)
+    expect(response.status).toBe(200)
     expect(mockGetVersion).toHaveBeenCalledWith('ios', '1.2.3+build.5')
   })
 
@@ -82,8 +64,8 @@ describe('GET /api/[platform]/[version]', () => {
 
     const response = await get('ios', '9.9.9')
 
-    expect(response._init.status).toBe(404)
-    expect(response._body).toEqual({ error: 'Version not found' })
+    expect(response.status).toBe(404)
+    expect((await response.json())).toEqual({ error: 'Version not found' })
   })
 
   it('still looks up a non-semver version rather than rejecting it', async () => {
@@ -93,28 +75,28 @@ describe('GET /api/[platform]/[version]', () => {
 
     const response = await get('ios', 'legacy-build')
 
-    expect(response._init.status).toBe(404)
+    expect(response.status).toBe(404)
     expect(mockGetVersion).toHaveBeenCalledWith('ios', 'legacy-build')
   })
 
   it('rejects a version containing a slash with 400 and never hits Redis', async () => {
     const response = await get('ios', '..%2Fsecret')
 
-    expect(response._init.status).toBe(400)
+    expect(response.status).toBe(400)
     expect(mockGetVersion).not.toHaveBeenCalled()
   })
 
   it('rejects a version containing spaces with 400', async () => {
     const response = await get('ios', '1.2.3%20')
 
-    expect(response._init.status).toBe(400)
+    expect(response.status).toBe(400)
     expect(mockGetVersion).not.toHaveBeenCalled()
   })
 
   it('rejects an over-long version with 400', async () => {
     const response = await get('ios', 'a'.repeat(129))
 
-    expect(response._init.status).toBe(400)
+    expect(response.status).toBe(400)
     expect(mockGetVersion).not.toHaveBeenCalled()
   })
 })

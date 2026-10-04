@@ -51,31 +51,8 @@ export class InvalidContentError extends Data.TaggedError(
 
 // ── Types ────────────────────────────────────────────────────────────────────
 
-export type Schema = {
-  content: Record<string, unknown>
-  dependencies: string[]
-  output: Record<string, unknown>
-  author?: Author
-}
-
-export type Author = {
-  id: string
-  name: string
-  image?: string
-}
-
-export type SchemaValidationResult = {
-  valid: boolean
-  errors: string[]
-}
-
-export type SchemaHistoryEntry = {
-  timestamp: number
-  content: Record<string, unknown>
-  dependencies: string[]
-  output: Record<string, unknown>
-  author?: Author
-}
+import type { Schema, Author, SchemaHistoryEntry, SchemaValidationResult } from '@/shared/contracts'
+export type { Schema, Author, SchemaHistoryEntry, SchemaValidationResult } from '@/shared/contracts'
 
 type ResolvedDependency = { platform: string; version: string }
 
@@ -420,8 +397,7 @@ const cascadeDependentsEffect = (
   })
 
 // ── Public API ───────────────────────────────────────────────────────────────
-// Plain server-side functions, not Server Actions — see the note in
-// src/models/Platform.ts for why a `'use server'` directive doesn't belong here.
+// Server-only functions, called by authenticated HTTP routes and services.
 
 export async function getSchema(
   platform: string,

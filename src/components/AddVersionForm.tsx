@@ -1,7 +1,4 @@
-'use client'
-
 import { useCallback, useMemo, useRef, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import Button from '@/components/ui/Button'
 import { AlertCircle, CheckCircle2, Loader2 } from 'lucide-react'
 import Input from '@/components/ui/Input'
@@ -20,7 +17,6 @@ export default function AddVersionForm({ action }: Props) {
     text: string
   } | null>(null)
   const inputRef = useRef<HTMLInputElement | null>(null)
-  const router = useRouter()
 
   const isValid = useMemo(() => isValidVersion(version.trim()), [version])
 
@@ -35,7 +31,7 @@ export default function AddVersionForm({ action }: Props) {
       e.preventDefault()
       setSubmitting(true)
       try {
-        // Build FormData and call server action
+        // Submit the mutation supplied by the route
         const formData = new FormData()
         formData.set('versionName', version.trim())
         await action(formData)
@@ -44,8 +40,6 @@ export default function AddVersionForm({ action }: Props) {
         setMessage({ kind: 'success', text: 'Version created. Its schema starts at {}.' })
         // Keep focus ready for quick entry
         inputRef.current?.focus()
-        // Ensure the server-rendered version list updates
-        router.refresh()
       } catch (err) {
         console.error('Failed to create version:', err)
         setMessage({
@@ -58,7 +52,7 @@ export default function AddVersionForm({ action }: Props) {
         setSubmitting(false)
       }
     },
-    [action, isValid, version, router]
+    [action, isValid, version]
   )
 
   return (

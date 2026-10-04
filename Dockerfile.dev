@@ -1,22 +1,9 @@
-# Development Dockerfile
 FROM node:22-alpine
-
-# Install pnpm
-RUN corepack enable pnpm
-
 WORKDIR /app
-
-# Copy package files
-COPY package.json pnpm-lock.yaml* ./
-
-# Install dependencies
-RUN pnpm install
-
-# Copy source code
+RUN apk add --no-cache python3 make g++ && corepack enable
+COPY package.json pnpm-lock.yaml .npmrc ./
+RUN pnpm install --frozen-lockfile
 COPY . .
-
-# Expose port
+ENV VITE_HOST=0.0.0.0
 EXPOSE 3000
-
-# Start development server
-CMD ["pnpm", "dev"]
+CMD ["pnpm", "dev:direct"]

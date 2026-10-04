@@ -29,7 +29,7 @@ Start the app (requires a global `portless` install: `npm install -g portless`):
 pnpm dev
 ```
 
-Use `pnpm dev:next` to skip portless and run on `localhost:3000`.
+Use `pnpm dev:direct` to skip portless and run on `localhost:3000`.
 
 ## Checks
 

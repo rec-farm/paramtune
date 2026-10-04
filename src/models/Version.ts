@@ -27,8 +27,7 @@ const getVersionEffect = (
   getLatestFromSortedSet<Version>(getKey(platform, id))
 
 // ── Public API ───────────────────────────────────────────────────────────────
-// Plain server-side functions, not Server Actions — see the note in
-// src/models/Platform.ts for why a `'use server'` directive doesn't belong here.
+// Server-only functions, called by authenticated HTTP routes and services.
 
 export async function getVersions(platformId: string) {
   return Effect.runPromise(getVersionsEffect(platformId))

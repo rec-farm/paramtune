@@ -1,5 +1,3 @@
-'use client'
-
 import { forwardRef, useCallback, useEffect, useRef } from 'react'
 import { Code, Hash, Key } from 'lucide-react'
 import { cn } from '@/lib/utils'

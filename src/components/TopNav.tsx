@@ -1,6 +1,4 @@
-'use client'
-
-import Link from 'next/link'
+import { Link } from 'react-router'
 import { Menu } from 'lucide-react'
 import Logo from './Logo'
 import { useSidebarSafe } from '@/contexts/SidebarContext'
@@ -28,10 +26,10 @@ export default function TopNav() {
           </div>
 
           <nav className="flex items-center gap-2">
-            <Link href="/" className="pt-btn pt-btn-ghost h-8 px-3 text-xs">
+            <Link to="/" className="pt-btn pt-btn-ghost h-8 px-3 text-xs">
               Home
             </Link>
-            <Link href="/dashboard" className="pt-btn pt-btn-secondary h-8 px-3 text-xs">
+            <Link to="/dashboard" className="pt-btn pt-btn-secondary h-8 px-3 text-xs">
               Dashboard
             </Link>
           </nav>

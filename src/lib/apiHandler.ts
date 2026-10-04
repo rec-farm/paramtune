@@ -1,5 +1,4 @@
 import { Effect } from 'effect'
-import { NextResponse } from 'next/server'
 import { auth } from '@/lib/auth'
 import {
   VALID_NAME_REGEX,
@@ -29,7 +28,7 @@ const NO_STORE = { 'Cache-Control': 'no-store' } as const
  * exposed in development; production clients get a generic body.
  */
 function internalErrorResponse(message: string) {
-  return NextResponse.json(
+  return Response.json(
     {
       error:
         process.env.NODE_ENV === 'development'
@@ -55,7 +54,7 @@ export function decodeParam(value: string, label: string) {
   return Effect.try({
     try: () => decodeURIComponent(value),
     catch: () =>
-      NextResponse.json(
+      Response.json(
         { error: `Invalid ${label}: malformed percent-encoding` },
         { status: 400 },
       ),
@@ -123,8 +122,8 @@ export function parseJsonBody(request: Request) {
 export const failWith = (
   error: string,
   status: number
-): Effect.Effect<never, NextResponse> =>
-  Effect.fail(NextResponse.json({ error }, { status }))
+): Effect.Effect<never, Response> =>
+  Effect.fail(Response.json({ error }, { status }))
 
 /**
  * Validates the user session and returns it, or fails with 401.
@@ -142,23 +141,23 @@ export function requireSession(request: Request) {
 }
 
 /**
- * Runs an API handler that may short-circuit with a NextResponse error.
+ * Runs an API handler that may short-circuit with a Response error.
  * Handles both expected failures (validation, not-found) and unexpected defects.
  */
 export function handleApiWithFailures<A>(
-  effect: Effect.Effect<A, NextResponse>,
+  effect: Effect.Effect<A, Response>,
   init?: ApiResponseInit
-): Promise<NextResponse> {
+): Promise<Response> {
   return Effect.runPromise(
     effect.pipe(
       Effect.map((data) =>
-        NextResponse.json(data, {
+        Response.json(data, {
           status: init?.status ?? 200,
           headers: { ...NO_STORE, ...init?.headers },
         })
       ),
       Effect.catchAll((response) =>
-        response instanceof NextResponse
+        response instanceof Response
           ? Effect.succeed(response)
           : Effect.succeed(internalErrorResponse(String(response)))
       ),

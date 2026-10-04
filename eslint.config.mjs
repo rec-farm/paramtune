@@ -1,14 +1,31 @@
-import { defineConfig, globalIgnores } from 'eslint/config'
-import nextVitals from 'eslint-config-next/core-web-vitals'
+import js from '@eslint/js'
+import tseslint from 'typescript-eslint'
+import reactHooks from 'eslint-plugin-react-hooks'
+import jsxA11y from 'eslint-plugin-jsx-a11y'
+import globals from 'globals'
 
-export default defineConfig([
-  ...nextVitals,
-  globalIgnores([
-    '.next/**',
-    'out/**',
-    'build/**',
-    'next-env.d.ts',
-  ]),
-])
-
-
+export default tseslint.config(
+  { ignores: ['dist/**', '.vercel/**', '.next/**', 'out/**', 'build/**', 'coverage/**', 'test-results/**', 'playwright-report/**', 'next-env.d.ts'] },
+  js.configs.recommended,
+  ...tseslint.configs.recommended,
+  { languageOptions: { globals: { ...globals.browser, ...globals.node } } },
+  {
+    files: ['**/*.{ts,tsx}'],
+    plugins: { 'react-hooks': reactHooks, 'jsx-a11y': jsxA11y },
+    rules: {
+      'react-hooks/rules-of-hooks': 'error',
+      'react-hooks/exhaustive-deps': 'warn',
+      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrors: 'none' }],
+      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-empty-object-type': ['error', { allowObjectTypes: 'always' }],
+      'jsx-a11y/alt-text': 'error',
+    },
+  },
+  { files: ['tests/**/*.ts'], rules: { '@typescript-eslint/ban-ts-comment': 'warn' } },
+  {
+    files: ['src/client/**/*.{ts,tsx}', 'src/components/**/*.{ts,tsx}', 'src/contexts/**/*.{ts,tsx}'],
+    rules: {
+      'no-restricted-imports': ['error', { patterns: ['@/server/*', '@/models/*', '@/connections/*', '@/lib/auth', '@/lib/apiHandler', '@/lib/dashboardAuth', '@/lib/auditLog', '@/lib/effectRedis', '@/lib/oidc', '@/lib/oidcProfile', '@/lib/oidcLogoutToken', 'next', 'next/*', 'node:*'] }],
+    },
+  },
+)

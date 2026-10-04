@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en" data-theme="dark" data-product="paramtune" data-scroll-behavior="smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Paramtune · Configuration management</title>
+    <meta name="description" content="Self-hosted, API-first configuration management for every platform you ship." />
+    <meta name="theme-color" content="#0a0b0c" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#f7f1e3" media="(prefers-color-scheme: light)" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="icon" href="/icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="manifest" href="/site.webmanifest" />
+    <script>(function(){try{var c=localStorage.getItem('paramtune-theme');if(c==='system'){c=matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'}if(c==='light'||c==='dark'){document.documentElement.dataset.theme=c}}catch(e){}})()</script>
+  </head>
+  <body class="font-sans antialiased min-h-screen bg-background text-foreground">
+    <div id="root"></div>
+    <script type="module" src="/src/client/main.tsx"></script>
+  </body>
+</html>

@@ -1,5 +1,3 @@
-'use client'
-
 import { memo, useMemo, useState, useEffect, useRef } from 'react'
 import DOMPurify from 'dompurify'
 import { highlightVisibleLines } from '../utils/optimizedSyntaxHighlighter'

@@ -44,3 +44,10 @@ coverage
 # Misc
 *.tgz
 *.tar.gz
+
+dist
+.vercel
+test-results
+playwright-report
+data/*.db-*
+.env

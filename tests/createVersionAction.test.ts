@@ -5,8 +5,6 @@ const mockAuth = vi.hoisted(() => ({
 }))
 vi.mock('@/lib/auth', () => ({ auth: mockAuth }))
 
-const mockHeaders = vi.hoisted(() => vi.fn())
-vi.mock('next/headers', () => ({ headers: mockHeaders }))
 
 const mockGetPlatform = vi.hoisted(() => vi.fn())
 const mockSavePlatform = vi.hoisted(() => vi.fn())
@@ -23,12 +21,11 @@ vi.mock('@/models/Platform', () => ({
 const mockLogAudit = vi.hoisted(() => vi.fn())
 vi.mock('@/lib/auditLog', () => ({ logAudit: mockLogAudit }))
 
-import { createPlatformVersion } from '@/actions/createVersion'
+import { createPlatformVersion } from '@/server/services/createVersion'
 
 describe('createPlatformVersion action', () => {
   beforeEach(() => {
     vi.clearAllMocks()
-    mockHeaders.mockResolvedValue(new Headers())
     mockAuth.api.getSession.mockResolvedValue({
       user: { id: 'u1', email: 'a@b.com' },
     })
@@ -37,7 +34,7 @@ describe('createPlatformVersion action', () => {
   it('throws when there is no session, without saving or logging', async () => {
     mockAuth.api.getSession.mockResolvedValue(null)
 
-    await expect(createPlatformVersion('ios', '1.0.0')).rejects.toThrow(
+    await expect(createPlatformVersion(new Headers(), 'ios', '1.0.0')).rejects.toThrow(
       'Unauthorized'
     )
     expect(mockSavePlatform).not.toHaveBeenCalled()
@@ -46,7 +43,7 @@ describe('createPlatformVersion action', () => {
 
   it('rejects an invalid platform name, without saving or logging', async () => {
     await expect(
-      createPlatformVersion('ios/../etc', '1.0.0')
+      createPlatformVersion(new Headers(), 'ios/../etc', '1.0.0')
     ).rejects.toThrow('Invalid platform name')
     expect(mockGetPlatform).not.toHaveBeenCalled()
     expect(mockSavePlatform).not.toHaveBeenCalled()
@@ -58,7 +55,7 @@ describe('createPlatformVersion action', () => {
     // absent, which a direct server-action call can send without the cast
     // the dashboard page applies.
     await expect(
-      createPlatformVersion(null as unknown as string, '1.0.0')
+      createPlatformVersion(new Headers(), null as unknown as string, '1.0.0')
     ).rejects.toThrow('Invalid platform name')
     expect(mockGetPlatform).not.toHaveBeenCalled()
     expect(mockSavePlatform).not.toHaveBeenCalled()
@@ -68,7 +65,7 @@ describe('createPlatformVersion action', () => {
   it('throws when the platform does not exist', async () => {
     mockGetPlatform.mockResolvedValue(null)
 
-    await expect(createPlatformVersion('nonexistent', '1.0.0')).rejects.toThrow()
+    await expect(createPlatformVersion(new Headers(), 'nonexistent', '1.0.0')).rejects.toThrow()
     expect(mockSavePlatform).not.toHaveBeenCalled()
     expect(mockLogAudit).not.toHaveBeenCalled()
   })
@@ -77,7 +74,7 @@ describe('createPlatformVersion action', () => {
     mockGetPlatform.mockResolvedValue({ name: 'ios', versions: ['1.0.0'] })
 
     await expect(
-      createPlatformVersion('ios', 'not-a-version')
+      createPlatformVersion(new Headers(), 'ios', 'not-a-version')
     ).rejects.toThrow('must be a valid semantic version')
     expect(mockSavePlatform).not.toHaveBeenCalled()
     expect(mockLogAudit).not.toHaveBeenCalled()
@@ -89,7 +86,7 @@ describe('createPlatformVersion action', () => {
     // Mirrors formData.get('versionName') returning null when the field is
     // absent, which the caller casts to `string` without checking.
     await expect(
-      createPlatformVersion('ios', null as unknown as string)
+      createPlatformVersion(new Headers(), 'ios', null as unknown as string)
     ).rejects.toThrow('must be a valid semantic version')
     expect(mockSavePlatform).not.toHaveBeenCalled()
     expect(mockLogAudit).not.toHaveBeenCalled()
@@ -99,7 +96,7 @@ describe('createPlatformVersion action', () => {
     mockGetPlatform.mockResolvedValue({ name: 'ios', versions: ['1.0.0'] })
     mockSavePlatform.mockResolvedValue(undefined)
 
-    await createPlatformVersion('ios', '2.0.0')
+    await createPlatformVersion(new Headers(), 'ios', '2.0.0')
 
     expect(mockSavePlatform).toHaveBeenCalledWith('ios', {
       name: 'ios',

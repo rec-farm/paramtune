@@ -1,5 +1,3 @@
-'use client'
-
 import { useMemo } from 'react'
 import Card from '@/components/ui/Card'
 import Badge from '@/components/ui/Badge'

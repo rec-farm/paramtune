@@ -1,23 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 
-vi.mock('next/server', () => {
-  class MockNextResponse {
-    _body: any
-    _init: any
-
-    constructor(body?: any, init?: any) {
-      this._body = body
-      this._init = init
-    }
-
-    static json(body: any, init?: any) {
-      const response = new MockNextResponse(body, init)
-      ;(response as any).json = async () => body
-      return response
-    }
-  }
-  return { NextResponse: MockNextResponse }
-})
 
 const mockAuth = vi.hoisted(() => ({
   api: { getSession: vi.fn() },
@@ -34,7 +16,7 @@ vi.mock('@/models/Platform', () => ({
 const mockLogAudit = vi.hoisted(() => vi.fn())
 vi.mock('@/lib/auditLog', () => ({ logAudit: mockLogAudit }))
 
-import { GET, POST } from '@/app/api/[platform]/versions/route'
+import { GET, POST } from '@/server/routes/versions'
 
 function makeRequest() {
   return { headers: new Headers() } as unknown as Request
@@ -60,8 +42,8 @@ describe('GET /api/[platform]/versions', () => {
       params: Promise.resolve({ platform: 'nonexistent' }),
     })) as any
 
-    expect(response._init.status).toBe(404)
-    expect(response._body).toEqual({ error: 'Platform not found' })
+    expect(response.status).toBe(404)
+    expect((await response.json())).toEqual({ error: 'Platform not found' })
   })
 
   it('returns the versions list when the platform exists', async () => {
@@ -74,8 +56,8 @@ describe('GET /api/[platform]/versions', () => {
       params: Promise.resolve({ platform: 'ios' }),
     })) as any
 
-    expect(response._init.status).toBe(200)
-    expect(response._body).toEqual(['1.0.0', '2.0.0'])
+    expect(response.status).toBe(200)
+    expect((await response.json())).toEqual(['1.0.0', '2.0.0'])
   })
 })
 
@@ -92,8 +74,8 @@ describe('POST /api/[platform]/versions', () => {
       params: Promise.resolve({ platform: 'nonexistent' }),
     })) as any
 
-    expect(response._init.status).toBe(404)
-    expect(response._body).toEqual({ error: 'Platform not found' })
+    expect(response.status).toBe(404)
+    expect((await response.json())).toEqual({ error: 'Platform not found' })
     expect(mockSavePlatform).not.toHaveBeenCalled()
     expect(mockLogAudit).not.toHaveBeenCalled()
   })
@@ -107,8 +89,8 @@ describe('POST /api/[platform]/versions', () => {
       params: Promise.resolve({ platform: 'ios' }),
     })) as any
 
-    expect(response._init.status).toBe(201)
-    expect(response._body).toEqual({ ok: true })
+    expect(response.status).toBe(201)
+    expect((await response.json())).toEqual({ ok: true })
     expect(mockSavePlatform).toHaveBeenCalledWith('ios', {
       name: 'ios',
       versions: ['1.0.0', '2.0.0'],
@@ -124,8 +106,8 @@ describe('POST /api/[platform]/versions', () => {
       params: Promise.resolve({ platform: 'ios' }),
     })) as any
 
-    expect(response._init.status).toBe(201)
-    expect(response._body).toEqual({ ok: true })
+    expect(response.status).toBe(201)
+    expect((await response.json())).toEqual({ ok: true })
     expect(mockSavePlatform).toHaveBeenCalledWith('ios', {
       name: 'ios',
       versions: ['1.0.0', '1.2.3+build.5'],
@@ -139,7 +121,7 @@ describe('POST /api/[platform]/versions', () => {
       params: Promise.resolve({ platform: 'ios' }),
     })) as any
 
-    expect(response._init.status).toBe(400)
+    expect(response.status).toBe(400)
     expect(mockSavePlatform).not.toHaveBeenCalled()
   })
 
@@ -153,7 +135,7 @@ describe('POST /api/[platform]/versions', () => {
       params: Promise.resolve({ platform: 'ios' }),
     })) as any
 
-    expect(response._init.status).toBe(400)
+    expect(response.status).toBe(400)
     expect(mockSavePlatform).not.toHaveBeenCalled()
   })
 
@@ -166,7 +148,7 @@ describe('POST /api/[platform]/versions', () => {
         params: Promise.resolve({ platform: 'ios' }),
       })) as any
 
-      expect(response._init.status).toBe(400)
+      expect(response.status).toBe(400)
       expect(mockSavePlatform).not.toHaveBeenCalled()
     }
   )
@@ -178,7 +160,7 @@ describe('POST /api/[platform]/versions', () => {
       params: Promise.resolve({ platform: 'ios' }),
     })) as any
 
-    expect(response._init.status).toBe(400)
-    expect(response._body).toEqual({ error: 'Missing "version" in body' })
+    expect(response.status).toBe(400)
+    expect((await response.json())).toEqual({ error: 'Missing "version" in body' })
   })
 })

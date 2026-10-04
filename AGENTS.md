@@ -16,15 +16,13 @@
 - Components use forwardRef with displayName
 - Error handling with try/catch and type guards
 - Use cn() utility for conditional className merging
-- Client components marked with 'use client'
+- Browser code lives in src/client and src/components; never import server modules there
 - Props interfaces extend HTML element attributes where appropriate
 
-<!-- BEGIN:nextjs-agent-rules -->
+## Runtime boundaries
 
-# This is NOT the Next.js you know
-
-This version has breaking changes — APIs, conventions, and file structure may all differ from your training data. Read the relevant guide in `node_modules/next/dist/docs/` (resolved from this file's directory; in monorepos the `next` package may not be visible from the repo root) before writing any code. Heed deprecation notices.
-
-This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
-
-<!-- END:nextjs-agent-rules -->
+- Vite builds the browser app; Hono on Node serves authenticated APIs and production assets.
+- Keep Redis, SQLite, auth configuration, and audit logging server-only.
+- Shared JSON contracts and browser-safe validation live in src/shared and src/lib.
+- Every dashboard endpoint must validate its session; browser redirects are not authorization.
+- Run pnpm test:e2e:ci after changing routing, auth, mutations, or production serving.

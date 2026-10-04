@@ -119,7 +119,7 @@ export function createKeyboardHandlers({
       const value = textarea.value
 
       const { currentLine, currentIndent } = getCurrentLineInfo()
-      let newIndent = calculateNewLineIndent(currentLine, currentIndent)
+      const newIndent = calculateNewLineIndent(currentLine, currentIndent)
 
       // If next non-space is a closing brace/bracket and current line lacks a comma, add one before newline
       const after = value.substring(end)
@@ -318,7 +318,7 @@ export function createAutocompleteKeyDownHandler(
           e.preventDefault()
           autocomplete.dismiss()
           return
-        case 'Tab':
+        case 'Tab': {
           // Accept suggestion on Tab as well
           e.preventDefault()
           const tabSuggestion = autocomplete.acceptSuggestion()
@@ -326,6 +326,7 @@ export function createAutocompleteKeyDownHandler(
             onAcceptSuggestion(tabSuggestion)
           }
           return
+        }
       }
     }
 

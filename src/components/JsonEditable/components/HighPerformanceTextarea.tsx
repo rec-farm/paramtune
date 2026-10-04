@@ -1,5 +1,3 @@
-'use client'
-
 import { memo, forwardRef, useCallback, useMemo, useState } from 'react'
 import { VirtualizedLineNumbers } from './VirtualizedLineNumbers'
 import { EDITOR_CONSTANTS } from '../utils/editorConstants'

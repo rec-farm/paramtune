@@ -9,19 +9,27 @@ use paramtune_api::{AppState, Config, router};
 use serde_json::json;
 use tower::ServiceExt;
 
-fn state(auth_url: String) -> AppState {
-    AppState::new(
+fn state(auth_url: String) -> (AppState, tempfile::TempDir) {
+    // CI runs Rust tests before Vite builds the production assets.
+    let client_dir = tempfile::tempdir().unwrap();
+    std::fs::write(
+        client_dir.path().join("app.html"),
+        "<!doctype html><html></html>",
+    )
+    .unwrap();
+    let state = AppState::new(
         Config {
             auth_url,
             public_origin: "https://paramtune.example".into(),
             cors_origin: "https://paramtune.example".into(),
             production: true,
             trust_proxy: false,
-            client_dir: "../dist/client".into(),
+            client_dir: client_dir.path().to_str().unwrap().into(),
         },
         "redis://127.0.0.1:1/15",
     )
-    .unwrap()
+    .unwrap();
+    (state, client_dir)
 }
 async fn auth() -> (String, tokio::task::JoinHandle<()>) {
     let listener = tokio::net::TcpListener::bind("127.0.0.1:0").await.unwrap();
@@ -63,7 +71,8 @@ async fn auth() -> (String, tokio::task::JoinHandle<()>) {
 #[tokio::test]
 async fn session_failures_never_authorize_and_auth_cookies_survive() {
     let (url, task) = auth().await;
-    let app = router(state(url));
+    let (state, _client_dir) = state(url);
+    let app = router(state);
     let request = Request::builder()
         .uri("/api/schemas")
         .header("x-user-id", "forged")
@@ -125,7 +134,8 @@ async fn session_failures_never_authorize_and_auth_cookies_survive() {
 #[tokio::test]
 async fn security_and_rate_limits_precede_domain_operations() {
     let (url, task) = auth().await;
-    let app = router(state(url));
+    let (state, _client_dir) = state(url);
+    let app = router(state);
     for (header, value, expected) in [
         ("origin", "https://evil.example", 403),
         ("sec-fetch-site", "cross-site", 403),

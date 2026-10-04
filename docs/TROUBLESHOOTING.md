@@ -1,8 +1,9 @@
 # Troubleshooting
 
-## Build fails on Vercel
-- Ensure Node version is within `engines` in `package.json` (20–22).
-- Verify environment variables are set in Vercel Project Settings.
+## Build or startup fails
+- Use Node 22.12+ as required by `engines` in `package.json`.
+- Verify runtime environment variables are configured on rec-farm, including `BETTER_AUTH_URL`, `BETTER_AUTH_SECRET`, and Redis settings.
+- Ensure `AUTH_DB_PATH` points to writable persistent storage.
 
 ## Redis connection errors
 - Prefer a single `REDIS_URL`.

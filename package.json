@@ -26,8 +26,7 @@
     "analyze": "pnpm build && node scripts/analyze.mjs",
     "auth:migrate": "tsx src/server/migrate-auth.ts",
     "auth:migrate:production": "node --import ./scripts/env.mjs dist/server/migrate-auth.js",
-    "test:e2e:ci": "node scripts/e2e.mjs",
-    "build:vercel": "pnpm build && node scripts/vercel.mjs"
+    "test:e2e:ci": "node scripts/e2e.mjs"
   },
   "dependencies": {
     "better-auth": "^1.7.7",

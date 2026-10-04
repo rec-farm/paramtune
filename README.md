@@ -129,12 +129,11 @@ export BETTER_AUTH_URL="http://localhost:3000"
 docker-compose up --build -d
 ```
 
-### Vercel
+### rec-farm
 
-Vercel hosts the frontend and proxies APIs to a persistent Node backend. Set
-PARAMTUNE_API_ORIGIN to its HTTPS origin and set backend BETTER_AUTH_URL to the
-public frontend origin. Builds fail without a backend origin. See
-[Deployment](docs/DEPLOYMENT.md).
+Deploy the Node/Docker application on rec-farm with persistent Redis and SQLite
+storage. The same process serves the frontend and API behind the HTTPS reverse
+proxy. See [Deployment](docs/DEPLOYMENT.md) for configuration and rollback.
 
 ## Architecture
 

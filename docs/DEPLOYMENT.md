@@ -48,19 +48,20 @@ Handstamp session (RP-initiated logout), and signing out at Handstamp ends every
 session of that person through the back-channel logout URI, which must be reachable from the
 Handstamp server.
 
-## Vercel frontend
+## rec-farm hosting
 
-vercel.json runs pnpm build:vercel to generate Build Output API assets/routes.
+Deploy the Docker image on rec-farm with persistent Redis and SQLite volumes.
+Route the public HTTPS origin to the Node application on port 3000; it serves
+both the frontend and API. Set BETTER_AUTH_URL and CORS_ORIGIN to that public
+origin and register matching Google/OIDC callback URLs.
 
-1. Deploy the Node backend with persistent SQLite and Redis.
-2. Set PARAMTUNE_API_ORIGIN in Vercel to the backend HTTPS origin, without a path.
-3. Set backend BETTER_AUTH_URL and provider callback URLs to the public frontend origin.
-4. Deploy. /api/* and /healthz proxy to the backend; browser requests stay same-origin.
-5. Verify OAuth, cookies, deep-link reload, and saving on the actual deployment.
+Keep secrets in runtime environment variables. VITE_* variables are public and
+must never contain secrets. No separate frontend host or API proxy build is
+required. Verify provider sign-in, cookies, deep-link reloads, and saving on the
+actual deployment before switching traffic.
 
-The build fails explicitly without a backend origin. Preview deployments need matching backend/auth origins and separate data. VITE_* variables are public and must never contain secrets. SQLite cannot persist durably in a stateless Vercel function.
-
-Public routes retain prerendered HTML. Dashboard shells are uncached, and API requests enforce authorization. Unknown API paths never fall through to frontend HTML.
+Public routes retain prerendered HTML. Dashboard shells are uncached, and API
+requests enforce authorization. Unknown API paths never fall through to frontend HTML.
 
 ## Rollback
 

@@ -9,6 +9,7 @@ import { sortVersionsDescending } from '@/lib/versionUtils'
 import { createPlatformVersion } from '@/actions/createVersion'
 import { revalidatePath } from 'next/cache'
 import { Suspense } from 'react'
+import { decodeRouteParam } from '@/lib/routeParams'
 
 export const dynamic = 'force-dynamic'
 
@@ -42,7 +43,7 @@ export default async function Page({
   params: Promise<{ platform: string }>
 }) {
   const resolvedParams = await params
-  const platformName = decodeURIComponent(resolvedParams.platform)
+  const platformName = decodeRouteParam(resolvedParams.platform)
   const platform = await getPlatform(platformName)
 
   if (!platform) {
@@ -72,7 +73,7 @@ export default async function Page({
     'use server'
 
     const resolvedParams = await params
-    const platformName = decodeURIComponent(resolvedParams.platform)
+    const platformName = decodeRouteParam(resolvedParams.platform)
     const versionName = formData.get('versionName') as string
 
     await createPlatformVersion(platformName, versionName)

@@ -5,6 +5,7 @@ import { GitCompare } from 'lucide-react'
 
 import { createHash } from 'crypto'
 import { saveSchemaContent } from '@/actions/saveSchema'
+import { decodeRouteParam } from '@/lib/routeParams'
 import PageTitle from '@/components/PageTitle'
 import SchemaTabs from '@/components/SchemaTabs'
 import {
@@ -22,8 +23,8 @@ export default async function Page({
 }) {
   const resolvedParams = await params
   const { platform, version } = resolvedParams
-  const platformName = decodeURIComponent(platform)
-  const versionName = decodeURIComponent(version)
+  const platformName = decodeRouteParam(platform)
+  const versionName = decodeRouteParam(version)
 
   const schema = await getSchema(platformName, versionName)
   const contentHash = createHash('sha256')

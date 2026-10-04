@@ -145,8 +145,8 @@ proxy. See [Deployment](docs/DEPLOYMENT.md) for configuration and rollback.
 - tests: unit/HTTP contracts and browser integration
 
 Production serves frontend and API on one port. Development uses PORT (default
-3000) and API_PORT (default 3001) with a same-origin proxy. Both ports must be
-free. The existing portless workflow remains available. Use herdr-run for
+3000, or assigned by portless) and an automatically allocated local API port
+with a same-origin proxy. Set API_PORT only when a fixed, free port is needed. The existing portless workflow remains available. Use herdr-run for
 long-running processes inside Herdr.
 
 Public pages are prerendered without database access. Dashboard reads and writes

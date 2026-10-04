@@ -1,20 +1,15 @@
 import './env.mjs'
 import { createServer } from 'vite'
 import { spawn } from 'node:child_process'
-import { createServer as createPortProbe } from 'node:net'
+import { selectApiPort } from './dev-port'
 
 process.env.NODE_ENV = 'development'
 const port = Number(process.env.PORT || 3000)
-const apiPort = Number(process.env.API_PORT || 3001)
-if (port === apiPort) throw new Error('PORT and API_PORT must be different')
-process.env.API_PORT = String(apiPort)
 process.env.BETTER_AUTH_URL ||= process.env.PORTLESS_URL || `http://localhost:${port}`
-// Refuse occupied ports before spawning a watcher or borrowing another API.
-await new Promise<void>((resolve, reject) => {
-  const probe = createPortProbe()
-  probe.once('error', reject)
-  probe.listen(apiPort, '127.0.0.1', () => probe.close(() => resolve()))
-})
+let apiPort = await selectApiPort(process.env.API_PORT)
+if (process.env.API_PORT && apiPort === port) throw new Error('PORT and API_PORT must be different')
+while (apiPort === port) apiPort = await selectApiPort()
+process.env.API_PORT = String(apiPort)
 const devServer = await createServer({ server: { port } })
 await devServer.listen()
 const api = spawn('pnpm', ['exec', 'tsx', 'watch', '--import', './scripts/env.mjs', 'src/server/index.ts'], {

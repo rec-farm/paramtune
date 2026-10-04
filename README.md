@@ -138,9 +138,7 @@ proxy. See [Deployment](docs/DEPLOYMENT.md) for configuration and rollback.
 
 - src/client: React Router pages, API client, styles, prerendering
 - backend: Rust HTTP routes, security, Redis persistence, schema resolution, and asset serving
-- src/server: optional legacy Node reference backend, excluded from the production image
 - src/shared: browser-safe JSON contracts
-- src/models: retained Node domain implementation for compatibility tests and rollback
 - src/components: reusable UI
 - tests: unit/HTTP contracts and browser integration
 
@@ -150,7 +148,7 @@ with a same-origin proxy. Set API_PORT only when a fixed, free port is needed. T
 long-running processes inside Herdr.
 
 Public pages are prerendered without database access. Dashboard reads and writes
-use authenticated APIs. Browser builds reject server-only imports.
+use authenticated APIs. Lint rejects Node built-in imports in browser code.
 
 ## Documentation
 

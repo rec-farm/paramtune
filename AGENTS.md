@@ -23,7 +23,7 @@
 
 ## Runtime boundaries
 
-- Vite builds the browser app; Axum on Rust serves authenticated APIs and production assets; Rust handles Handstamp OIDC and Redis sessions. The Node API remains a local reference excluded from the production image.
+- Vite builds the browser app; Axum on Rust serves authenticated APIs and production assets; Rust handles Handstamp OIDC and Redis sessions.
 - Keep Redis, auth configuration, and audit logging server-only.
 - Shared JSON contracts and browser-safe validation live in src/shared and src/lib.
 - Every dashboard endpoint must validate its session; browser redirects are not authorization.

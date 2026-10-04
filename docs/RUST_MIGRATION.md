@@ -1,10 +1,10 @@
 # Rust runtime and Handstamp authentication
 
-One Rust/Axum process serves static Vite assets, APIs, and Handstamp OIDC. The production image contains no Node runtime, npm packages, SQLite database, or auth sidecar. Node is used only for frontend build/development tooling and the optional reference backend.
+One Rust/Axum process serves static Vite assets, APIs, and Handstamp OIDC. The production image contains no Node runtime, npm packages, SQLite database, or auth sidecar. Node is used only for frontend build/development tooling.
 
 ## Authentication
 
-Set PUBLIC_ORIGIN to the public HTTPS origin, plus OIDC_ISSUER, OIDC_CLIENT_ID, and OIDC_CLIENT_SECRET. BETTER_AUTH_URL remains a transitional alias. Credentials and provider tokens stay server-only.
+Set PUBLIC_ORIGIN to the public HTTPS origin, plus OIDC_ISSUER, OIDC_CLIENT_ID, and OIDC_CLIENT_SECRET. Credentials and provider tokens stay server-only.
 
 The openidconnect library handles authorization-code login with PKCE. It verifies signatures, issuer, audience, expiry, nonce, and any access-token hash. Userinfo must match the verified subject. Login transactions expire after ten minutes, bind to an HttpOnly browser cookie, and are consumed once. OIDC_ROLES_CLAIM defaults to groups; OIDC_ADMIN_GROUP maps its members to admin.
 
@@ -28,6 +28,6 @@ Build with Rust 1.92+ and Node 22.12+. Run the lint, typecheck, unit, Rust, prod
 
 The image starts Rust directly. Local startup scripts wrap that binary with Node development tooling. For direct execution, export runtime variables and execute backend/target/release/paramtune-api. OIDC_CA_CERT_FILE optionally adds a private CA certificate; TLS verification stays enabled.
 
-Keep the previous image and SQLite volume for rollback using current Redis configuration data. The optional Node reference backend is available locally after pnpm build:node; it is not packaged in the minimal image.
+Keep the previous image and SQLite volume for rollback using current Redis configuration data.
 
 Local tests do not verify live Handstamp registration or the VPS proxy. Verify login, roles, deep links, saves, and both logout directions on deployment before switching traffic.

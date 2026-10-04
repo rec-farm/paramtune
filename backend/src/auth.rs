@@ -495,7 +495,7 @@ async fn backchannel(state: &AppState, request: Request) -> Result<Response> {
 pub async fn handle(State(state): State<AppState>, request: Request) -> Result<Response> {
     let path = request.uri().path();
     match (request.method(),path) {
-        (&Method::GET,"/api/auth/providers") => Ok(Json(json!({"oidc":if setting("OIDC_ISSUER","").is_empty() { Value::Null } else { json!({"label":setting("OIDC_DISPLAY_NAME","Handstamp")}) },"google":false,"development":!state.0.config.production})).into_response()),
+        (&Method::GET,"/api/auth/providers") => Ok(Json(json!({"oidc":if setting("OIDC_ISSUER","").is_empty() { Value::Null } else { json!({"label":setting("OIDC_DISPLAY_NAME","Handstamp")}) },"development":!state.0.config.production})).into_response()),
         (&Method::GET,"/api/auth/get-session") => match session(&state,request.headers()).await { Ok(row) => Ok(Json(row).into_response()), Err(error) if error.0 == StatusCode::UNAUTHORIZED => Ok(Json(Value::Null).into_response()), Err(error) => Err(error) },
         (&Method::POST,"/api/auth/sign-in/social") => {
             let bytes = axum::body::to_bytes(request.into_body(),16384).await.map_err(|_| ApiError::bad("Invalid sign-in body"))?;

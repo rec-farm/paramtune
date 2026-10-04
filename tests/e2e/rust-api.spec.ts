@@ -1,6 +1,5 @@
 import { test, expect } from '@playwright/test'
 
-test.skip(process.env.PARAMTUNE_BACKEND === 'node', 'Rust compatibility probes require the Rust backend; the browser workflow suite covers Node rollback')
 
 const authURL = process.env.E2E_AUTH_URL || 'http://localhost:4380'
 const nodeURL = ''
@@ -69,7 +68,7 @@ test('Rust API preserves composition, cascading updates and history', async ({ c
 
 test('Rust rejects unauthenticated writes, forged identity, CSRF, bad bodies and unknown routes', async ({ request }) => {
   const unauthorized = await request.put(detail(`${prefix}-absent`), {
-    data: { content: {} }, headers: { 'x-user-id': 'forged', Cookie: 'better-auth.session_token=forged' },
+    data: { content: {} }, headers: { 'x-user-id': 'forged', Cookie: 'paramtune-session=forged' },
   })
   expect(unauthorized.status()).toBe(401)
   expect((await request.post(`${ui}/platforms`, { data: { name: 'csrf' }, headers: { Origin: 'https://evil.example' } })).status()).toBe(403)

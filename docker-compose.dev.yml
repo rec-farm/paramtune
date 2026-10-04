@@ -22,7 +22,6 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=development
-      - PARAMTUNE_BACKEND=${PARAMTUNE_BACKEND:-rust}
       - VITE_HOST=0.0.0.0
       - CORS_ORIGIN=http://localhost:3000
       - REDIS_URL=redis://redis:6379/2

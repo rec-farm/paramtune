@@ -32,7 +32,7 @@ async fn sessions_fail_closed_and_production_disables_dev_login() {
     let app = router(state);
     for cookie in [
         None,
-        Some("better-auth.session_token=forged"),
+        Some("untrusted-session=forged"),
         Some("__Host-paramtune-session=invalid"),
     ] {
         let mut request = Request::builder().uri("/api/schemas");

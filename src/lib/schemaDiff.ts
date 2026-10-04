@@ -253,19 +253,3 @@ export function calculateDiff(
 
   return { changes, summary, byType }
 }
-
-// Schema-specific helpers (for Phase 7 cross-schema comparison)
-
-import type { Schema } from '@/shared/contracts'
-
-/**
- * Compare two Schema objects by their content
- */
-export function diffSchemas(
-  schemaA: Pick<Schema, 'content'>,
-  schemaB: Pick<Schema, 'content'>
-): DiffResult {
-  // A is the source (previous), B the target (current): keys only in B are
-  // "added", keys only in A are "removed"
-  return calculateDiff(schemaB.content, schemaA.content)
-}

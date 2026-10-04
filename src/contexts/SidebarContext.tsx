@@ -1,9 +1,9 @@
 import { createContext, useContext, useState, ReactNode } from 'react'
-import { Data } from 'effect'
 
-export class SidebarContextError extends Data.TaggedError('SidebarContextError')<{}> {
-  get message() {
-    return 'useSidebar must be used within a SidebarProvider'
+export class SidebarContextError extends Error {
+  constructor() {
+    super('useSidebar must be used within a SidebarProvider')
+    this.name = 'SidebarContextError'
   }
 }
 

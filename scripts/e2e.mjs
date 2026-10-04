@@ -6,8 +6,7 @@ const authURL = 'http://localhost:4481'
 const baseURL = 'http://localhost:4482'
 const env = {
   ...process.env,
-  BETTER_AUTH_URL: baseURL,
-  OIDC_ISSUER: '', OIDC_CLIENT_ID: '', OIDC_CLIENT_SECRET: '', GOOGLE_CLIENT_ID: '', GOOGLE_CLIENT_SECRET: '',
+  OIDC_ISSUER: '', OIDC_CLIENT_ID: '', OIDC_CLIENT_SECRET: '',
   DEV_USER_EMAIL: 'reviewer@paramtune.local', DEV_USER_NAME: 'Reviewer',
   REDIS_URL: process.env.E2E_REDIS_URL || 'redis://127.0.0.1:6379/15',
   E2E_BASE_URL: baseURL, E2E_AUTH_URL: authURL, E2E_PRODUCTION: '1',
@@ -35,8 +34,8 @@ try {
     if (occupied) throw new Error(`Integration port is occupied: ${url}`)
   }
   // Development and production share test Redis sessions, with dev login disabled in production.
-  for (const [mode, port, url, backend] of [['development', '4481', authURL, process.env.PARAMTUNE_BACKEND || 'rust'], ['production', '4482', baseURL, process.env.PARAMTUNE_BACKEND || 'rust']]) {
-    children.push(spawn(process.execPath, ['scripts/start.mjs'], { env: { ...env, NODE_ENV: mode, PORT: port, HOST: '127.0.0.1', PUBLIC_ORIGIN: url, BETTER_AUTH_URL: url, PARAMTUNE_BACKEND: backend }, stdio: 'inherit' }))
+  for (const [mode, port, url] of [['development', '4481', authURL], ['production', '4482', baseURL]]) {
+    children.push(spawn(process.execPath, ['scripts/start.mjs'], { env: { ...env, NODE_ENV: mode, PORT: port, HOST: '127.0.0.1', PUBLIC_ORIGIN: url }, stdio: 'inherit' }))
     await ready(`${url}/healthz`)
   }
   const tests = spawn('pnpm', ['exec', 'playwright', 'test'], { env, stdio: 'inherit' })

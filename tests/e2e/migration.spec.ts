@@ -33,7 +33,7 @@ test('create, edit, compose, compare, restore, reload, and sign out', async ({ p
   page.on('pageerror', (error) => errors.push(error.message))
   const login = await context.request.post(`${authURL}/api/auth/dev-login`, { headers: { Origin: authURL } })
   expect(login.ok()).toBe(true)
-  expect(login.headers()['set-cookie']).toContain(process.env.PARAMTUNE_BACKEND === 'node' ? 'session_token' : 'paramtune-session')
+  expect(login.headers()['set-cookie']).toContain('paramtune-session')
   await page.goto('/dashboard')
   await expect(page.getByRole('heading', { name: 'Overview.' })).toBeVisible()
   await page.getByLabel('Platform name').fill(platform)

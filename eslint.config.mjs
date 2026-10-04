@@ -25,7 +25,7 @@ export default tseslint.config(
   {
     files: ['src/client/**/*.{ts,tsx}', 'src/components/**/*.{ts,tsx}', 'src/contexts/**/*.{ts,tsx}'],
     rules: {
-      'no-restricted-imports': ['error', { patterns: ['@/server/*', '@/models/*', '@/connections/*', '@/lib/auth', '@/lib/apiHandler', '@/lib/dashboardAuth', '@/lib/auditLog', '@/lib/effectRedis', '@/lib/oidc', '@/lib/oidcProfile', '@/lib/oidcLogoutToken', 'next', 'next/*', 'node:*'] }],
+      'no-restricted-imports': ['error', { patterns: ['node:*'] }],
     },
   },
 )

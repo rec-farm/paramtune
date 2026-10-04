@@ -23,7 +23,7 @@ export function useSession() {
 }
 
 export const signIn = {
-  async social(input: { provider: string, callbackURL: string, errorCallbackURL?: string }) {
+  async social(input: { provider: string, callbackURL: string }) {
     const response = await fetch('/api/auth/sign-in/social', {
       method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(input),
     })

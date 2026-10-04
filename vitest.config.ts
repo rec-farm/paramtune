@@ -13,7 +13,7 @@ export default defineConfig({
     include: ['tests/**/*.test.ts'],
     coverage: {
       provider: 'v8',
-      include: ['src/models/**', 'src/lib/**'],
+      include: ['src/lib/**', 'src/shared/**', 'src/components/JsonEditable/utils/**'],
     },
   },
 })

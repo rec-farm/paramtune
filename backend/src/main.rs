@@ -13,8 +13,6 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         .init();
     let production = setting("NODE_ENV", "production") != "development";
     let origin = env::var("PUBLIC_ORIGIN")
-        .or_else(|_| env::var("BETTER_AUTH_URL"))
-        .or_else(|_| env::var("BETTER_AUTH_BASE_URL"))
         .or_else(|_| env::var("PORTLESS_URL"))
         .unwrap_or_else(|_| "http://localhost:3000".into());
     let origin = url::Url::parse(&origin)?.origin().ascii_serialization();

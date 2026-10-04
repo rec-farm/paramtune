@@ -7,7 +7,7 @@ RUN cargo build --release --locked --manifest-path backend/Cargo.toml
 
 FROM node:22-alpine AS builder
 WORKDIR /app
-RUN corepack enable && apk add --no-cache python3 make g++
+RUN corepack enable
 COPY package.json pnpm-lock.yaml .npmrc ./
 RUN pnpm install --frozen-lockfile
 COPY . .

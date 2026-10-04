@@ -7,6 +7,5 @@ export function displayEmail(email: string | null | undefined) {
 
 export interface LoginProviders {
   oidc: { label: string } | null
-  google: boolean
   development: boolean
 }

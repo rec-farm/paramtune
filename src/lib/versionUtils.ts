@@ -12,7 +12,7 @@ export function sortVersionsDescending(versions: string[]): string[] {
 
 /**
  * Returns the newest version in a list by semver order, or undefined if the
- * list is empty. `addVersion` only ever appends, so a version list is not
+ * list is empty. A version list is not
  * guaranteed to already be in semver order (e.g. backfilling an older
  * version after a newer one already exists) — callers that need "the latest
  * version" must sort first rather than assume the last or first array entry.
@@ -44,42 +44,4 @@ export function isValidVersion(version: unknown): version is string {
     isValidVersionName(version) &&
     semver.valid(version) !== null
   )
-}
-
-/**
- * Checks whether a value is an array of valid semantic version strings.
- * Used to validate the "versions" field of a platform payload before it's
- * persisted, since a malformed value (e.g. a non-array or an entry that
- * isn't valid semver) breaks sortVersionsDescending and @extends resolution
- * the same way a single invalid version does.
- */
-export function isValidVersionsList(versions: unknown): versions is string[] {
-  return (
-    Array.isArray(versions) &&
-    versions.every((v) => typeof v === 'string' && isValidVersion(v))
-  )
-}
-
-/**
- * Appends a version to an existing version list, deduplicating it.
- * Without dedup, resubmitting an already-existing version persists a
- * duplicate string, which then renders as a duplicate React list key and
- * a duplicate entry for every downstream sortVersionsDescending/semver-range
- * consumer.
- */
-export function addVersion(versions: string[] | undefined, version: string): string[] {
-  return Array.from(new Set([...(versions || []), version]))
-}
-
-/**
- * Deduplicates a version list, preserving first-occurrence order.
- * POST /api/[platform] (documented in docs/API.md) lets an external caller
- * submit the full "versions" array directly, unlike POST /api/[platform]/versions
- * which already dedupes via addVersion. Without this, a caller resubmitting
- * an existing version persists a duplicate string, hitting the same
- * duplicate-React-key / duplicate-sortVersionsDescending-entry bug addVersion
- * was written to prevent.
- */
-export function dedupeVersions(versions: string[]): string[] {
-  return Array.from(new Set(versions))
 }

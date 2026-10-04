@@ -2,29 +2,25 @@ import { spawn } from 'node:child_process'
 import { createServer } from 'node:net'
 import { access } from 'node:fs/promises'
 
-export async function freePort(configured) {
-  const port = configured ? Number(configured) : 0
-  if (!Number.isInteger(port) || port < 0 || port > 65535) throw new Error('AUTH_PORT must be an integer between 0 and 65535')
+export async function freePort() {
   return new Promise((resolve, reject) => {
     const probe = createServer()
     probe.once('error', reject)
-    probe.listen(port, '127.0.0.1', () => {
+    probe.listen(0, '127.0.0.1', () => {
       const address = probe.address()
       probe.close((error) => error ? reject(error) : resolve(address.port))
     })
   })
 }
-export async function compileRust(release = false) {
-  const args = ['build', '--locked', '--manifest-path', 'backend/Cargo.toml', ...(release ? ['--release'] : [])]
+export async function compileRust() {
+  const args = ['build', '--locked', '--manifest-path', 'backend/Cargo.toml']
   await new Promise((resolve, reject) => {
     const child = spawn('cargo', args, { stdio: 'inherit' })
     child.once('error', reject)
     child.once('exit', (code) => code === 0 ? resolve() : reject(new Error(`Rust build failed (${code})`)))
   })
 }
-export async function startBackend({ env = process.env, watch = false, onExit = () => {} } = {}) {
-  const backend = env.PARAMTUNE_BACKEND || 'rust'
-  if (!['rust', 'node'].includes(backend)) throw new Error('PARAMTUNE_BACKEND must be rust or node')
+export async function startBackend({ env = process.env, development = false, onExit = () => {} } = {}) {
   const children = []
   let closing = false
   let closePromise
@@ -64,18 +60,11 @@ export async function startBackend({ env = process.env, watch = false, onExit = 
     }
     throw new Error(`Backend did not become ready: ${url}`)
   }
-  const apiEnv = { ...env, NODE_ENV: env.NODE_ENV || 'production', PARAMTUNE_AUTH_SIDECAR: 'false' }
-  const nodeArgs = (entry) => watch
-    ? ['exec', 'tsx', 'watch', '--import', './scripts/env.mjs', `src/server/${entry}.ts`]
-    : ['--import', './scripts/env.mjs', `dist/server/${entry}.js`]
+  const apiEnv = { ...env, NODE_ENV: env.NODE_ENV || 'production' }
   try {
-    if (backend === 'node') {
-      launch(watch ? 'pnpm' : process.execPath, nodeArgs('index'), apiEnv)
-    } else {
-      const binary = env.PARAMTUNE_API_BINARY || `backend/target/${watch ? 'debug' : 'release'}/paramtune-api`
-      await access(binary)
-      launch(binary, [], apiEnv)
-    }
+    const binary = env.PARAMTUNE_API_BINARY || `backend/target/${development ? 'debug' : 'release'}/paramtune-api`
+    await access(binary)
+    launch(binary, [], apiEnv)
     await ready(`http://127.0.0.1:${env.PORT || 3000}/healthz`)
     return { close }
   } catch (error) { await close(); throw error }

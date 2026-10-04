@@ -74,10 +74,53 @@ export interface OidcSignIn {
   label: string
 }
 
-function LoginContent({ oidc }: { oidc: OidcSignIn | null }) {
+interface LoginProps {
+  oidc: OidcSignIn | null
+  google: boolean
+}
+
+// Better Auth sends failed sign-ins back here with ?error=<code>
+const SIGN_IN_ERRORS: Record<string, string> = {
+  access_denied: 'Sign-in was cancelled or this account isn’t allowed to use Paramtune.',
+  state_mismatch: 'That sign-in took too long or was started in another tab. Try again.',
+  please_restart_the_process: 'That sign-in took too long or was started in another tab. Try again.',
+}
+
+function signInErrorMessage(code: string | null) {
+  if (!code) return null
+  return SIGN_IN_ERRORS[code] ?? 'Sign-in didn’t complete. Try again.'
+}
+
+type Provider = typeof OIDC_PROVIDER_ID | 'google'
+
+function LoginContent({ oidc, google }: LoginProps) {
   const searchParams = useSearchParams()
   const returnTo = searchParams.get('returnTo') || '/dashboard'
   const { data: session, isPending } = useSession()
+  const [pending, setPending] = useState<Provider | null>(null)
+  const [error, setError] = useState<string | null>(() =>
+    signInErrorMessage(searchParams.get('error')),
+  )
+
+  // On success the browser leaves for the provider, so only failures come back
+  async function startSignIn(provider: Provider) {
+    setPending(provider)
+    setError(null)
+    try {
+      const result = await signIn.social({
+        provider,
+        callbackURL: returnTo,
+        errorCallbackURL: '/login',
+      })
+      if (result.error) {
+        setError(result.error.message || 'Sign-in didn’t start. Try again.')
+        setPending(null)
+      }
+    } catch {
+      setError('Sign-in didn’t start. Check your connection and try again.')
+      setPending(null)
+    }
+  }
 
   if (isPending) {
     return <LoadingState />
@@ -156,36 +199,55 @@ function LoginContent({ oidc }: { oidc: OidcSignIn | null }) {
         </div>
 
         <div className="space-y-6">
+          {error && (
+            <p role="alert" className="text-sm text-destructive">
+              {error}
+            </p>
+          )}
+
           {oidc && (
             <button
               type="button"
-              onClick={() => signIn.social({
-                provider: OIDC_PROVIDER_ID,
-                callbackURL: returnTo
-              })}
+              onClick={() => startSignIn(OIDC_PROVIDER_ID)}
+              disabled={pending !== null}
+              aria-busy={pending === OIDC_PROVIDER_ID}
               className="pt-btn pt-btn-primary w-full h-11"
             >
+              {pending === OIDC_PROVIDER_ID && (
+                <Loader2 className="w-4 h-4 animate-spin" strokeWidth={1.5} aria-hidden="true" />
+              )}
               Sign in with {oidc.label}
             </button>
           )}
 
-          <button
-            type="button"
-            onClick={() => signIn.social({
-              provider: 'google',
-              callbackURL: returnTo
-            })}
-            className={oidc ? 'pt-btn pt-btn-secondary w-full h-11' : 'pt-btn pt-btn-primary w-full h-11'}
-          >
-            Sign in with Google
-          </button>
+          {google && (
+            <button
+              type="button"
+              onClick={() => startSignIn('google')}
+              disabled={pending !== null}
+              aria-busy={pending === 'google'}
+              className={oidc ? 'pt-btn pt-btn-secondary w-full h-11' : 'pt-btn pt-btn-primary w-full h-11'}
+            >
+              {pending === 'google' && (
+                <Loader2 className="w-4 h-4 animate-spin" strokeWidth={1.5} aria-hidden="true" />
+              )}
+              Sign in with Google
+            </button>
+          )}
+
+          {!oidc && !google && process.env.NODE_ENV !== 'development' && (
+            <p className="text-sm text-muted-foreground">
+              No sign-in method is set up. Set OIDC_ISSUER and OIDC_CLIENT_ID, or the Google
+              credentials, and restart Paramtune.
+            </p>
+          )}
 
           {process.env.NODE_ENV === 'development' && (
             <DevLoginButton returnTo={returnTo} />
           )}
 
           <p className="text-sm text-muted-foreground">
-            We use your {oidc ? 'account' : 'Google account'} only to sign you
+            We use your {oidc || !google ? 'account' : 'Google account'} only to sign you
             in. Your schemas stay on this server and are never shared.
           </p>
         </div>
@@ -194,10 +256,10 @@ function LoginContent({ oidc }: { oidc: OidcSignIn | null }) {
   )
 }
 
-export default function LoginForm({ oidc }: { oidc: OidcSignIn | null }) {
+export default function LoginForm(props: LoginProps) {
   return (
     <Suspense fallback={<LoadingState />}>
-      <LoginContent oidc={oidc} />
+      <LoginContent {...props} />
     </Suspense>
   )
 }

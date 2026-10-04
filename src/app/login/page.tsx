@@ -7,6 +7,8 @@ import LoginForm from './LoginForm'
 export default async function LoginPage() {
   await connection()
   const oidc = readOidcSettings()
+  // Matches the condition in auth.ts: Google is only registered with both values
+  const google = Boolean(process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET)
 
-  return <LoginForm oidc={oidc ? { label: oidc.displayName } : null} />
+  return <LoginForm oidc={oidc ? { label: oidc.displayName } : null} google={google} />
 }

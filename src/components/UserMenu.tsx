@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import { ChevronDown, LogOut } from 'lucide-react'
 import { signOut, useSession } from '@/lib/auth-client'
+import { displayEmail } from '@/lib/oidc'
 import { useState, useRef, useEffect } from 'react'
 import ThemeSwitcher from './ThemeSwitcher'
 
@@ -82,9 +83,11 @@ export default function UserMenu() {
             <p className="text-base font-semibold text-foreground truncate">
               {user.name}
             </p>
-            <p className="font-mono text-xs text-muted-foreground truncate">
-              {user.email}
-            </p>
+            {displayEmail(user.email) && (
+              <p className="font-mono text-xs text-muted-foreground truncate">
+                {displayEmail(user.email)}
+              </p>
+            )}
           </div>
 
           <div className="px-4 py-3 border-b border-border space-y-2">

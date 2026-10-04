@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import {
+  displayEmail,
   mapOidcProfile,
   readOidcSettings,
   rememberPendingRole,
@@ -7,7 +8,7 @@ import {
   takePendingRole,
 } from '@/lib/oidc'
 
-const settings = { rolesClaim: 'groups', adminGroup: 'paramtune-admins' }
+const settings = { issuer: 'https://id.rec.farm', rolesClaim: 'groups', adminGroup: 'paramtune-admins' }
 
 describe('readOidcSettings', () => {
   it('is disabled without an issuer or client id', () => {
@@ -76,12 +77,33 @@ describe('mapOidcProfile', () => {
   it('maps name, email and role', () => {
     expect(
       mapOidcProfile({ sub: 's1', name: 'Ada', email: 'ada@example.com', groups: ['paramtune-admins'] }, settings),
-    ).toEqual({ name: 'Ada', email: 'ada@example.com', role: 'admin' })
+    ).toEqual({ name: 'Ada', email: 'ada@example.com', emailVerified: false, role: 'admin' })
+  })
+
+  it('passes email_verified through only for a real email', () => {
+    expect(mapOidcProfile({ sub: 's1', email: 'ada@example.com', email_verified: true }, settings).emailVerified).toBe(true)
+    expect(mapOidcProfile({ sub: 's1', email: 'ada@example.com', email_verified: 'true' }, settings).emailVerified).toBe(false)
+    expect(mapOidcProfile({ sub: 's1', email_verified: true }, settings).emailVerified).toBe(false)
+  })
+
+  it('gives accounts without an email an undeliverable placeholder', () => {
+    const user = mapOidcProfile({ sub: 'Ab3_x/Y', name: 'Ada' }, settings)
+    expect(user.email).toBe('ab3_x-y@id.rec.farm.invalid')
+    expect(user.name).toBe('Ada')
+    expect(mapOidcProfile({ name: 'Ada' }, settings).email).toBeUndefined()
   })
 
   it('falls back to preferred_username, then email, for the name', () => {
     expect(mapOidcProfile({ preferred_username: 'ada', email: 'ada@example.com' }, settings).name).toBe('ada')
     expect(mapOidcProfile({ email: 'ada@example.com' }, settings).name).toBe('ada@example.com')
+  })
+})
+
+describe('displayEmail', () => {
+  it('hides placeholder addresses', () => {
+    expect(displayEmail('ada@example.com')).toBe('ada@example.com')
+    expect(displayEmail('s1@id.rec.farm.invalid')).toBeNull()
+    expect(displayEmail(null)).toBeNull()
   })
 })
 

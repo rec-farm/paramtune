@@ -6,7 +6,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 import { Loader2 } from 'lucide-react'
 import { signIn, signOut, useSession } from '@/lib/auth-client'
 import Logo from '@/components/Logo'
-import { OIDC_PROVIDER_ID } from '@/lib/oidc'
+import { OIDC_PROVIDER_ID, displayEmail } from '@/lib/oidc'
 
 function LoadingState() {
   return (
@@ -153,9 +153,11 @@ function LoginContent({ oidc, google }: LoginProps) {
               <p className="text-lg font-semibold text-foreground truncate">
                 {session.user.name}
               </p>
-              <p className="font-mono text-sm text-muted-foreground truncate">
-                {session.user.email}
-              </p>
+              {displayEmail(session.user.email) && (
+                <p className="font-mono text-sm text-muted-foreground truncate">
+                  {displayEmail(session.user.email)}
+                </p>
+              )}
             </div>
           </div>
 

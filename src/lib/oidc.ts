@@ -57,14 +57,31 @@ function stringClaim(value: unknown) {
   return typeof value === 'string' && value.trim() ? value : undefined
 }
 
+// Better Auth needs an email to create a user, but a Handstamp account may
+// have none (passkey only). Such accounts get an address under the reserved
+// .invalid TLD: unique per subject, never deliverable, never verified, and
+// replaced by the real one at the next sign-in once the account has one.
+export function placeholderEmail(subject: string, issuer: string) {
+  const id = subject.toLowerCase().replace(/[^a-z0-9._-]/g, '-')
+  return `${id}@${new URL(issuer).hostname}.invalid`
+}
+
+// Placeholder addresses identify the account but aren't worth showing anyone
+export function displayEmail(email: string | null | undefined) {
+  return email && !email.endsWith('.invalid') ? email : null
+}
+
 export function mapOidcProfile(
   profile: Record<string, unknown>,
-  settings: Pick<OidcSettings, 'rolesClaim' | 'adminGroup'>,
+  settings: Pick<OidcSettings, 'issuer' | 'rolesClaim' | 'adminGroup'>,
 ) {
   const email = stringClaim(profile.email)
+  const subject = stringClaim(profile.sub)
   return {
     name: stringClaim(profile.name) ?? stringClaim(profile.preferred_username) ?? email ?? '',
-    email,
+    email: email ?? (subject ? placeholderEmail(subject, settings.issuer) : undefined),
+    // Better Auth reads `emailVerified`; OIDC sends `email_verified`
+    emailVerified: email !== undefined && profile.email_verified === true,
     role: roleFromClaims(profile, settings),
   }
 }

@@ -1,4 +1,4 @@
-import { spawn, spawnSync } from 'node:child_process'
+import { spawn } from 'node:child_process'
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
@@ -39,8 +39,7 @@ try {
     try { await fetch(url); occupied = true } catch { /* free */ }
     if (occupied) throw new Error(`Integration port is occupied: ${url}`)
   }
-  const migration = spawnSync(process.execPath, ['dist/server/migrate-auth.js'], { env: { ...env, NODE_ENV: 'test' }, stdio: 'inherit', timeout: 30_000 })
-  if (migration.status !== 0) throw new Error('Test auth database migration failed')
+  // The first server must initialize this fresh database itself.
   for (const [mode, port, url] of [['development', '4481', authURL], ['production', '4482', baseURL]]) {
     children.push(spawn(process.execPath, ['scripts/start.mjs'], { env: { ...env, NODE_ENV: mode, PORT: port, HOST: '127.0.0.1', BETTER_AUTH_URL: url }, stdio: 'inherit' }))
     await ready(`${url}/healthz`)

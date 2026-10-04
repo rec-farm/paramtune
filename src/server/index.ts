@@ -1,13 +1,15 @@
 import { serve } from '@hono/node-server'
 import { serveStatic } from '@hono/node-server/serve-static'
 import { readFile } from 'node:fs/promises'
-import { app } from '@/server/app'
-import { auth } from '@/lib/auth'
 import redis from '@/connections/redis'
 import { migrateAuth } from '@/server/auth-config'
 
 // Finish schema upgrades before accepting any requests.
 await migrateAuth()
+// Better Auth checks the schema during initialization; import it only after
+// the migration so a fresh database cannot race that check.
+const { app } = await import('@/server/app')
+const { auth } = await import('@/lib/auth')
 
 const production = process.env.NODE_ENV === 'production'
 if (production) {

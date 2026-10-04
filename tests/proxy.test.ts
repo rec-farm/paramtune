@@ -95,4 +95,36 @@ describe('proxy security headers', () => {
     expect(response.headers.get('X-Content-Type-Options')).toBe('nosniff')
     expect(response.headers.get('Referrer-Policy')).toBe('strict-origin-when-cross-origin')
   })
+
+  it('never rate-limits back-channel logout from the identity provider', async () => {
+    const { checkRateLimit } = await import('@/lib/rateLimit')
+    vi.mocked(checkRateLimit).mockClear()
+    vi.mocked(checkRateLimit).mockReturnValue({ allowed: false, retryAfter: 42 })
+    const request = new NextRequest('http://localhost/api/auth/backchannel-logout', { method: 'POST' })
+
+    const response = proxy(request)
+
+    expect(response.status).toBe(200)
+    expect(checkRateLimit).not.toHaveBeenCalled()
+    expect(response.headers.get('X-Content-Type-Options')).toBe('nosniff')
+    vi.mocked(checkRateLimit).mockReturnValue({ allowed: true })
+  })
+
+  it('keeps the strict auth budget for sign-in and session reads on the API budget', async () => {
+    const { checkRateLimit } = await import('@/lib/rateLimit')
+    vi.mocked(checkRateLimit).mockReturnValue({ allowed: true })
+    const budgets = {
+      '/api/auth/sign-in/social': 'auth',
+      '/api/auth/oauth2/callback/oidc': 'auth',
+      '/api/auth/callback/google': 'auth',
+      '/api/auth/get-session': 'api',
+      '/api/auth/sign-out': 'api',
+    }
+
+    for (const [path, budget] of Object.entries(budgets)) {
+      vi.mocked(checkRateLimit).mockClear()
+      proxy(new NextRequest(`http://localhost${path}`))
+      expect(vi.mocked(checkRateLimit).mock.calls[0]?.[1], path).toBe(budget)
+    }
+  })
 })

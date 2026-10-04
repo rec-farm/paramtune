@@ -5,6 +5,8 @@ import { checkRateLimit } from '@/lib/rateLimit'
 
 let corsWarningLogged = false
 
+const SIGN_IN_PATHS = /^\/api\/auth\/(sign-in|sign-up|callback|oauth2|dev-login)(\/|$)/
+
 export const config = {
   matcher: ['/api/:path*', '/dashboard/:path*'],
 }
@@ -74,12 +76,22 @@ export function proxy(request: NextRequest) {
     return applyBaseSecurityHeaders(NextResponse.next())
   }
 
+  // Back-channel logout is a server-to-server call from the identity provider,
+  // authenticated by its signed logout_token. Keep it out of the per-IP auth
+  // budget so a busy provider (or one sharing an IP with users) is never
+  // answered 429 and sessions it ends stay ended.
+  if (request.nextUrl.pathname === '/api/auth/backchannel-logout') {
+    return applyApiResponseHeaders(NextResponse.next(), request)
+  }
+
   // Rate limiting for API routes
   const ip =
     request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
     request.headers.get('x-real-ip') ||
     '127.0.0.1'
-  const isAuthRoute = request.nextUrl.pathname.startsWith('/api/auth')
+  // The strict auth budget is for sign-in attempts. Session reads and sign-out
+  // happen on every page (useSession), so they share the general API budget.
+  const isAuthRoute = SIGN_IN_PATHS.test(request.nextUrl.pathname)
   const { allowed, retryAfter } = checkRateLimit(ip, isAuthRoute ? 'auth' : 'api')
   if (!allowed) {
     return applyApiResponseHeaders(

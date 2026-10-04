@@ -1,56 +1,33 @@
-# Rust backend migration
+# Rust runtime and Handstamp authentication
 
-Axum/Tokio (`backend/`) is the default backend. Rust serves configuration APIs, production assets, Redis persistence, schema composition, semver resolution, history, diffs, audit logging, security middleware, and rate limiting. Vite and React Router retain the same frontend and API URLs.
+One Rust/Axum process serves static Vite assets, APIs, and Handstamp OIDC. The production image contains no Node runtime, npm packages, SQLite database, or auth sidecar. Node is used only for frontend build/development tooling.
 
-Better Auth remains in a loopback-only Node/Hono sidecar. This migration still requires Node at runtime; a future Rust authentication replacement is separate work.
+## Authentication
 
-## Build and development
+Set PUBLIC_ORIGIN to the public HTTPS origin, plus OIDC_ISSUER, OIDC_CLIENT_ID, and OIDC_CLIENT_SECRET. Credentials and provider tokens stay server-only.
 
-Install Rust 1.92+ (CI and Docker use 1.92), Node 22.12+, pnpm, and Redis.
+The openidconnect library handles authorization-code login with PKCE. It verifies signatures, issuer, audience, expiry, nonce, and any access-token hash. Userinfo must match the verified subject. Login transactions expire after ten minutes, bind to an HttpOnly browser cookie, and are consumed once. OIDC_ROLES_CLAIM defaults to groups; OIDC_ADMIN_GROUP maps its members to admin.
 
-```sh
-pnpm dev:direct
-pnpm backend:check
-pnpm backend:test
-pnpm build
-pnpm start
-```
+Sessions use random 256-bit tokens; Redis stores only their hashes with a seven-day TTL. Cookies are HttpOnly and SameSite=Lax; HTTPS uses Secure and the __Host- prefix. Every protected API and dashboard HTML request checks Redis. Missing sessions return 401; session-store outages return 503 and never grant access.
 
-Development compiles Rust before starting the API. Vite and the auth TypeScript watcher retain hot reload. Restart the dev command after Rust changes to rebuild; cargo-watch is not required. Inside Herdr, use herdr-run to start/restart development commands.
+Local sign-out deletes the session and returns Handstamp's end-session URL. Signed back-channel logout revokes all sessions of the subject. Signature, issuer, audience, recent issued-at, token ID, and logout event are checked; nonce is forbidden. Replay detection and revocation are atomic in Redis across replicas. Signing keys are fetched during verification to support rotation.
 
-`pnpm build:web` builds the frontend, public-page prerendering, auth sidecar, and Node reference backend. `pnpm backend:build` compiles the Rust release binary. `pnpm build` runs both. Docker compiles Rust in a separate stage and copies the binary into the Node runtime image.
+Development login is enabled only with NODE_ENV=development. Configure Google and password authentication in Handstamp; Paramtune has no direct production login for those methods.
 
-## Startup and authentication
+## Cutover
 
-The supervisor allocates an unused loopback auth port, waits for SQLite migrations and auth readiness, then starts Rust on PORT (default 3000). HOST controls Rust's listener; auth always binds 127.0.0.1. AUTH_PORT optionally fixes the sidecar port. PARAMTUNE_API_BINARY overrides the executable path. AUTH_SERVICE_URL is injected by the supervisor and accepts only HTTP loopback origins. All settings are server-only.
+Keep the registered Handstamp callback at PUBLIC_ORIGIN/api/auth/oauth2/callback/oidc, post-logout redirect at PUBLIC_ORIGIN/, and back-channel endpoint at PUBLIC_ORIGIN/api/auth/backchannel-logout.
 
-Supervised children stop together on signals or unexpected exits. `/healthz` checks Rust and auth readiness, not Redis readiness. Redis connects lazily.
+Existing Better Auth sessions are not migrated: users sign in again. Redis configuration records, history, and audit data remain compatible. Historical authors keep their stored identity; new author IDs derive from issuer and subject. Keep the old SQLite volume separately for rollback.
 
-Public `/api/auth/*` traffic is proxied without following redirects. Headers, repeated Set-Cookie values, and OAuth callback paths survive forwarding. Rust strips incoming identity/IP forwarding headers, then sends the verified peer IP (or trusted proxy IP when TRUST_PROXY=true) in a dedicated header. Better Auth trusts that header only in sidecar mode.
+Persist Redis, which now stores authentication and revocation state too. Losing auth state signs users out. Replicas share sessions when using the same Redis database and public origin. /healthz checks process readiness, not Redis or provider connectivity.
 
-Every configuration request and protected dashboard HTML request asks the private `/_internal/session` endpoint to validate the cookie against SQLite through Better Auth, with cookie caching disabled. Rust does not expose this endpoint publicly. The internal check bypasses public auth rate-limit buckets. Missing sessions return 401; unavailable or malformed auth responses return 503 and grant no access.
+## Verification and rollback
 
-Google/OIDC, PKCE, role mapping, account-linking policy, development login, and signed backchannel logout retain their existing implementation.
+Build with Rust 1.92+ and Node 22.12+. Run the lint, typecheck, unit, Rust, production build, and production browser integration commands in package.json. Backend integration tests require Redis and openssl and exercise a TLS OIDC provider with synthetic keys. E2E_REDIS_URL selects a dedicated test Redis database.
 
-## Data and rollback
+The image starts Rust directly. Local startup scripts wrap that binary with Node development tooling. For direct execution, export runtime variables and execute backend/target/release/paramtune-api. OIDC_CA_CERT_FILE optionally adds a private CA certificate; TLS verification stays enabled.
 
-Redis keys and SQLite tables remain compatible. Preserve data volumes, AUTH_DB_PATH, BETTER_AUTH_SECRET, and BETTER_AUTH_URL. Rust writes existing sorted-set members and dependent sets, retains 200 history entries and 1,000 audit entries, and uses JavaScript-compatible number/key serialization for sorted-set member identity and content hashes. Dependency ranges use npm semver semantics.
+Keep the previous image and SQLite volume for rollback using current Redis configuration data.
 
-The Node domain implementation remains as a reference and rollback path:
-
-```sh
-PARAMTUNE_BACKEND=node pnpm start
-PARAMTUNE_BACKEND=node pnpm dev:direct
-```
-
-Both runtimes read and write the same storage. Roll back code/runtime while preserving post-cutover writes. The Docker image includes Node fallback; set PARAMTUNE_BACKEND=node on the app and restart. Keep the previous image as an independent rollback option.
-
-Rate limiting remains per process. Recursive schema composition is limited to 128 levels. Dependent cascades remain best-effort after the source write, and dropped dependencies are removed from reverse indexes. The existing consistency model remains; this migration does not add cross-process write locking.
-
-## Verification
-
-Run lint, typecheck, TypeScript tests, Rust checks/tests, build, audit, and `pnpm test:e2e:ci`. Integration uses disposable SQLite and a dedicated E2E_REDIS_URL, with development/production servers and a Node reference on ports 4481/4482/4483. Never use production Redis for tests.
-
-Browser coverage includes public HTML, protected links, cookies, creation, saves, restore, composition, comparison, reload, mobile navigation, and logout. Additional HTTP tests seed through Node and check Rust reads/mutations, deduplication, cascades, detached dependencies, validation, diffs, bad bodies, CSRF, and forged identity. Rust tests cover proxy cookies, auth outages, rate limits, npm ranges, JSON serialization, and diffs.
-
-Local development login and mock HTTP tests do not verify live Google/Handstamp credentials or the deployed HTTPS proxy. Verify those on the actual deployment before switching traffic.
+Local tests do not verify live Handstamp registration or the VPS proxy. Verify login, roles, deep links, saves, and both logout directions on deployment before switching traffic.

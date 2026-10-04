@@ -1,3 +1,4 @@
+pub mod auth;
 pub mod diff;
 pub mod error;
 pub mod json;
@@ -25,7 +26,6 @@ use tower::ServiceExt;
 use tower_http::services::ServeDir;
 
 pub struct Config {
-    pub auth_url: String,
     pub public_origin: String,
     pub cors_origin: String,
     pub production: bool,
@@ -45,23 +45,15 @@ impl AppState {
         config: Config,
         redis_url: &str,
     ) -> std::result::Result<Self, Box<dyn std::error::Error>> {
-        // Auth traffic is never redirected to external destinations or sent via an environment proxy.
-        let auth = url::Url::parse(&config.auth_url)?;
-        if auth.scheme() != "http"
-            || !matches!(auth.host_str(), Some("127.0.0.1" | "[::1]"))
-            || auth.path() != "/"
-            || auth.query().is_some()
-            || auth.fragment().is_some()
-            || !auth.username().is_empty()
-            || auth.password().is_some()
-        {
-            return Err("AUTH_SERVICE_URL must be an HTTP loopback origin".into());
-        }
-        let client = reqwest::Client::builder()
+        let mut client = reqwest::Client::builder()
             .redirect(reqwest::redirect::Policy::none())
             .no_proxy()
-            .timeout(Duration::from_secs(10))
-            .build()?;
+            .timeout(Duration::from_secs(10));
+        if let Ok(path) = std::env::var("OIDC_CA_CERT_FILE") {
+            client =
+                client.add_root_certificate(reqwest::Certificate::from_pem(&std::fs::read(path)?)?);
+        }
+        let client = client.build()?;
         Ok(Self(Arc::new(Inner {
             store: store::Store::new(redis_url)?,
             config,
@@ -70,32 +62,14 @@ impl AppState {
         })))
     }
     pub async fn session(&self, headers: &HeaderMap) -> Result<Value> {
-        let mut request = self.0.client.get(format!(
-            "{}/_internal/session",
-            self.0.config.auth_url.trim_end_matches('/')
-        ));
-        if let Some(cookie) = headers.get("cookie") {
-            request = request.header("cookie", cookie);
-        }
-        let response = request.send().await.map_err(|_| ApiError::unavailable())?;
-        if !response.status().is_success() {
-            return Err(ApiError::unavailable());
-        }
-        let session: Value = response.json().await.map_err(|_| ApiError::unavailable())?;
-        if session.is_null() {
-            return Err(ApiError(StatusCode::UNAUTHORIZED, "Unauthorized".into()));
-        }
-        if !session["user"]["id"].is_string() || !session["session"].is_object() {
-            return Err(ApiError::unavailable());
-        }
-        Ok(session)
+        auth::session(self, headers).await
     }
 }
 pub fn router(state: AppState) -> Router {
     Router::new()
         .route("/healthz", get(health))
-        .route("/api/auth/{*path}", any(auth_proxy))
-        .route("/api/auth", any(auth_proxy))
+        .route("/api/auth/{*path}", any(auth::handle))
+        .route("/api/auth", any(auth::handle))
         .nest("/api/_ui/v1", routes::dashboard())
         .merge(routes::legacy())
         .fallback(frontend)
@@ -105,112 +79,8 @@ pub fn router(state: AppState) -> Router {
         ))
         .with_state(state)
 }
-async fn health(State(state): State<AppState>) -> Response {
-    match state
-        .0
-        .client
-        .get(format!(
-            "{}/healthz",
-            state.0.config.auth_url.trim_end_matches('/')
-        ))
-        .send()
-        .await
-    {
-        Ok(response) if response.status().is_success() => {
-            axum::Json(json!({"ok":true,"backend":"rust"})).into_response()
-        }
-        _ => ApiError::unavailable().into_response(),
-    }
-}
-fn hop_headers(headers: &HeaderMap) -> Vec<String> {
-    let mut names = vec![
-        "connection",
-        "keep-alive",
-        "proxy-authenticate",
-        "proxy-authorization",
-        "te",
-        "trailer",
-        "transfer-encoding",
-        "upgrade",
-        "host",
-        "content-length",
-    ]
-    .into_iter()
-    .map(str::to_owned)
-    .collect::<Vec<_>>();
-    for value in headers.get_all("connection") {
-        if let Ok(value) = value.to_str() {
-            names.extend(
-                value
-                    .split(',')
-                    .map(|name| name.trim().to_ascii_lowercase()),
-            );
-        }
-    }
-    names
-}
-async fn auth_proxy(State(state): State<AppState>, request: Request) -> Result<Response> {
-    let uri = request
-        .uri()
-        .path_and_query()
-        .map(|v| v.as_str())
-        .unwrap_or("/")
-        .to_owned();
-    let upstream = url::Url::parse(&format!(
-        "{}{}",
-        state.0.config.auth_url.trim_end_matches('/'),
-        uri
-    ))
-    .map_err(|_| ApiError::bad("Invalid auth request URL"))?;
-    // URL normalization must not move a public request into private auth routes.
-    if upstream.path() != "/api/auth" && !upstream.path().starts_with("/api/auth/") {
-        return Err(ApiError::missing("Not found"));
-    }
-    let ip = security::client_ip(&state, &request);
-    let (parts, body) = request.into_parts();
-    let body = axum::body::to_bytes(body, 1024 * 1024).await.map_err(|_| {
-        ApiError(
-            StatusCode::PAYLOAD_TOO_LARGE,
-            "Request body exceeds 1 MiB".into(),
-        )
-    })?;
-    let excluded = hop_headers(&parts.headers);
-    let mut forwarded = HeaderMap::new();
-    for (name, value) in &parts.headers {
-        if !excluded.contains(&name.as_str().to_owned())
-            && !name.as_str().starts_with("x-forwarded-")
-            && name != "x-real-ip"
-            && name != "x-paramtune-client-ip"
-        {
-            forwarded.append(name.clone(), value.clone());
-        }
-    }
-    let response = state
-        .0
-        .client
-        .request(parts.method, upstream)
-        .headers(forwarded)
-        .header("content-length", body.len())
-        .header("x-paramtune-client-ip", ip)
-        .body(body)
-        .send()
-        .await
-        .map_err(|_| ApiError::unavailable())?;
-    let status = response.status();
-    let headers = response.headers().clone();
-    let excluded = hop_headers(&headers);
-    let body = response
-        .bytes()
-        .await
-        .map_err(|_| ApiError::unavailable())?;
-    let mut result = Response::new(Body::from(body));
-    *result.status_mut() = status;
-    for (name, value) in &headers {
-        if !excluded.contains(&name.as_str().to_owned()) {
-            result.headers_mut().append(name.clone(), value.clone());
-        }
-    }
-    Ok(result)
+async fn health(State(_state): State<AppState>) -> Response {
+    axum::Json(json!({"ok":true,"backend":"rust"})).into_response()
 }
 async fn frontend(State(state): State<AppState>, request: Request) -> Response {
     let path = request.uri().path().to_owned();

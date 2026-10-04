@@ -1,6 +1,6 @@
 # Next.js replacement and reusable checklist
 
-Vite/React Router replaces App Router; Hono/Node replaces handlers, middleware, and Server Actions. Existing page URLs, configuration API contracts, Redis formats, and SQLite storage remain intact. Local fonts retain Archivo width, Figtree, and Geist Mono.
+Vite/React Router replaces App Router; Rust/Axum replaces handlers, middleware, and Server Actions. Existing page URLs, configuration API contracts, Redis configuration formats remain intact. Local fonts retain Archivo width, Figtree, and Geist Mono.
 
 ## Dashboard API
 
@@ -20,9 +20,9 @@ Authors come from the session. Existing /api/schemas, /api/:platform, /api/:plat
 
 ## Verification
 
-Run lint, typecheck, unit/HTTP contract tests, production build, and audit. Run the production browser suite against dedicated Redis: it uses disposable auth storage and checks HTML, redirects, cookies, creation, saving, history/restore, composition, comparison, mobile navigation, reload, sign-out, and page errors.
+Run lint, typecheck, unit/HTTP contract tests, production build, and audit. Run the production browser suite against dedicated Redis: it uses Redis-backed test sessions and checks HTML, redirects, cookies, creation, saving, history/restore, composition, comparison, mobile navigation, reload, sign-out, and page errors.
 
-Build the Docker image and verify SQLite initialization and startup. Validate Google/Handstamp OAuth and the rec-farm HTTPS reverse proxy on the actual deployment; local development login does not prove a live provider callback.
+Build the Docker image and verify Rust startup. Validate Handstamp OIDC and the rec-farm HTTPS reverse proxy on the actual deployment; local development login does not prove a live provider callback.
 
 ## Reuse across projects
 

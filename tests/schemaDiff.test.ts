@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest'
 
 import {
   calculateDiff,
-  diffSchemas,
   formatPath,
   getNestedKeys,
   getNestedValue,
@@ -196,29 +195,5 @@ describe('calculateDiff', () => {
       { items: [{ id: 2 }, { id: 1 }] }
     )
     expect(result.byType.modified.some((c) => c.path === 'items')).toBe(true)
-  })
-})
-
-describe('diffSchemas', () => {
-  it('compares two schemas by content', () => {
-    const schemaA = { content: { key: 'a' } }
-    const schemaB = { content: { key: 'b' } }
-    const result = diffSchemas(schemaA, schemaB)
-    expect(result.summary.modified).toBe(1)
-  })
-
-  it('treats A as the source and B as the target', () => {
-    const result = diffSchemas(
-      { content: { removedKey: 1, shared: 1 } },
-      { content: { addedKey: 1, shared: 1 } }
-    )
-    expect(result.byType.added.map((c) => c.path)).toEqual(['addedKey'])
-    expect(result.byType.removed.map((c) => c.path)).toEqual(['removedKey'])
-  })
-
-  it('returns no changes for identical schemas', () => {
-    const schema = { content: { key: 'same' } }
-    const result = diffSchemas(schema, schema)
-    expect(result.summary.total).toBe(0)
   })
 })

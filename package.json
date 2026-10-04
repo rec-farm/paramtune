@@ -24,32 +24,21 @@
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
     "analyze": "pnpm build && node scripts/analyze.mjs",
-    "auth:migrate": "tsx src/server/migrate-auth.ts",
-    "auth:migrate:production": "node --import ./scripts/env.mjs dist/server/migrate-auth.js",
     "test:e2e:ci": "node scripts/e2e.mjs",
-    "build:web": "vite build && vite build --config vite.server.config.ts && vite build --config vite.prerender.config.ts && node scripts/prerender.mjs",
+    "build:web": "vite build && vite build --config vite.prerender.config.ts && node scripts/prerender.mjs",
     "backend:build": "cargo build --release --locked --manifest-path backend/Cargo.toml",
-    "backend:test": "cargo test --locked --manifest-path backend/Cargo.toml",
+    "backend:test": "cargo test --locked --manifest-path backend/Cargo.toml && cargo build --locked --manifest-path backend/Cargo.toml && node scripts/test-oidc.mjs",
     "backend:check": "cargo fmt --manifest-path backend/Cargo.toml -- --check && cargo clippy --locked --manifest-path backend/Cargo.toml --all-targets -- -D warnings"
   },
   "dependencies": {
-    "better-auth": "^1.7.7",
-    "better-sqlite3": "^13.0.3",
-    "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "date-fns": "^4.4.0",
     "dompurify": "^3.4.16",
-    "effect": "^3.22.2",
-    "ioredis": "^6.0.0",
-    "jose": "^6.2.12",
     "lucide-react": "^1.49.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "semver": "^7.8.5",
     "tailwind-merge": "^3.7.0",
-    "tailwindcss-animate": "^1.0.7",
-    "hono": "^4.0.0",
-    "@hono/node-server": "^1.0.0",
     "react-router": "^7.0.0",
     "dotenv": "^17.0.0",
     "@fontsource-variable/archivo": "^5.0.0",
@@ -57,7 +46,6 @@
     "@fontsource-variable/geist-mono": "^5.0.0"
   },
   "devDependencies": {
-    "@types/better-sqlite3": "^9.6.0",
     "@types/node": "^26.6.3",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
@@ -90,9 +78,6 @@
       "js-yaml": "^4.3.2",
       "nanoid": "^3.3.17"
     },
-    "onlyBuiltDependencies": [
-      "better-sqlite3"
-    ],
     "auditConfig": {
       "ignoreGhsas": [
         "GHSA-vfj7-8cjw-p6xm"

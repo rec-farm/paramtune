@@ -25,10 +25,9 @@ jobs:
     env:
       CORS_ORIGIN: http://localhost:3000
       REDIS_URL: redis://127.0.0.1:6379/2
-      BETTER_AUTH_SECRET: ci-only-secret
-      BETTER_AUTH_URL: http://localhost:3000
+      PUBLIC_ORIGIN: http://localhost:3000
+      E2E_REDIS_URL: redis://127.0.0.1:6379/15
       DEV_USER_EMAIL: dev@paramtune.local
-      DEV_USER_PASSWORD: dev-password-123
       DEV_USER_NAME: Dev User
 
     steps:

@@ -4,14 +4,7 @@ import tailwindcss from '@tailwindcss/vite'
 import { fileURLToPath, URL } from 'node:url'
 
 export default defineConfig({
-  plugins: [react(), tailwindcss(), {
-    name: 'server-boundary',
-    transform(_code, id) {
-      if (/\/src\/(server|models|connections)\//.test(id) || /\/src\/lib\/(auth|apiHandler|dashboardAuth|auditLog|effectRedis|oidc|oidcProfile|oidcLogoutToken)\.ts$/.test(id)) {
-        throw new Error(`Server-only module imported by the browser: ${id}`)
-      }
-    },
-  }],
+  plugins: [react(), tailwindcss()],
   resolve: { alias: { '@': fileURLToPath(new URL('./src', import.meta.url)) } },
   build: { outDir: 'dist/client', manifest: true },
   server: {

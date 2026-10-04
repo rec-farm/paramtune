@@ -1,23 +1,15 @@
 import { spawn } from 'node:child_process'
-import { mkdtemp, rm } from 'node:fs/promises'
-import { tmpdir } from 'node:os'
-import { join } from 'node:path'
 
-// A bounded integration run owns its server children and a disposable auth DB.
+// A bounded integration run owns its Rust server children.
 // Redis must be a dedicated test service; never point this at production data.
-const directory = await mkdtemp(join(tmpdir(), 'paramtune-e2e-'))
 const authURL = 'http://localhost:4481'
 const baseURL = 'http://localhost:4482'
-const nodeURL = 'http://localhost:4483'
 const env = {
   ...process.env,
-  AUTH_DB_PATH: join(directory, 'auth.db'),
-  BETTER_AUTH_SECRET: 'paramtune-disposable-integration-test-secret',
-  BETTER_AUTH_URL: baseURL,
-  OIDC_ISSUER: '', OIDC_CLIENT_ID: '', OIDC_CLIENT_SECRET: '', GOOGLE_CLIENT_ID: '', GOOGLE_CLIENT_SECRET: '',
-  DEV_USER_EMAIL: 'reviewer@paramtune.local', DEV_USER_PASSWORD: 'review-local-password', DEV_USER_NAME: 'Reviewer',
+  OIDC_ISSUER: '', OIDC_CLIENT_ID: '', OIDC_CLIENT_SECRET: '',
+  DEV_USER_EMAIL: 'reviewer@paramtune.local', DEV_USER_NAME: 'Reviewer',
   REDIS_URL: process.env.E2E_REDIS_URL || 'redis://127.0.0.1:6379/15',
-  E2E_BASE_URL: baseURL, E2E_AUTH_URL: authURL, E2E_NODE_URL: nodeURL, E2E_PRODUCTION: '1',
+  E2E_BASE_URL: baseURL, E2E_AUTH_URL: authURL, E2E_PRODUCTION: '1',
   CORS_ORIGIN: baseURL,
 }
 const children = []
@@ -36,14 +28,14 @@ async function ready(url) {
 }
 try {
   // Fail instead of borrowing a developer's server or its data.
-  for (const url of [authURL, baseURL, nodeURL]) {
+  for (const url of [authURL, baseURL]) {
     let occupied = false
     try { await fetch(url); occupied = true } catch { /* free */ }
     if (occupied) throw new Error(`Integration port is occupied: ${url}`)
   }
-  // The first server must initialize this fresh database itself.
-  for (const [mode, port, url, backend] of [['development', '4481', authURL, process.env.PARAMTUNE_BACKEND || 'rust'], ['production', '4482', baseURL, process.env.PARAMTUNE_BACKEND || 'rust'], ['production', '4483', nodeURL, 'node']]) {
-    children.push(spawn(process.execPath, ['scripts/start.mjs'], { env: { ...env, NODE_ENV: mode, PORT: port, HOST: '127.0.0.1', BETTER_AUTH_URL: url, PARAMTUNE_BACKEND: backend, AUTH_PORT: '' }, stdio: 'inherit' }))
+  // Development and production share test Redis sessions, with dev login disabled in production.
+  for (const [mode, port, url] of [['development', '4481', authURL], ['production', '4482', baseURL]]) {
+    children.push(spawn(process.execPath, ['scripts/start.mjs'], { env: { ...env, NODE_ENV: mode, PORT: port, HOST: '127.0.0.1', PUBLIC_ORIGIN: url }, stdio: 'inherit' }))
     await ready(`${url}/healthz`)
   }
   const tests = spawn('pnpm', ['exec', 'playwright', 'test'], { env, stdio: 'inherit' })
@@ -59,5 +51,4 @@ try {
       child.once('exit', () => { clearTimeout(timer); resolve() })
     })
   }))
-  await rm(directory, { recursive: true, force: true })
 }

@@ -67,13 +67,9 @@ function DevLoginButton({ returnTo }: { returnTo: string }) {
   )
 }
 
-export interface OidcSignIn {
-  label: string
-}
-
 type LoginProps = LoginProviders
 
-// Better Auth sends failed sign-ins back here with ?error=<code>
+// OIDC sends failed sign-ins back here with ?error=<code>
 const SIGN_IN_ERRORS: Record<string, string> = {
   access_denied: 'Sign-in was cancelled or this account isn’t allowed to use Paramtune.',
   state_mismatch: 'That sign-in took too long or was started in another tab. Try again.',
@@ -85,9 +81,9 @@ function signInErrorMessage(code: string | null) {
   return SIGN_IN_ERRORS[code] ?? 'Sign-in didn’t complete. Try again.'
 }
 
-type Provider = typeof OIDC_PROVIDER_ID | 'google'
+type Provider = typeof OIDC_PROVIDER_ID
 
-function LoginContent({ oidc, google, development }: LoginProps) {
+function LoginContent({ oidc, development }: LoginProps) {
   const [searchParams] = useSearchParams()
   const requestedPath = searchParams.get('returnTo') || '/dashboard'
   const returnTo = requestedPath.startsWith('/') && !requestedPath.startsWith('//') && !requestedPath.includes('\\') ? requestedPath : '/dashboard'
@@ -105,7 +101,6 @@ function LoginContent({ oidc, google, development }: LoginProps) {
       const result = await signIn.social({
         provider,
         callbackURL: returnTo,
-        errorCallbackURL: '/login',
       })
       if (result.error) {
         setError(result.error.message || 'Sign-in didn’t start. Try again.')
@@ -215,25 +210,10 @@ function LoginContent({ oidc, google, development }: LoginProps) {
             </button>
           )}
 
-          {google && (
-            <button
-              type="button"
-              onClick={() => startSignIn('google')}
-              disabled={pending !== null}
-              aria-busy={pending === 'google'}
-              className={oidc ? 'pt-btn pt-btn-secondary w-full h-11' : 'pt-btn pt-btn-primary w-full h-11'}
-            >
-              {pending === 'google' && (
-                <Loader2 className="w-4 h-4 animate-spin" strokeWidth={1.5} aria-hidden="true" />
-              )}
-              Sign in with Google
-            </button>
-          )}
-
-          {!oidc && !google && !development && (
+          {!oidc && !development && (
             <p className="text-sm text-muted-foreground">
-              No sign-in method is set up. Set OIDC_ISSUER and OIDC_CLIENT_ID, or the Google
-              credentials, and restart Paramtune.
+              No sign-in method is set up. Set OIDC_ISSUER and OIDC_CLIENT_ID
+              and restart Paramtune.
             </p>
           )}
 
@@ -242,7 +222,7 @@ function LoginContent({ oidc, google, development }: LoginProps) {
           )}
 
           <p className="text-sm text-muted-foreground">
-            We use your {oidc || !google ? 'account' : 'Google account'} only to sign you
+            We use your account only to sign you
             in. Your schemas stay on this server and are never shared.
           </p>
         </div>

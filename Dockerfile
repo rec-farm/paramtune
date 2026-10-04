@@ -5,34 +5,21 @@ COPY backend/Cargo.toml backend/Cargo.lock ./backend/
 COPY backend/src ./backend/src
 RUN cargo build --release --locked --manifest-path backend/Cargo.toml
 
-FROM node:22-alpine AS base
+FROM node:22-alpine AS builder
 WORKDIR /app
 RUN corepack enable
-
-FROM base AS dependencies
-RUN apk add --no-cache python3 make g++
 COPY package.json pnpm-lock.yaml .npmrc ./
 RUN pnpm install --frozen-lockfile
-
-FROM dependencies AS builder
 COPY . .
 RUN pnpm build:web
-RUN pnpm prune --prod
 
-FROM base AS runner
-ENV NODE_ENV=production
-ENV PORT=3000
-ENV AUTH_DB_PATH=/app/data/auth.db
-RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 paramtune
-COPY --from=builder /app/package.json ./
-COPY --from=builder /app/node_modules ./node_modules
+FROM alpine:3.23 AS runner
+RUN apk add --no-cache ca-certificates && addgroup -S -g 1001 paramtune && adduser -S -u 1001 -G paramtune paramtune
+WORKDIR /app
+ENV NODE_ENV=production PORT=3000
 COPY --from=builder /app/dist/client ./dist/client
-COPY --from=builder /app/dist/server ./dist/server
-COPY --from=builder /app/scripts/env.mjs /app/scripts/start.mjs /app/scripts/backend.mjs ./scripts/
-COPY --from=rust-builder /app/backend/target/release/paramtune-api /app/bin/paramtune-api
-ENV PARAMTUNE_API_BINARY=/app/bin/paramtune-api
-RUN mkdir data && chown paramtune:nodejs data
+COPY --from=rust-builder /app/backend/target/release/paramtune-api /usr/local/bin/paramtune-api
 USER paramtune
 EXPOSE 3000
-HEALTHCHECK --interval=30s --timeout=3s CMD node -e "fetch('http://127.0.0.1:3000/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
-CMD ["node", "scripts/start.mjs"]
+HEALTHCHECK --interval=30s --timeout=3s CMD wget -q -O /dev/null http://127.0.0.1:3000/healthz || exit 1
+CMD ["paramtune-api"]

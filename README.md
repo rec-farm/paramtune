@@ -1,16 +1,16 @@
 # Paramtune
 
-Paramtune is a React application with a Vite frontend and Rust/Axum API with a Node/Better Auth sidecar for managing platform schemas and versioned feature configuration with dependency resolution and Redis persistence.
+Paramtune is a React application with a Vite frontend and Rust/Axum API with native Handstamp OIDC authentication for managing platform schemas and versioned feature configuration with dependency resolution and Redis persistence.
 
 ## Overview
 
 - **Vite**, **React 19**, **React Router**, **TypeScript**
-- **Axum/Tokio** on **Rust 1.92+**, with **Node.js 22.12+** for Better Auth
+- **Axum/Tokio** on **Rust 1.92+**, with **Node.js 22.12+** for frontend builds only
 - **Tailwind CSS 4** for styling with shadcn/ui components
 - **Redis** (via the Rust redis client) for schema and platform persistence
-- **SQLite** (via better-sqlite3) for authentication data
+- **Handstamp OIDC** and Redis for authentication sessions
 - **JSON schema composition** with `@extends` and semver-aware dependency resolution
-- **Authentication** via better-auth (Google or Handstamp/OIDC in production, email/password in development)
+- **Authentication** via Handstamp/OIDC in Rust, with a development-only login
 - **Real-time JSON editing** with live preview, validation, and schema diffing
 - **Audit logging** for all schema and platform changes
 - **Rate limiting** on API and auth routes
@@ -52,19 +52,18 @@ npm install -g portless
 pnpm dev
 ```
 
-If you don't want portless, run `pnpm dev:direct` (or `PORTLESS=0 pnpm dev`) to start the frontend and API directly on `http://localhost:3000`, and set `BETTER_AUTH_URL` / `CORS_ORIGIN` in `.env.local` to match.
+If you don't want portless, run `pnpm dev:direct` (or `PORTLESS=0 pnpm dev`) to start the frontend and API directly on `http://localhost:3000`, and set `PUBLIC_ORIGIN` / `CORS_ORIGIN` in `.env.local` to match.
 
-Rust is compiled at development startup; restart the dev command after Rust changes. Vite and auth TypeScript retain hot reload.
+Rust is compiled at development startup; restart the dev command after Rust changes. Vite retains frontend hot reload.
 
-Authentication tables are created and upgraded automatically at startup. `pnpm auth:migrate` is available for explicit preflight migrations.
+Rust stores authentication sessions in Redis; no SQLite migration is needed.
 
-In development, email/password login is enabled with credentials configured in `.env.local` (`DEV_USER_EMAIL` / `DEV_USER_PASSWORD`).
 
 ## Development Commands
 
 - `pnpm dev` – start development server with hot reload through `portless` (`paramtune.localhost`)
 - `pnpm dev:direct` – start development server directly on `localhost:3000`, without `portless`
-- `pnpm build` – frontend, auth service, and Rust release build
+- `pnpm build` – frontend assets and Rust release build
 - `pnpm backend:check` – Rust formatting and Clippy
 - `pnpm backend:test` – Rust unit/HTTP tests
 - `pnpm start` – run production server locally
@@ -80,12 +79,8 @@ In development, email/password login is enabled with credentials configured in `
 - `CORS_ORIGIN` – Allowed origin for cross-origin API requests
 - `REDIS_URL` – Full Redis connection URL (preferred)
 - `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD`, `REDIS_DB` – Individual Redis settings when URL is not provided
-- `BETTER_AUTH_SECRET` – Secret used by better-auth for signing. Generate with `openssl rand -base64 32`
-- `BETTER_AUTH_URL` – Public base URL for auth callbacks, e.g. `https://paramtune.example.com`
-- `BETTER_AUTH_BASE_URL` – Optional alias supported for deployments that use the Better Auth base URL name
-- `AUTH_DB_PATH` – SQLite database path for auth data. Defaults to `./data/auth.db`
-- `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` – Google OAuth credentials (production)
-- `DEV_USER_EMAIL`, `DEV_USER_PASSWORD`, `DEV_USER_NAME` – Development login credentials
+- `PUBLIC_ORIGIN` – Public application origin
+- `OIDC_ISSUER`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET` – Handstamp application credentials
 
 ## Features
 
@@ -98,8 +93,8 @@ In development, email/password login is enabled with credentials configured in `
 - Schema version diffing and history tracking
 
 ### Authentication & Security
-- Google OAuth sign-in (production) with email/password fallback (development)
-- Session-based authentication via better-auth with SQLite storage
+- Handstamp OIDC sign-in, with a development-only local login
+- Opaque session cookies with Redis storage and Handstamp OIDC
 - All API endpoints require authentication
 - Rate limiting on API and auth routes
 - Security headers (CSP, HSTS, X-Frame-Options) via HTTP middleware
@@ -129,14 +124,13 @@ docker-compose -f docker-compose.dev.yml up --build
 
 # Production
 export REDIS_PASSWORD="$(openssl rand -base64 24)"
-export BETTER_AUTH_SECRET="$(openssl rand -base64 32)"
-export BETTER_AUTH_URL="http://localhost:3000"
+export PUBLIC_ORIGIN="http://localhost:3000"
 docker-compose up --build -d
 ```
 
 ### rec-farm
 
-Deploy the Rust/Node Docker application on rec-farm with persistent Redis and SQLite
+Deploy the Rust Docker application on rec-farm with persistent Redis
 storage. The Rust process serves the frontend and API behind the HTTPS reverse
 proxy. See [Deployment](docs/DEPLOYMENT.md) for configuration and rollback.
 
@@ -144,19 +138,17 @@ proxy. See [Deployment](docs/DEPLOYMENT.md) for configuration and rollback.
 
 - src/client: React Router pages, API client, styles, prerendering
 - backend: Rust HTTP routes, security, Redis persistence, schema resolution, and asset serving
-- src/server: Better Auth sidecar and Node reference backend for rollback
 - src/shared: browser-safe JSON contracts
-- src/models: retained Node domain implementation for compatibility tests and rollback
 - src/components: reusable UI
 - tests: unit/HTTP contracts and browser integration
 
 Production serves frontend and API on one port. Development uses PORT (default
 3000, or assigned by portless) and an automatically allocated local API port
-with a same-origin proxy. A loopback auth port is also allocated automatically. Set API_PORT only when a fixed, free port is needed. The existing portless workflow remains available. Use herdr-run for
+with a same-origin proxy. Set API_PORT only when a fixed, free port is needed. The existing portless workflow remains available. Use herdr-run for
 long-running processes inside Herdr.
 
 Public pages are prerendered without database access. Dashboard reads and writes
-use authenticated APIs. Browser builds reject server-only imports.
+use authenticated APIs. Lint rejects Node built-in imports in browser code.
 
 ## Documentation
 
@@ -195,5 +187,5 @@ Paramtune is released under the [MIT License](LICENSE).
 
 After building, install a browser with `pnpm exec playwright install chromium`.
 Run `E2E_REDIS_URL=redis://127.0.0.1:6379/15 pnpm test:e2e:ci` against dedicated
-Redis. The bounded suite owns ports 4481/4482/4483 and disposable SQLite storage.
+Redis. The bounded browser suite owns ports 4481/4482 and uses a dedicated test Redis database.
 Use E2E_CHROME=1 for installed Chrome. See [Migration and reuse](docs/VITE_MIGRATION.md).

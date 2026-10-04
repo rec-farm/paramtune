@@ -11,14 +11,12 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing_subscriber::fmt()
         .with_env_filter(setting("RUST_LOG", "paramtune_api=info"))
         .init();
-    let production = setting("NODE_ENV", "production") == "production";
-    let origin = env::var("BETTER_AUTH_URL")
-        .or_else(|_| env::var("BETTER_AUTH_BASE_URL"))
+    let production = setting("NODE_ENV", "production") != "development";
+    let origin = env::var("PUBLIC_ORIGIN")
         .or_else(|_| env::var("PORTLESS_URL"))
         .unwrap_or_else(|_| "http://localhost:3000".into());
     let origin = url::Url::parse(&origin)?.origin().ascii_serialization();
     let config = Config {
-        auth_url: env::var("AUTH_SERVICE_URL")?,
         public_origin: origin.clone(),
         cors_origin: setting("CORS_ORIGIN", &origin),
         production,

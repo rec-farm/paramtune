@@ -13,7 +13,7 @@ services:
       timeout: 3s
       retries: 3
 
-  # Vite frontend with Node API
+  # Vite frontend with Rust API and Node auth
   app:
     build:
       context: .
@@ -22,6 +22,7 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=development
+      - PARAMTUNE_BACKEND=${PARAMTUNE_BACKEND:-rust}
       - VITE_HOST=0.0.0.0
       - CORS_ORIGIN=http://localhost:3000
       - REDIS_URL=redis://redis:6379/2
@@ -37,6 +38,7 @@ services:
     volumes:
       - .:/app
       - /app/node_modules
+      - /app/backend/target
       - auth_data:/app/data
     restart: unless-stopped
     command: sh -c "pnpm auth:migrate && pnpm dev:direct"

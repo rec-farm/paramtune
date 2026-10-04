@@ -44,6 +44,12 @@ jobs:
           node-version: 22
           cache: pnpm
 
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: 1.92.0
+          components: rustfmt, clippy
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
@@ -55,6 +61,9 @@ jobs:
 
       - name: Test
         run: pnpm test
+
+      - name: Rust checks
+        run: pnpm backend:check && pnpm backend:test
 
       - name: Build
         run: pnpm build

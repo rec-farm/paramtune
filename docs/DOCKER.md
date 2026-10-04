@@ -24,8 +24,8 @@ docker-compose -f docker-compose.dev.yml up --build
 
 This will:
 - Start a Redis instance on port 6379
-- Start the Vite frontend and Node API on port 3000
-- Enable hot reloading for code changes
+- Start the Vite frontend, Rust API, and Node auth sidecar on port 3000
+- Enable Vite/auth hot reload; restart the app command after Rust changes
 
 ### Production Environment
 
@@ -48,7 +48,7 @@ docker-compose up --build -d
 This will:
 - Start a Redis instance with persistent data storage
 - Mount a persistent SQLite volume for authentication data
-- Build and run the Vite frontend and Node application
+- Build and run the Vite frontend, Rust API, and Node auth service
 - Run in detached mode (`-d` flag)
 
 ## Environment Variables
@@ -72,7 +72,7 @@ The application uses the following environment variables:
 
 ### `docker-compose.yml` (Production)
 - Uses optimized multi-stage Dockerfile
-- Runs production Node server and Vite assets
+- Runs production Rust server, loopback Node auth, and Vite assets
 - Includes health checks
 - Persistent Redis and auth database storage
 
@@ -115,7 +115,7 @@ docker run -d --name paramtune -p 3000:3000 \
 
 ## Ports
 
-- `3000`: Node application
+- `3000`: Rust application (auth uses an unpublished loopback port)
 - `6379`: Redis server
 
 ## Troubleshooting

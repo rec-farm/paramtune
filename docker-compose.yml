@@ -13,7 +13,7 @@ services:
       timeout: 3s
       retries: 3
 
-  # Vite frontend and Node API
+  # Vite frontend, Rust API, and loopback Node auth
   app:
     build:
       context: .
@@ -22,6 +22,7 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=production
+      - PARAMTUNE_BACKEND=${PARAMTUNE_BACKEND:-rust}
       - CORS_ORIGIN=${CORS_ORIGIN:-http://localhost:3000}
       - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379/2
       - AUTH_DB_PATH=/app/data/auth.db

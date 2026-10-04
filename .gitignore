@@ -48,3 +48,5 @@ data/*.db
 /test-results/
 /playwright-report/
 data/*.db-*
+
+/backend/target/

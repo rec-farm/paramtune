@@ -1,13 +1,13 @@
 # Paramtune
 
-Paramtune is a React application with a Vite frontend and Node/Hono API for managing platform schemas and versioned feature configuration with dependency resolution and Redis persistence.
+Paramtune is a React application with a Vite frontend and Rust/Axum API with a Node/Better Auth sidecar for managing platform schemas and versioned feature configuration with dependency resolution and Redis persistence.
 
 ## Overview
 
 - **Vite**, **React 19**, **React Router**, **TypeScript**
-- **Hono** on **Node.js 22.12+**
+- **Axum/Tokio** on **Rust 1.92+**, with **Node.js 22.12+** for Better Auth
 - **Tailwind CSS 4** for styling with shadcn/ui components
-- **Redis** (via ioredis) for schema and platform persistence
+- **Redis** (via the Rust redis client) for schema and platform persistence
 - **SQLite** (via better-sqlite3) for authentication data
 - **JSON schema composition** with `@extends` and semver-aware dependency resolution
 - **Authentication** via better-auth (Google or Handstamp/OIDC in production, email/password in development)
@@ -18,6 +18,7 @@ Paramtune is a React application with a Vite frontend and Node/Hono API for mana
 
 ## Requirements
 
+- Rust 1.92+
 - Node.js 22.12+ (LTS recommended)
 - pnpm 10.x
 - Redis accessible locally or through a cloud provider
@@ -53,6 +54,8 @@ pnpm dev
 
 If you don't want portless, run `pnpm dev:direct` (or `PORTLESS=0 pnpm dev`) to start the frontend and API directly on `http://localhost:3000`, and set `BETTER_AUTH_URL` / `CORS_ORIGIN` in `.env.local` to match.
 
+Rust is compiled at development startup; restart the dev command after Rust changes. Vite and auth TypeScript retain hot reload.
+
 Authentication tables are created and upgraded automatically at startup. `pnpm auth:migrate` is available for explicit preflight migrations.
 
 In development, email/password login is enabled with credentials configured in `.env.local` (`DEV_USER_EMAIL` / `DEV_USER_PASSWORD`).
@@ -61,7 +64,9 @@ In development, email/password login is enabled with credentials configured in `
 
 - `pnpm dev` – start development server with hot reload through `portless` (`paramtune.localhost`)
 - `pnpm dev:direct` – start development server directly on `localhost:3000`, without `portless`
-- `pnpm build` – production build
+- `pnpm build` – frontend, auth service, and Rust release build
+- `pnpm backend:check` – Rust formatting and Clippy
+- `pnpm backend:test` – Rust unit/HTTP tests
 - `pnpm start` – run production server locally
 - `pnpm lint` – lint with ESLint
 - `pnpm typecheck` – TypeScript type checking
@@ -131,22 +136,23 @@ docker-compose up --build -d
 
 ### rec-farm
 
-Deploy the Node/Docker application on rec-farm with persistent Redis and SQLite
-storage. The same process serves the frontend and API behind the HTTPS reverse
+Deploy the Rust/Node Docker application on rec-farm with persistent Redis and SQLite
+storage. The Rust process serves the frontend and API behind the HTTPS reverse
 proxy. See [Deployment](docs/DEPLOYMENT.md) for configuration and rollback.
 
 ## Architecture
 
 - src/client: React Router pages, API client, styles, prerendering
-- src/server: Hono routes, middleware, authenticated services, auth configuration
+- backend: Rust HTTP routes, security, Redis persistence, schema resolution, and asset serving
+- src/server: Better Auth sidecar and Node reference backend for rollback
 - src/shared: browser-safe JSON contracts
-- src/models: existing server-only Redis and schema/version logic
+- src/models: retained Node domain implementation for compatibility tests and rollback
 - src/components: reusable UI
 - tests: unit/HTTP contracts and browser integration
 
 Production serves frontend and API on one port. Development uses PORT (default
 3000, or assigned by portless) and an automatically allocated local API port
-with a same-origin proxy. Set API_PORT only when a fixed, free port is needed. The existing portless workflow remains available. Use herdr-run for
+with a same-origin proxy. A loopback auth port is also allocated automatically. Set API_PORT only when a fixed, free port is needed. The existing portless workflow remains available. Use herdr-run for
 long-running processes inside Herdr.
 
 Public pages are prerendered without database access. Dashboard reads and writes
@@ -156,6 +162,7 @@ use authenticated APIs. Browser builds reject server-only imports.
 
 - [API Reference](docs/API.md)
 - [Architecture](docs/ARCHITECTURE.md)
+- [Rust migration and rollback](docs/RUST_MIGRATION.md)
 - [Deployment Guide](docs/DEPLOYMENT.md)
 - [Docker Setup](docs/DOCKER.md)
 - [Troubleshooting](docs/TROUBLESHOOTING.md)
@@ -170,6 +177,8 @@ Before opening a pull request, run:
 pnpm lint
 pnpm typecheck
 pnpm test
+pnpm backend:check
+pnpm backend:test
 pnpm build
 pnpm audit --audit-level moderate
 ```
@@ -186,5 +195,5 @@ Paramtune is released under the [MIT License](LICENSE).
 
 After building, install a browser with `pnpm exec playwright install chromium`.
 Run `E2E_REDIS_URL=redis://127.0.0.1:6379/15 pnpm test:e2e:ci` against dedicated
-Redis. The bounded suite owns ports 4481/4482 and disposable SQLite storage.
+Redis. The bounded suite owns ports 4481/4482/4483 and disposable SQLite storage.
 Use E2E_CHROME=1 for installed Chrome. See [Migration and reuse](docs/VITE_MIGRATION.md).

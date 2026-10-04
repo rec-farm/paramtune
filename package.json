@@ -15,7 +15,7 @@
   "scripts": {
     "dev": "portless paramtune pnpm dev:direct",
     "dev:direct": "tsx scripts/dev.ts",
-    "build": "vite build && vite build --config vite.server.config.ts && vite build --config vite.prerender.config.ts && node scripts/prerender.mjs",
+    "build": "pnpm build:web && pnpm backend:build",
     "start": "node scripts/start.mjs",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
@@ -26,7 +26,11 @@
     "analyze": "pnpm build && node scripts/analyze.mjs",
     "auth:migrate": "tsx src/server/migrate-auth.ts",
     "auth:migrate:production": "node --import ./scripts/env.mjs dist/server/migrate-auth.js",
-    "test:e2e:ci": "node scripts/e2e.mjs"
+    "test:e2e:ci": "node scripts/e2e.mjs",
+    "build:web": "vite build && vite build --config vite.server.config.ts && vite build --config vite.prerender.config.ts && node scripts/prerender.mjs",
+    "backend:build": "cargo build --release --locked --manifest-path backend/Cargo.toml",
+    "backend:test": "cargo test --locked --manifest-path backend/Cargo.toml",
+    "backend:check": "cargo fmt --manifest-path backend/Cargo.toml -- --check && cargo clippy --locked --manifest-path backend/Cargo.toml --all-targets -- -D warnings"
   },
   "dependencies": {
     "better-auth": "^1.7.7",

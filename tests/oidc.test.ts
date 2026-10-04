@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
+import { mapOidcProfile } from '@/lib/oidcProfile'
 import {
   displayEmail,
-  mapOidcProfile,
   readOidcSettings,
   rememberPendingRole,
   roleFromClaims,
@@ -88,9 +88,16 @@ describe('mapOidcProfile', () => {
 
   it('gives accounts without an email an undeliverable placeholder', () => {
     const user = mapOidcProfile({ sub: 'Ab3_x/Y', name: 'Ada' }, settings)
-    expect(user.email).toBe('ab3_x-y@id.rec.farm.invalid')
+    expect(user.email).toMatch(/^[0-9a-f]{64}@id\.rec\.farm\.invalid$/)
     expect(user.name).toBe('Ada')
     expect(mapOidcProfile({ name: 'Ada' }, settings).email).toBeUndefined()
+  })
+
+  it('never gives two subjects the same placeholder', () => {
+    const emails = ['Ab/c', 'ab-c', 'ab/c', 'AB-C'].map(
+      (sub) => mapOidcProfile({ sub }, settings).email,
+    )
+    expect(new Set(emails).size).toBe(4)
   })
 
   it('falls back to preferred_username, then email, for the name', () => {

@@ -6,9 +6,9 @@ import Database from 'better-sqlite3'
 import { createHash } from 'crypto'
 import { mkdirSync } from 'fs'
 import { dirname } from 'path'
+import { mapOidcProfile } from '@/lib/oidcProfile'
 import {
   OIDC_PROVIDER_ID,
-  mapOidcProfile,
   readOidcSettings,
   rememberPendingRole,
   takePendingRole,

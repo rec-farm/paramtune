@@ -2,7 +2,7 @@
 name = "paramtune-api"
 version = "0.1.0"
 edition = "2024"
-rust-version = "1.88"
+rust-version = "1.92"
 publish = false
 
 [dependencies]
@@ -21,6 +21,12 @@ url = "2"
 percent-encoding = "2"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+
+openidconnect = { version = "4", default-features = false, features = ["reqwest", "rustls-tls"] }
+serde = { version = "1", features = ["derive"] }
+rand = "0.9"
+base64 = "0.22"
+jsonwebtoken = { version = "10", default-features = false, features = ["rust_crypto"] }
 
 [dev-dependencies]
 http-body-util = "0.1"

@@ -73,7 +73,7 @@ export interface OidcSignIn {
 
 type LoginProps = LoginProviders
 
-// Better Auth sends failed sign-ins back here with ?error=<code>
+// OIDC sends failed sign-ins back here with ?error=<code>
 const SIGN_IN_ERRORS: Record<string, string> = {
   access_denied: 'Sign-in was cancelled or this account isn’t allowed to use Paramtune.',
   state_mismatch: 'That sign-in took too long or was started in another tab. Try again.',
@@ -232,8 +232,8 @@ function LoginContent({ oidc, google, development }: LoginProps) {
 
           {!oidc && !google && !development && (
             <p className="text-sm text-muted-foreground">
-              No sign-in method is set up. Set OIDC_ISSUER and OIDC_CLIENT_ID, or the Google
-              credentials, and restart Paramtune.
+              No sign-in method is set up. Set OIDC_ISSUER and OIDC_CLIENT_ID
+              and restart Paramtune.
             </p>
           )}
 

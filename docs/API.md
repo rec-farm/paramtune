@@ -194,7 +194,7 @@ When a base schema is updated, all schemas that depend on it (via `@extends`) ar
 
 ## Examples
 
-All endpoints require an authenticated better-auth session; the `curl` commands below omit the session cookie for brevity but will receive `401 Unauthorized` without one.
+All endpoints require an authenticated Paramtune session; the `curl` commands below omit the session cookie for brevity but will receive `401 Unauthorized` without one.
 
 ### Create a Platform
 ```bash
@@ -238,7 +238,7 @@ All endpoints include proper error handling with:
 - CORS configured via `CORS_ORIGIN` environment variable
 - Security headers added via middleware
 - Input validation on all endpoints
-- All endpoints require an authenticated better-auth session; requests without one receive `401 Unauthorized`
+- All endpoints require an authenticated Paramtune session; requests without one receive `401 Unauthorized`
 
 ## Caching
 

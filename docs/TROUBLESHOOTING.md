@@ -2,7 +2,7 @@
 
 ## Build or startup fails
 - Use Node 22.12+ as required by `engines` in `package.json`.
-- Verify runtime environment variables are configured on rec-farm, including `BETTER_AUTH_URL`, `BETTER_AUTH_SECRET`, and Redis settings.
+- Verify runtime environment variables are configured on rec-farm, including `PUBLIC_ORIGIN`, `OIDC_ISSUER`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET`, and Redis settings.
 - Ensure `AUTH_DB_PATH` points to writable persistent storage.
 
 ## Redis connection errors

@@ -50,3 +50,6 @@ data/*.db
 data/*.db-*
 
 /backend/target/
+
+# Synthetic OIDC integration key, never used outside tests
+!/backend/tests/fixtures/oidc-test.pem

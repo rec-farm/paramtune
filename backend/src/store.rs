@@ -14,7 +14,7 @@ impl Store {
             connection: OnceCell::new(),
         })
     }
-    async fn connection(&self) -> Result<ConnectionManager> {
+    pub(crate) async fn connection(&self) -> Result<ConnectionManager> {
         Ok(self
             .connection
             .get_or_try_init(|| async {

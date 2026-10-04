@@ -13,7 +13,7 @@ services:
       timeout: 3s
       retries: 3
 
-  # Vite frontend with Rust API and Node auth
+  # Vite frontend and Rust API
   app:
     build:
       context: .
@@ -26,11 +26,8 @@ services:
       - VITE_HOST=0.0.0.0
       - CORS_ORIGIN=http://localhost:3000
       - REDIS_URL=redis://redis:6379/2
-      - AUTH_DB_PATH=/app/data/auth.db
-      - BETTER_AUTH_SECRET=development-only-secret
-      - BETTER_AUTH_URL=http://localhost:3000
+      - PUBLIC_ORIGIN=http://localhost:3000
       - DEV_USER_EMAIL=dev@paramtune.local
-      - DEV_USER_PASSWORD=dev-password-123
       - DEV_USER_NAME=Dev User
     depends_on:
       redis:
@@ -39,10 +36,8 @@ services:
       - .:/app
       - /app/node_modules
       - /app/backend/target
-      - auth_data:/app/data
     restart: unless-stopped
-    command: sh -c "pnpm auth:migrate && pnpm dev:direct"
+    command: sh -c "pnpm dev:direct"
 
 volumes:
   redis_data:
-  auth_data:

@@ -74,12 +74,7 @@ export async function startBackend({ env = process.env, watch = false, onExit = 
     } else {
       const binary = env.PARAMTUNE_API_BINARY || `backend/target/${watch ? 'debug' : 'release'}/paramtune-api`
       await access(binary)
-      const authPort = await freePort(env.AUTH_PORT)
-      if (authPort === Number(env.PORT)) throw new Error('AUTH_PORT and API port must differ')
-      const authURL = `http://127.0.0.1:${authPort}`
-      launch(watch ? 'pnpm' : process.execPath, nodeArgs('auth-index'), { ...apiEnv, AUTH_PORT: String(authPort), PARAMTUNE_AUTH_SIDECAR: 'true' })
-      await ready(`${authURL}/healthz`)
-      launch(binary, [], { ...apiEnv, AUTH_SERVICE_URL: authURL })
+      launch(binary, [], apiEnv)
     }
     await ready(`http://127.0.0.1:${env.PORT || 3000}/healthz`)
     return { close }

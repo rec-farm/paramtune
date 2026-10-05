@@ -76,14 +76,24 @@ pub fn compare(previous: &Value, current: &Value) -> Value {
             changes.push(change);
         }
     }
-    let mut by_type = json!({"added":[],"removed":[],"modified":[],"unchanged":[]});
-    for change in &changes {
-        by_type[change["type"].as_str().unwrap()]
-            .as_array_mut()
-            .unwrap()
-            .push(change.clone());
-    }
-    json!({"changes": changes,"summary": {"added":by_type["added"].as_array().unwrap().len(),"removed":by_type["removed"].as_array().unwrap().len(),"modified":by_type["modified"].as_array().unwrap().len(),"unchanged":0,"total":changes.len()},"byType":by_type})
+    let of_type = |kind: &str| -> Vec<&Value> {
+        changes
+            .iter()
+            .filter(|change| change["type"] == kind)
+            .collect()
+    };
+    let (added, removed, modified) = (of_type("added"), of_type("removed"), of_type("modified"));
+    json!({
+        "changes": changes,
+        "summary": {
+            "added": added.len(),
+            "removed": removed.len(),
+            "modified": modified.len(),
+            "unchanged": 0,
+            "total": changes.len(),
+        },
+        "byType": {"added": added, "removed": removed, "modified": modified, "unchanged": []},
+    })
 }
 #[cfg(test)]
 mod tests {
@@ -102,5 +112,18 @@ mod tests {
             result["byType"]["modified"][0]["typeChange"],
             json!({"from":"null","to":"array"})
         );
+    }
+
+    #[test]
+    fn groups_changes_by_type_and_identical_input_is_empty() {
+        let result = compare(&json!({"a":1,"b":2}), &json!({"a":3,"c":4}));
+        assert_eq!(result["byType"]["added"][0]["path"], "c");
+        assert_eq!(result["byType"]["removed"][0]["path"], "b");
+        assert_eq!(result["byType"]["modified"][0]["path"], "a");
+        assert_eq!(result["byType"]["unchanged"], json!([]));
+
+        let same = compare(&json!({"a":{"b":1}}), &json!({"a":{"b":1}}));
+        assert_eq!(same["changes"], json!([]));
+        assert_eq!(same["summary"]["total"], 0);
     }
 }

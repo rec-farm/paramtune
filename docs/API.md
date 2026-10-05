@@ -29,7 +29,9 @@ Returns all platforms with their metadata.
 ```
 
 #### GET /api/[platform]
-Returns platform metadata including name and available versions.
+Returns platform metadata including name, available versions, and optional `kind`.
+
+`kind` is one of `ios`, `android`, `web`, `service`, or `custom`. It controls dashboard descriptions and icons; it does not change platform identifiers or configuration resolution. Older records may omit it and display as Custom.
 
 **Response:**
 ```json
@@ -47,7 +49,7 @@ Returns platform metadata including name and available versions.
 ```
 
 #### POST /api/[platform]
-Creates or updates platform metadata.
+Creates or updates platform metadata. An optional `kind` sets the platform type; omitting it preserves an existing type when updating versions. Invalid types return HTTP 400.
 
 **Request Body:**
 ```json
@@ -245,3 +247,8 @@ All endpoints include proper error handling with:
 - All API responses include `Cache-Control: no-store` headers
 - Redis provides backend caching for schema resolution
 - Consider implementing CDN caching for production deployments
+### Dashboard platform creation
+
+`POST /api/_ui/v1/platforms` accepts `{ "name": "customer-portal", "kind": "web" }`, creates a platform with no versions, and returns HTTP 201. `kind` is optional. A duplicate name returns HTTP 409. This endpoint requires an authenticated session and the same write protections as other dashboard mutations.
+
+The dashboard guides users through platform creation, a semantic version (initial suggestion `1.0.0`), and an explicit configuration save. Loading the illustrative JSON example only edits the browser draft; it does not save or configure application behavior automatically.

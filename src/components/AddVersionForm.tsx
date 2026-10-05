@@ -5,11 +5,12 @@ import Input from '@/components/ui/Input'
 import { isValidVersion } from '@/lib/versionUtils'
 
 type Props = {
+  initialVersion?: string
   action: (formData: FormData) => Promise<void>
 }
 
-export default function AddVersionForm({ action }: Props) {
-  const [version, setVersion] = useState('')
+export default function AddVersionForm({ action, initialVersion = '' }: Props) {
+  const [version, setVersion] = useState(initialVersion)
   const [touched, setTouched] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [message, setMessage] = useState<{
@@ -76,6 +77,7 @@ export default function AddVersionForm({ action }: Props) {
             setMessage(null)
           }}
           onBlur={() => setTouched(true)}
+          disabled={submitting}
           required
           aria-required="true"
           aria-invalid={touched && !isValid}
@@ -95,7 +97,7 @@ export default function AddVersionForm({ action }: Props) {
         </Button>
       </div>
       <p id="versionName-help" className="text-xs text-muted-foreground">
-        Semantic version: major.minor.patch
+        A version identifies a release of this configuration. Use major.minor.patch, such as 1.0.0 for your first release.
       </p>
       {touched && !isValid && (
         <p id="versionName-error" className="flex items-center gap-2 text-xs text-danger">

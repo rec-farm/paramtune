@@ -268,7 +268,7 @@ const JsonEditable = memo(function JsonEditable({
 
       {/* Header / Toolbar */}
       {showHeader && (
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <ValidationStatus
               isValid={state.isValid}
@@ -284,8 +284,10 @@ const JsonEditable = memo(function JsonEditable({
           </div>
 
           {renderToolbar ? (
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               {renderToolbar({
+                jsonText: state.jsonText,
+                setJsonText: actions.setJsonText,
                 isValid: state.isValid,
                 errorMessage: state.errorMessage,
                 onFormat: actions.formatJson,

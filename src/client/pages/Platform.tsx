@@ -1,7 +1,8 @@
-import { useLoaderData, useRevalidator } from 'react-router'
+import { useLoaderData, useNavigate, useRevalidator } from 'react-router'
 import { api, UI_API } from '@/client/api'
 import type { Platform } from '@/shared/contracts'
 import PageTitle from '@/components/PageTitle'
+import SetupGuide from '@/components/SetupGuide'
 import AddVersionForm from '@/components/AddVersionForm'
 import { Link } from 'react-router'
 import { cn } from '@/lib/utils'
@@ -37,7 +38,8 @@ const VersionTag = ({ version, latest }: VersionTagProps) => (
 
 export default function PlatformPage() {
   const platform = useLoaderData() as Platform
-  const platformName = platform.name
+  const platformName = platform?.name ?? ''
+  const navigate = useNavigate()
   const revalidator = useRevalidator()
 
   if (!platform) {
@@ -68,12 +70,14 @@ export default function PlatformPage() {
       method: 'POST', body: JSON.stringify({ version: formData.get('versionName') }),
     })
     await revalidator.revalidate()
+    await navigate(`/dashboard/${encodeURIComponent(platformName)}/${encodeURIComponent(String(formData.get('versionName')))}`)
   }
 
   return (
     <div className="space-y-8">
-      <PageTitle platform={platformName} />
+      <PageTitle platform={platformName} kind={platform?.kind} />
 
+      {platform.versions.length === 0 && <SetupGuide step={1} href="#add-version" action="Add first version" />}
       <Card title="Versions">
         <Suspense
           fallback={
@@ -120,7 +124,7 @@ export default function PlatformPage() {
       </Card>
 
       <Card id="add-version" title="Add a version">
-        <AddVersionForm action={createVersion} />
+        <AddVersionForm action={createVersion} initialVersion={platform.versions.length === 0 ? '1.0.0' : ''} />
       </Card>
     </div>
   )

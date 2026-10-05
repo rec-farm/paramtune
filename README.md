@@ -187,5 +187,5 @@ Paramtune is released under the [MIT License](LICENSE).
 
 After building, install a browser with `pnpm exec playwright install chromium`.
 Run `E2E_REDIS_URL=redis://127.0.0.1:6379/15 pnpm test:e2e:ci` against dedicated
-Redis. The bounded browser suite owns ports 4481/4482 and uses a dedicated test Redis database.
+Redis. The bounded browser suite owns ports 4481/4482/4483 and uses a dedicated test Redis database.
 Use E2E_CHROME=1 for installed Chrome. See [Migration and reuse](docs/VITE_MIGRATION.md).

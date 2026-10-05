@@ -1,6 +1,7 @@
 import { lazy, Suspense, useMemo, useRef, useState } from 'react'
 import type { KeyboardEvent } from 'react'
 import Card from '@/components/ui/Card'
+import { Link } from 'react-router'
 import type { Schema, SchemaHistoryEntry } from '@/shared/contracts'
 
 const SchemaEditorForm = lazy(() => import('@/components/SchemaEditorForm'))
@@ -26,6 +27,7 @@ export default function SchemaTabs({
   currentSchema,
 }: SchemaTabsProps) {
   const [active, setActive] = useState<TabKey>('Editor')
+  const [saved, setSaved] = useState(false)
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([])
   const historyCount = history?.length ?? 0
   const previewCount = useMemo(
@@ -62,6 +64,14 @@ export default function SchemaTabs({
 
   return (
     <div className="space-y-4">
+      {saved && <div role="status" className="rounded-sm border border-border bg-surface-2 p-4 space-y-3">
+        <p className="font-semibold text-success">Configuration saved.</p>
+        <p className="text-sm text-muted-foreground">Check the resolved values in Preview, then see how your application can read them.</p>
+        <div className="flex flex-wrap gap-3">
+          <button type="button" className="pt-btn pt-btn-secondary" onClick={() => { setActive('Preview'); tabRefs.current[1]?.focus() }}>View preview</button>
+          <Link to="/api-docs" className="pt-btn pt-btn-secondary">Read API documentation</Link>
+        </div>
+      </div>}
       <div className="sticky top-0 z-10 bg-background border-b border-border">
         <div role="tablist" aria-label="Schema views" className="flex items-center gap-1">
           {TABS.map((tab, index) => {
@@ -110,7 +120,8 @@ export default function SchemaTabs({
           <SchemaEditorForm
             key={defaultValue}
             defaultValue={defaultValue}
-            updateSchema={updateSchema}
+            firstSave={historyCount === 0}
+            updateSchema={async (data) => { await updateSchema(data); setSaved(true) }}
           />
         </div>
       )}

@@ -181,6 +181,23 @@ fn ok(created: bool) -> Response {
 fn method() -> ApiError {
     ApiError(StatusCode::METHOD_NOT_ALLOWED, "Method not allowed".into())
 }
+fn platform_kind(data: &Value) -> Result<Option<&str>> {
+    match data.get("kind") {
+        None => Ok(None),
+        Some(Value::String(kind))
+            if matches!(
+                kind.as_str(),
+                "ios" | "android" | "web" | "service" | "custom"
+            ) =>
+        {
+            Ok(Some(kind))
+        }
+        Some(_) => Err(ApiError::bad(
+            "Invalid platform kind: use ios, android, web, service, or custom",
+        )),
+    }
+}
+
 async fn platform(state: &AppState, platform: &str) -> Result<Value> {
     state
         .0
@@ -298,10 +315,14 @@ async fn ui(State(state): State<AppState>, request: Request) -> Result<Response>
                     "Platform already exists".into(),
                 ));
             }
+            let mut record = json!({"name":p,"versions":[]});
+            if let Some(kind) = platform_kind(&data)? {
+                record["kind"] = Value::from(kind);
+            }
             state
                 .0
                 .store
-                .append(&format!("platforms:{p}"), &json!({"name":p,"versions":[]}))
+                .append(&format!("platforms:{p}"), &record)
                 .await?;
             audit(&state, &session, "create", &p, None).await;
             Ok(ok(true))
@@ -449,13 +470,20 @@ async fn public_api(State(state): State<AppState>, request: Request) -> Result<R
                 deduped.push(v.clone());
             }
         }
+        let mut record = state
+            .0
+            .store
+            .latest(&format!("platforms:{p}"))
+            .await?
+            .unwrap_or_else(|| json!({"name":p}));
+        record["versions"] = Value::from(deduped);
+        if let Some(kind) = platform_kind(&data)? {
+            record["kind"] = Value::from(kind);
+        }
         state
             .0
             .store
-            .append(
-                &format!("platforms:{p}"),
-                &json!({"name":p,"versions":deduped}),
-            )
+            .append(&format!("platforms:{p}"), &record)
             .await?;
         audit(&state, &session, "update", p, None).await;
         Ok(ok(true))

@@ -1,4 +1,4 @@
-import { useLoaderData, useParams, useRevalidator } from 'react-router'
+import { useLoaderData, useParams, useRevalidator, useRouteLoaderData } from 'react-router'
 import { api, schemaPath } from '@/client/api'
 import type { SchemaDetail } from '@/shared/contracts'
 import { Suspense } from 'react'
@@ -6,12 +6,16 @@ import { Link } from 'react-router'
 import { GitCompare } from 'lucide-react'
 
 import PageTitle from '@/components/PageTitle'
+import SetupGuide from '@/components/SetupGuide'
+import type { DashboardData } from '@/client/router'
 import SchemaTabs from '@/components/SchemaTabs'
 
 
 export default function SchemaPage() {
   const { platform: platformName = '', version: versionName = '' } = useParams()
   const { schema, history, contentHash } = useLoaderData() as SchemaDetail
+  const dashboard = useRouteLoaderData('dashboard') as DashboardData
+  const kind = dashboard.platforms.find((platform) => platform.name === platformName)?.kind
   const shortHash = contentHash.slice(0, 8)
   const revalidator = useRevalidator()
 
@@ -28,7 +32,7 @@ export default function SchemaPage() {
     <div className="space-y-6">
       <header className="space-y-3">
         <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3">
-          <PageTitle platform={platformName} version={versionName} />
+          <PageTitle platform={platformName} version={versionName} kind={kind} />
           <div className="flex items-center gap-2 flex-wrap">
             <Link
               to={`/dashboard/compare?platformA=${encodeURIComponent(platformName)}&versionA=${encodeURIComponent(versionName)}`}
@@ -41,7 +45,7 @@ export default function SchemaPage() {
         </div>
         {/* Meta line (§4): mono values at weight 500 inside muted sans */}
         <p className="text-sm text-muted-foreground tabular-nums flex flex-wrap items-center gap-x-2 gap-y-1">
-          <span>JSON Schema</span>
+          <span>JSON configuration</span>
           <span aria-hidden="true">·</span>
           <span title={`sha256 ${contentHash}`}>
             sha256{' '}
@@ -78,6 +82,8 @@ export default function SchemaPage() {
           </span>
         </p>
       </header>
+
+      {history.length === 0 && <SetupGuide step={2} />}
 
       <Suspense
         fallback={

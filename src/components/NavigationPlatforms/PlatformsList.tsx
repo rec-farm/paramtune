@@ -4,12 +4,9 @@ import { Link } from 'react-router'
 import { useLocation } from 'react-router'
 import { cn } from '@/lib/utils'
 import { sortVersionsDescending } from '@/lib/versionUtils'
+import PlatformIcon from '@/components/PlatformIcon'
+import type { Platform } from '@/shared/contracts'
 import { NAV_ITEM_ACTIVE, NAV_ITEM_IDLE } from './navItem'
-
-type Platform = {
-  name: string
-  versions: string[]
-}
 
 type VersionProps = {
   platform: string
@@ -140,7 +137,7 @@ export default function PlatformsList({
                 )}
                 to={platformHref}
               >
-                <span className="truncate">{platform.name}</span>
+                <span className="flex min-w-0 items-center gap-2"><PlatformIcon kind={platform.kind} className="h-4 w-4 shrink-0" /><span className="truncate">{platform.name}</span></span>
                 <span className="font-mono text-xs tabular-nums opacity-80">
                   {platform.versions?.length ?? 0}
                 </span>

@@ -1,7 +1,9 @@
-import { useLoaderData, useRevalidator } from 'react-router'
+import { useLoaderData, useNavigate, useRevalidator } from 'react-router'
 import { api, UI_API } from '@/client/api'
 import type { Overview, Platform } from '@/shared/contracts'
 import Card from '@/components/ui/Card'
+import SetupGuide from '@/components/SetupGuide'
+import PlatformIcon from '@/components/PlatformIcon'
 import CreatePlatformForm from '@/components/CreatePlatformForm'
 import { getLatestVersion } from '@/lib/versionUtils'
 import StatTiles from '@/components/StatTiles'
@@ -36,7 +38,14 @@ function formatRelative(timestamp: number) {
 
 export default function OverviewPage() {
   const { platforms, statuses, failed } = useLoaderData() as Overview
+  const navigate = useNavigate()
   const revalidator = useRevalidator()
+  const started = platforms.find((p) => p.versions.length > 0) ?? platforms[0]
+  const unfinished = started && statuses.find((s) => s.platform === started.name && s.savedAt === undefined)
+  const setupStep = started ? started.versions.length > 0 ? 2 : 1 : 0
+  const setupHref = !started ? '#create-platform' : unfinished
+    ? `/dashboard/${encodeURIComponent(started.name)}/${encodeURIComponent(unfinished.version)}`
+    : `/dashboard/${encodeURIComponent(started.name)}#add-version`
   const versionCount = platforms.reduce(
     (sum, p) => sum + (p.versions?.length ?? 0),
     0
@@ -49,9 +58,10 @@ export default function OverviewPage() {
 
   async function createPlatform(formData: FormData) {
     await api(`${UI_API}/platforms`, {
-      method: 'POST', body: JSON.stringify({ name: formData.get('platformName') }),
+      method: 'POST', body: JSON.stringify({ name: formData.get('platformName'), kind: formData.get('kind') }),
     })
     await revalidator.revalidate()
+    await navigate(`/dashboard/${encodeURIComponent(String(formData.get('platformName')))}`)
   }
 
   return (
@@ -76,6 +86,10 @@ export default function OverviewPage() {
           className="hidden md:block shrink-0"
         />
       </header>
+
+      {failed === 0 && !statuses.some((status) => status.savedAt !== undefined) && (
+        <SetupGuide step={setupStep} href={setupHref} action={setupStep === 0 ? 'Create platform' : setupStep === 1 ? 'Add first version' : 'Edit configuration'} />
+      )}
 
       <section aria-label="Workspace stats" className="space-y-3">
         <StatTiles
@@ -188,8 +202,9 @@ export default function OverviewPage() {
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0 space-y-1">
-                        <h3 className="font-mono text-lg font-medium truncate">
-                          {platform.name}
+                        <h3 className="flex items-center gap-2 font-mono text-lg font-medium">
+                          <PlatformIcon kind={platform.kind} />
+                          <span className="min-w-0 truncate">{platform.name}</span>
                         </h3>
                         <p className="text-sm text-muted-foreground">
                           <span className="font-mono font-medium text-foreground tabular-nums">
@@ -226,7 +241,7 @@ export default function OverviewPage() {
       <Card
         id="create-platform"
         title="Create a platform"
-        subtitle="Name it after the app or service it configures."
+        subtitle="A platform groups versions and configuration for one app or service. Give it a name such as customer-portal or payments-api."
       >
         <CreatePlatformForm action={createPlatform} />
       </Card>

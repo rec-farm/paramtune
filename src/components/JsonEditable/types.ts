@@ -13,6 +13,8 @@ export interface JsonEditableProps {
   syntaxHighlighting?: boolean
   autoFormat?: boolean
   renderToolbar?: (args: {
+    jsonText: string
+    setJsonText: (value: string) => void
     isValid: boolean
     errorMessage?: string
     onFormat: () => void

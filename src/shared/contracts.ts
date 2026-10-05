@@ -26,7 +26,10 @@ export type SchemaHistoryEntry = {
   author?: Author
 }
 
+export type PlatformKind = 'ios' | 'android' | 'web' | 'service' | 'custom'
+
 export type Platform = {
+  kind?: PlatformKind
   name: string
   versions: string[]
 }

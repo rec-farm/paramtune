@@ -2,6 +2,8 @@ import { useCallback, useMemo, useRef, useState } from 'react'
 import Button from '@/components/ui/Button'
 import { AlertCircle, CheckCircle2, Loader2, Plus } from 'lucide-react'
 import Input from '@/components/ui/Input'
+import PlatformIcon, { PLATFORM_TYPES } from '@/components/PlatformIcon'
+import type { PlatformKind } from '@/shared/contracts'
 import { isValidName } from '@/lib/nameValidation'
 
 type Props = {
@@ -10,6 +12,7 @@ type Props = {
 
 export default function CreatePlatformForm({ action }: Props) {
   const [name, setName] = useState('')
+  const [kind, setKind] = useState<PlatformKind>('custom')
   const [touched, setTouched] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [message, setMessage] = useState<{
@@ -37,6 +40,7 @@ export default function CreatePlatformForm({ action }: Props) {
         // Submit the mutation supplied by the route
         const formData = new FormData()
         formData.set('platformName', name.trim())
+        formData.set('kind', kind)
         await action(formData)
         setName('')
         setTouched(false)
@@ -55,11 +59,28 @@ export default function CreatePlatformForm({ action }: Props) {
         setSubmitting(false)
       }
     },
-    [action, isValid, name]
+    [action, isValid, name, kind]
   )
 
   return (
     <form onSubmit={onSubmit} className="space-y-4" noValidate>
+      <fieldset disabled={submitting} className="space-y-3">
+        <legend className="pt-label mb-2">Platform type</legend>
+        <p className="text-sm text-muted-foreground">Choose what this configuration is for. The type helps you recognize it; your name stays its API identifier.</p>
+        <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+          {PLATFORM_TYPES.map((type) => (
+            <label key={type.kind} className="flex cursor-pointer items-start gap-3 rounded-sm border border-border p-3 has-[:checked]:border-primary has-[:checked]:bg-primary-soft">
+              <input type="radio" name="kind" value={type.kind} checked={kind === type.kind} onChange={() => {
+                setKind(type.kind)
+                if (!name.trim()) setName(type.name)
+                setMessage(null)
+              }} className="mt-1" />
+              <PlatformIcon kind={type.kind} />
+              <span><span className="block font-semibold">{type.label}</span><span className="block text-xs text-muted-foreground">{type.description}</span></span>
+            </label>
+          ))}
+        </div>
+      </fieldset>
       <div className="space-y-2">
         <label
           htmlFor="platformName"
@@ -82,6 +103,7 @@ export default function CreatePlatformForm({ action }: Props) {
             setMessage(null)
           }}
           onBlur={() => setTouched(true)}
+          disabled={submitting}
           required
           aria-required="true"
           aria-invalid={touched && !isValid}

@@ -1,0 +1,108 @@
+import { test, expect } from '@playwright/test'
+
+const authURL = process.env.E2E_AUTH_URL || 'http://localhost:4380'
+const ui = '/api/_ui/v1'
+// A separate production server keeps the expanded suite within real rate limits.
+test.use({ baseURL: process.env.E2E_SETUP_URL || process.env.E2E_BASE_URL || 'http://localhost:4382' })
+
+test('guided setup, editable example, resume, errors, and platform icons', async ({ page, context }) => {
+  const name = `portal-${Date.now()}`
+  expect((await context.request.post(`${authURL}/api/auth/dev-login`, { headers: { Origin: authURL } })).ok()).toBe(true)
+  // Isolate the first-use overview presentation without clearing existing test data.
+  await page.route(`${ui}/overview`, (route) => route.fulfill({ json: { platforms: [], statuses: [], failed: 0 } }))
+  await page.goto('/dashboard')
+  await expect(page.getByRole('heading', { name: 'Create your first configuration' })).toBeVisible()
+  await expect(page.getByRole('list', { name: 'Setup progress' }).locator('[aria-current="step"]')).toContainText('Platform')
+  await page.screenshot({ path: 'test-results/setup-overview.png', fullPage: true, animations: 'disabled' })
+  await page.getByRole('button', { name: /Account menu/ }).click()
+  await page.getByRole('radio', { name: 'Paper', exact: true }).click()
+  await page.keyboard.press('Escape')
+  await expect(page.locator('html')).toHaveAttribute('data-theme', 'light')
+  await page.getByRole('group', { name: 'Platform type' }).scrollIntoViewIfNeeded()
+  await page.screenshot({ path: 'test-results/setup-types-paper.png', animations: 'disabled' })
+  await page.getByRole('button', { name: /Account menu/ }).click()
+  await page.getByRole('radio', { name: 'Dark', exact: true }).click()
+  await page.keyboard.press('Escape')
+  await page.getByRole('radio', { name: /Custom/ }).focus()
+  await page.keyboard.press('ArrowLeft')
+  await expect(page.getByRole('radio', { name: /API\/service/ })).toBeChecked()
+  await expect(page.getByLabel('Platform name')).toHaveValue('api')
+  await page.getByLabel('Platform name').fill(name)
+  await page.getByRole('radio', { name: /Web/ }).check()
+  await expect(page.getByLabel('Platform name')).toHaveValue(name)
+  await page.unroute(`${ui}/overview`)
+  await page.route(`${ui}/platforms`, (route) => route.fulfill({ status: 503, json: { error: 'Temporary test failure' } }))
+  await page.getByRole('button', { name: 'Create platform', exact: true }).click()
+  await expect(page.getByRole('status')).toContainText('Temporary test failure')
+  await expect(page.getByLabel('Platform name')).toHaveValue(name)
+  await page.unroute(`${ui}/platforms`)
+  await page.getByRole('button', { name: 'Create platform', exact: true }).click()
+  await expect(page).toHaveURL(`/dashboard/${name}`)
+  await expect(page.getByRole('list', { name: 'Setup progress' }).locator('[aria-current="step"]')).toContainText('Version')
+  await expect(page.locator('#versionName')).toHaveValue('1.0.0')
+  await expect(page.getByRole('heading', { name }).locator('svg.lucide-globe')).toBeVisible()
+  await expect(page.locator('aside').getByRole('link', { name }).locator('svg.lucide-globe')).toBeVisible()
+  await page.reload()
+  await expect(page.getByRole('list', { name: 'Setup progress' })).toBeVisible()
+  await page.locator('#versionName').fill('invalid')
+  await page.locator('#versionName').blur()
+  await expect(page.getByRole('button', { name: 'Create', exact: true })).toBeDisabled()
+  await expect(page.getByText('Enter a semantic version such as 1.2.3.')).toBeVisible()
+  await page.locator('#versionName').fill('1.0.0')
+  await page.getByRole('button', { name: 'Create', exact: true }).click()
+  await expect(page).toHaveURL(`/dashboard/${name}/1.0.0`)
+  await page.reload()
+  await expect(page.getByRole('list', { name: 'Setup progress' }).locator('[aria-current="step"]')).toContainText('Configuration')
+  const editor = page.locator('textarea')
+  await editor.fill('{"mine":true}')
+  await expect(page.getByRole('button', { name: 'Use example' })).toHaveCount(0)
+  await editor.fill('{}')
+  await page.getByRole('button', { name: 'Use example' }).click()
+  await expect(editor).toHaveValue(/"welcomeMessage": true/)
+  const schemaPath = `${ui}/platforms/${name}/versions/1.0.0/schema`
+  expect((await (await context.request.get(schemaPath)).json()).history).toHaveLength(0)
+  await page.setViewportSize({ width: 390, height: 844 })
+  await expect(page.getByRole('button', { name: 'Open menu' })).toBeVisible()
+  await editor.scrollIntoViewIfNeeded()
+  await page.screenshot({ path: 'test-results/setup-mobile.png', fullPage: true, animations: 'disabled' })
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true)
+  await page.route(schemaPath, (route) => route.request().method() === 'PUT'
+    ? route.fulfill({ status: 503, json: { error: 'Save temporarily unavailable' } }) : route.continue())
+  await page.getByRole('button', { name: 'Save changes' }).click()
+  await expect(page.getByRole('alert')).toContainText('Save temporarily unavailable')
+  await expect(editor).toHaveValue(/"welcomeMessage": true/)
+  await page.unroute(schemaPath)
+  await page.getByRole('button', { name: 'Save changes' }).click()
+  await expect(page.getByRole('status').filter({ hasText: 'Configuration saved.' })).toBeVisible()
+  await expect(page.getByRole('list', { name: 'Setup progress' })).toHaveCount(0)
+  await page.getByRole('button', { name: 'View preview' }).click()
+  await expect(page.getByText('Live preview', { exact: true })).toBeVisible()
+  expect((await (await context.request.get(`/api/${name}`)).json()).kind).toBe('web')
+  await page.goto('/dashboard')
+  await page.getByLabel('Platform name').fill(name)
+  await page.getByRole('button', { name: 'Create platform', exact: true }).click()
+  await expect(page.getByRole('status')).toContainText('Platform already exists')
+  await expect(page.getByLabel('Platform name')).toHaveValue(name)
+})
+
+test('platform types validate and survive legacy version updates', async ({ context }) => {
+  const request = context.request
+  const name = `types-${Date.now()}`
+  expect((await request.post(`${authURL}/api/auth/dev-login`, { headers: { Origin: authURL } })).ok()).toBe(true)
+  for (const kind of ['ios', 'android', 'web', 'service', 'custom']) {
+    const platform = `${name}-${kind}`
+    expect((await request.post(`${authURL}${ui}/platforms`, { data: { name: platform, kind } })).status()).toBe(201)
+    expect((await request.post(`${authURL}${ui}/platforms/${platform}/versions`, { data: { version: '1.0.0' } })).ok()).toBe(true)
+    expect((await request.post(`${authURL}/api/${platform}`, { data: { versions: ['1.0.0', '2.0.0'] } })).ok()).toBe(true)
+    expect((await (await request.get(`${authURL}/api/${platform}`)).json()).kind).toBe(kind)
+  }
+  for (const kind of ['unknown', null, 42]) {
+    expect((await request.post(`${authURL}${ui}/platforms`, { data: { name: `${name}-invalid`, kind } })).status()).toBe(400)
+    expect((await request.get(`${authURL}/api/${name}-invalid`)).status()).toBe(404)
+    expect((await request.post(`${authURL}/api/${name}-web`, { data: { versions: [], kind } })).status()).toBe(400)
+  }
+  expect((await request.post(`${authURL}${ui}/platforms`, { data: { name: `${name}-old` } })).ok()).toBe(true)
+  const older = await (await request.get(`${authURL}/api/${name}-old`)).json()
+  expect(older).not.toHaveProperty('kind')
+  expect((await (await request.get(`${authURL}/api/${name}-web`)).json()).versions).toEqual(['1.0.0', '2.0.0'])
+})

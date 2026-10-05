@@ -1,3 +1,4 @@
+import type { Platform } from '@/shared/contracts'
 import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router'
 import { useLocation } from 'react-router'
@@ -17,11 +18,6 @@ import { NAV_ITEM_ACTIVE, NAV_ITEM_IDLE } from '@/components/NavigationPlatforms
 import ThemeSwitcher from '@/components/ThemeSwitcher'
 import Logo from '@/components/Logo'
 import { signOut } from '@/lib/auth-client'
-
-type Platform = {
-  name: string
-  versions: string[]
-}
 
 type SidebarProps = {
   platforms: Platform[]

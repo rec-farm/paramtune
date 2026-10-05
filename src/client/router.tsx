@@ -40,7 +40,7 @@ export function createRouter() {
       { path: 'login', loader: ({ request }) => load('/api/auth/providers', request), lazy: async () => ({ Component: (await import('@/client/pages/Login')).default }) },
       { path: 'api-docs', lazy: async () => ({ Component: (await import('@/client/pages/ApiDocs')).default }) },
       {
-        path: 'dashboard', loader: dashboardLoader,
+        id: 'dashboard', path: 'dashboard', loader: dashboardLoader,
         lazy: async () => ({ Component: (await import('@/client/pages/Dashboard')).default }),
         children: [
           { index: true, ErrorBoundary: RouteError, loader: ({ request }) => load<Overview>(`${UI_API}/overview`, request), lazy: async () => ({ Component: (await import('@/client/pages/Overview')).default }) },

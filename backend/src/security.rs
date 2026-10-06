@@ -6,7 +6,9 @@ use axum::{
     response::{IntoResponse, Response},
 };
 use std::{
+    collections::HashMap,
     net::SocketAddr,
+    sync::PoisonError,
     time::{Duration, Instant},
 };
 fn header(request: &Request, name: &str) -> Option<String> {
@@ -41,6 +43,19 @@ pub async fn middleware(State(state): State<AppState>, request: Request, next: N
     };
     decorate(&state, response, api, origin.as_deref(), &path)
 }
+/// Counts one request for `key`; returns seconds to wait once `max` is exceeded within `window`.
+fn rate_limit_retry(
+    rates: &mut HashMap<String, (u32, Instant)>,
+    key: String,
+    max: u32,
+    window: Duration,
+    now: Instant,
+) -> Option<u64> {
+    rates.retain(|_, (_, deadline)| *deadline > now);
+    let (count, deadline) = rates.entry(key).or_insert((0, now + window));
+    *count += 1;
+    (*count > max).then(|| deadline.duration_since(now).as_secs() + 1)
+}
 async fn protect(state: &AppState, request: Request, next: Next) -> Response {
     let path = request.uri().path();
     if path == "/api/auth/backchannel-logout" {
@@ -60,17 +75,10 @@ async fn protect(state: &AppState, request: Request, next: Next) -> Response {
     };
     let now = Instant::now();
     let retry = {
-        let mut rates = state.0.rates.lock().unwrap();
-        rates.retain(|_, (_, deadline)| *deadline > now);
-        let (count, deadline) = rates
-            .entry(format!("{}:{ip}", if auth { "auth" } else { "api" }))
-            .or_insert((0, now + window));
-        *count += 1;
-        if *count > max {
-            Some(deadline.duration_since(now).as_secs() + 1)
-        } else {
-            None
-        }
+        // A panic elsewhere must not poison the limiter and fail every later request.
+        let mut rates = state.0.rates.lock().unwrap_or_else(PoisonError::into_inner);
+        let key = format!("{}:{ip}", if auth { "auth" } else { "api" });
+        rate_limit_retry(&mut rates, key, max, window, now)
     };
     if let Some(retry) = retry {
         let mut response =
@@ -173,4 +181,34 @@ fn decorate(
         );
     }
     response
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    #[test]
+    fn limits_per_key_and_resets_after_window() {
+        let mut rates = HashMap::new();
+        let window = Duration::from_secs(60);
+        let now = Instant::now();
+        for _ in 0..2 {
+            assert_eq!(
+                rate_limit_retry(&mut rates, "a".into(), 2, window, now),
+                None
+            );
+        }
+        assert_eq!(
+            rate_limit_retry(&mut rates, "a".into(), 2, window, now),
+            Some(61)
+        );
+        assert_eq!(
+            rate_limit_retry(&mut rates, "b".into(), 2, window, now),
+            None
+        );
+        let later = now + window;
+        assert_eq!(
+            rate_limit_retry(&mut rates, "a".into(), 2, window, later),
+            None
+        );
+    }
 }

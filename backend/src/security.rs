@@ -83,10 +83,9 @@ async fn protect(state: &AppState, request: Request, next: Next) -> Response {
     if let Some(retry) = retry {
         let mut response =
             ApiError(StatusCode::TOO_MANY_REQUESTS, "Too many requests".into()).into_response();
-        response.headers_mut().insert(
-            "retry-after",
-            HeaderValue::from_str(&retry.to_string()).unwrap(),
-        );
+        response
+            .headers_mut()
+            .insert("retry-after", HeaderValue::from(retry));
         return response;
     }
     if request.method() == "OPTIONS" {

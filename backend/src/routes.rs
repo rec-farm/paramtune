@@ -628,30 +628,24 @@ async fn public_api(State(state): State<AppState>, request: Request) -> Result<R
         Ok(Json(platform(&state, p).await?["versions"].clone()).into_response())
     } else if let Some(v) = path.get(2) {
         legacy_name(v, true)?;
-        if let Some(grant) = &grant {
-            // The resolved output embeds every platform it extends, so a scoped token
-            // must cover all of them, not just the one in the URL.
-            let outside: Vec<String> = schema::source_platforms(&state.0.store, p, v)
-                .await?
-                .into_iter()
-                .filter(|source| !grant.allows(source))
-                .collect();
-            if !outside.is_empty() {
-                return Err(ApiError(
-                    StatusCode::FORBIDDEN,
-                    "This schema extends platforms outside this token's scope".into(),
-                ));
-            }
+        let record = state
+            .0
+            .store
+            .latest(&schema::key(p, v))
+            .await?
+            .ok_or_else(|| ApiError::missing("Version not found"))?;
+        // The resolved output embeds every platform it extends, so a scoped token
+        // must cover all of them, as recorded when the output was computed.
+        if let Some(grant) = &grant
+            && !schema::stored_sources(p, &record)
+                .is_some_and(|sources| sources.iter().all(|source| grant.allows(source)))
+        {
+            return Err(ApiError(
+                StatusCode::FORBIDDEN,
+                "This schema extends platforms outside this token's scope".into(),
+            ));
         }
-        Ok(Json(
-            state
-                .0
-                .store
-                .latest(&schema::key(p, v))
-                .await?
-                .ok_or_else(|| ApiError::missing("Version not found"))?,
-        )
-        .into_response())
+        Ok(Json(record).into_response())
     } else {
         Ok(Json(platform(&state, p).await?).into_response())
     }

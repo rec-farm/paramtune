@@ -119,35 +119,42 @@ pub async fn blocking_dependents(
     }
     Ok(found)
 }
-/// Every platform whose content a saved schema's output includes, itself first,
-/// following `@extends` transitively through the stored revisions.
-pub async fn source_platforms(store: &Store, platform: &str, version: &str) -> Result<Vec<String>> {
-    let platforms = store.platforms().await?;
+/// Every platform whose content `content`'s output merges in, itself first. Computed
+/// with the same platform snapshot as the output, so it matches what was merged even
+/// if version ranges later resolve elsewhere.
+async fn sources(
+    store: &Store,
+    platforms: &[Value],
+    platform: &str,
+    content: &Value,
+) -> Result<Vec<String>> {
     let mut found = vec![platform.to_owned()];
     let mut visited = HashSet::new();
-    let mut pending = vec![(platform.to_owned(), version.to_owned())];
-    while let Some((p, v)) = pending.pop() {
-        if !visited.insert(format!("{p}/{v}")) {
-            continue;
+    let mut pending = dependencies(content);
+    while let Some(reference) = pending.pop() {
+        let (p, v) = resolve(&reference, platforms)?;
+        if !found.contains(&p) {
+            found.push(p.clone());
         }
-        let Some(latest) = store.latest(&key(&p, &v)).await? else {
-            continue;
-        };
-        for reference in dependencies(&latest["content"]) {
-            // An unresolvable reference names its platform; count it so scope stays closed.
-            let (rp, rv) = resolve(&reference, &platforms).unwrap_or_else(|_| {
-                let name = reference.split('/').next().unwrap_or_default();
-                (name.to_owned(), String::new())
-            });
-            if !found.contains(&rp) {
-                found.push(rp.clone());
-            }
-            if !rv.is_empty() {
-                pending.push((rp, rv));
-            }
+        if visited.insert(format!("{p}/{v}"))
+            && let Some(latest) = store.latest(&key(&p, &v)).await?
+        {
+            pending.extend(dependencies(&latest["content"]));
         }
     }
     Ok(found)
+}
+/// The platforms a stored revision's output came from. Revisions saved before this was
+/// recorded are only known when they extend nothing.
+pub fn stored_sources(platform: &str, record: &Value) -> Option<Vec<String>> {
+    match record["sources"].as_array() {
+        Some(sources) => sources
+            .iter()
+            .map(|s| s.as_str().map(str::to_owned))
+            .collect(),
+        None if dependencies(&record["content"]).is_empty() => Some(vec![platform.to_owned()]),
+        None => None,
+    }
 }
 /// Deletes the history of each version and its dependency bookkeeping.
 pub async fn remove(store: &Store, platform: &str, versions: &[String]) -> Result<()> {
@@ -292,7 +299,9 @@ fn save_tree<'a>(
             .map(|reference| resolve(reference, platforms))
             .collect::<Result<Vec<_>>>()?;
         let output = process(store, content.clone(), HashSet::new(), platforms, 0).await?;
-        let mut value = json!({"dependencies": deps, "content": content, "output": output});
+        let sources = sources(store, platforms, &platform, &content).await?;
+        let mut value =
+            json!({"dependencies": deps, "content": content, "output": output, "sources": sources});
         if !author.is_null() {
             value["author"] = author;
         }
@@ -368,6 +377,26 @@ mod tests {
         let ties = vec![json!({"name":"base","versions":["v1.2.3+first","1.2.3+second"]})];
         assert_eq!(resolve("base/latest", &ties).unwrap().1, "v1.2.3+first");
         assert_eq!(resolve("base/^1", &ties).unwrap().1, "v1.2.3+first");
+    }
+    #[test]
+    fn stored_sources_fail_closed_for_unrecorded_composition() {
+        let recorded = json!({"content":{"@extends":"a/1"},"sources":["app","a"]});
+        assert_eq!(
+            stored_sources("app", &recorded),
+            Some(vec!["app".into(), "a".into()])
+        );
+        assert_eq!(
+            stored_sources("app", &json!({"content":{"plain":true}})),
+            Some(vec!["app".into()])
+        );
+        assert_eq!(
+            stored_sources("app", &json!({"content":{"@extends":"a/1"}})),
+            None
+        );
+        assert_eq!(
+            stored_sources("app", &json!({"content":{},"sources":[1]})),
+            None
+        );
     }
     #[test]
     fn nested_arrays_dependencies_and_merge() {

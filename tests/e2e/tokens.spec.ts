@@ -99,4 +99,16 @@ test('a scoped token cannot read content inherited from platforms outside its sc
   const allowed = await read(await tokenFor([app, middle, secret]))
   expect(allowed.status).toBe(200)
   expect(JSON.parse(allowed.body).output).toEqual({ apiKey: 'hidden', own: true })
+
+  // A newer middle version that extends nothing changes what `^1` resolves to now,
+  // but app's stored output still holds secret's content until app is saved again.
+  expect((await request.post(`/api/${middle}/versions`, { data: { version: '1.1.0' } })).status()).toBe(201)
+  expect((await request.put(`${ui}/platforms/${middle}/versions/1.1.0/schema`, { data: { content: { clean: true } } })).ok()).toBe(true)
+  const stale = await read(await tokenFor([app, middle]))
+  expect(stale.status).toBe(403)
+  expect(stale.body).not.toContain('hidden')
+  expect((await put(app, { '@extends': `${middle}/^1`, own: true })).ok()).toBe(true)
+  const resaved = await read(await tokenFor([app, middle]))
+  expect(resaved.status).toBe(200)
+  expect(JSON.parse(resaved.body).output).toEqual({ clean: true, own: true })
 })

@@ -1,5 +1,7 @@
 use crate::{
-    AppState, diff,
+    AppState,
+    auth::{require_manage, require_write},
+    diff,
     error::{ApiError, Result},
     schema, tokens,
 };
@@ -271,6 +273,13 @@ async fn ui(State(state): State<AppState>, request: Request) -> Result<Response>
     let path: Vec<&str> = path.iter().map(String::as_str).collect();
     let method_name = request.method().as_str().to_owned();
     match path.as_slice() {
+        ["tokens", ..] => require_manage(&session)?,
+        // Validation and comparison are reads that happen to POST a body.
+        ["validate"] | ["compare"] => {}
+        _ if !matches!(method_name.as_str(), "GET" | "HEAD") => require_write(&session)?,
+        _ => {}
+    }
+    match path.as_slice() {
         ["overview"] if method_name == "GET" || method_name == "HEAD" => {
             let platforms = state.0.store.platforms().await?;
             let pairs: Vec<(&str, &str)> = platforms
@@ -486,6 +495,9 @@ async fn public_api(State(state): State<AppState>, request: Request) -> Result<R
         return Ok(Json(platforms).into_response());
     }
     legacy_name(p, false)?;
+    if method_name == "POST" {
+        require_write(&session)?;
+    }
     if grant.as_ref().is_some_and(|grant| !grant.allows(p)) {
         // Out-of-scope platforms look absent, so a token can't probe for names.
         return Err(ApiError::missing("Platform not found"));

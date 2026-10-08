@@ -23,9 +23,11 @@ import { signOut } from '@/lib/auth-client'
 type SidebarProps = {
   platforms: Platform[]
   version: string
+  /** Shows administration links such as API tokens. */
+  canManage: boolean
 }
 
-export default function Sidebar({ platforms, version }: SidebarProps) {
+export default function Sidebar({ platforms, version, canManage }: SidebarProps) {
   const { isOpen, close } = useSidebar()
   const { pathname } = useLocation()
   const [searchQuery, setSearchQuery] = useState('')
@@ -147,14 +149,14 @@ export default function Sidebar({ platforms, version }: SidebarProps) {
             <GitCompare className="h-5 w-5 shrink-0" strokeWidth={1.5} />
             Compare schemas
           </Link>
-          <Link
+          {canManage && <Link
             to="/dashboard/settings/tokens"
             aria-current={isTokensActive ? 'page' : undefined}
             className={navItem(isTokensActive)}
           >
             <KeyRound className="h-5 w-5 shrink-0" strokeWidth={1.5} />
             API tokens
-          </Link>
+          </Link>}
         </div>
 
         <div className="space-y-1">

@@ -3,7 +3,8 @@ import type { LoaderFunctionArgs } from 'react-router'
 import { load, UI_API, schemaPath, ApiError } from '@/client/api'
 import type { Platform, Overview, SchemaDetail, ApiToken } from '@/shared/contracts'
 
-export type DashboardData = { platforms: Platform[]; redisAvailable: boolean }
+export type Permissions = { write: boolean; manage: boolean }
+export type DashboardData = { platforms: Platform[]; redisAvailable: boolean; permissions: Permissions }
 function Root() {
   const navigation = useNavigation()
   return <>
@@ -26,10 +27,15 @@ function RouteError() {
   </div>
 }
 async function dashboardLoader({ request }: LoaderFunctionArgs): Promise<DashboardData> {
-  try { return { platforms: await load<Platform[]>('/api/schemas', request), redisAvailable: true } }
-  catch (error) {
+  try {
+    const [platforms, session] = await Promise.all([
+      load<Platform[]>('/api/schemas', request),
+      load<{ permissions?: Permissions } | null>('/api/auth/get-session', request),
+    ])
+    return { platforms, redisAvailable: true, permissions: session?.permissions ?? { write: false, manage: false } }
+  } catch (error) {
     if (error instanceof Response || request.signal.aborted) throw error
-    return { platforms: [], redisAvailable: false }
+    return { platforms: [], redisAvailable: false, permissions: { write: false, manage: false } }
   }
 }
 export function createRouter() {

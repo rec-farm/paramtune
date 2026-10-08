@@ -11,7 +11,7 @@ describe('safeReturnTo', () => {
   it.each([
     null, '', 'https://evil.example', '//evil.example', '/\\evil.example',
     '/\t/evil.example', '/\n/evil.example', '/\r/evil.example', '/\u007f/evil.example',
-    '/api/auth/sign-out', 'javascript:alert(1)',
+    '/api/auth/sign-out', 'javascript:alert(1)', '/.//evil.example', '/..//evil.example', '/a/..//evil.example', '/./api/x',
   ])('falls back to the dashboard for %j', (raw) => {
     expect(safeReturnTo(raw, origin)).toBe('/dashboard')
   })

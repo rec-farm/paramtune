@@ -16,8 +16,8 @@ const env = {
   RATE_LIMIT_PREFIX: `ratelimit:e2e-${process.pid}-${Date.now()}`,
   // All three servers share one bucket per limit from 127.0.0.1, and each spec signs in several times.
   RATE_LIMIT_API_MAX: '10000', RATE_LIMIT_AUTH_MAX: '1000',
-  // Members are read-only; there is no admin group, so editors also manage.
-  OIDC_EDITOR_GROUP: 'paramtune-editors', OIDC_ADMIN_GROUP: '',
+  // Members are read-only and editors can't administer; dev login defaults to admin.
+  OIDC_EDITOR_GROUP: 'paramtune-editors', OIDC_ADMIN_GROUP: 'paramtune-admins',
 }
 const children = []
 let timedOut = false

@@ -1,7 +1,7 @@
 import { test, expect } from '@playwright/test'
 
-// The integration servers run with OIDC_EDITOR_GROUP set and no admin group, so
-// members are read-only, editors write and manage, and dev login defaults to admin.
+// The integration servers set both groups, so members are read-only, editors write
+// but don't administer, and dev login defaults to admin.
 const authURL = process.env.E2E_AUTH_URL || 'http://localhost:4380'
 const platform = `roles-${Date.now()}`
 const ui = '/api/_ui/v1'
@@ -18,7 +18,7 @@ test('roles from OIDC groups gate writes and administration on the server', asyn
   const [admin, editor, viewer] = [await signIn(), await signIn('editor'), await signIn('member')]
   try {
     expect((await (await admin.get('/api/auth/get-session')).json()).permissions).toEqual({ write: true, manage: true })
-    expect((await (await editor.get('/api/auth/get-session')).json()).permissions).toEqual({ write: true, manage: true })
+    expect((await (await editor.get('/api/auth/get-session')).json()).permissions).toEqual({ write: true, manage: false })
     expect((await (await viewer.get('/api/auth/get-session')).json()).permissions).toEqual({ write: false, manage: false })
     expect((await (await playwright.request.newContext()).post(`${authURL}/api/auth/dev-login`, { headers: { Origin: authURL }, data: { role: 'owner' } })).status()).toBe(400)
 
@@ -46,7 +46,9 @@ test('roles from OIDC groups gate writes and administration on the server', asyn
       expect((await response.json()).error).toBeTruthy()
     }
     expect((await (await viewer.get(schema)).json()).schema.content).toEqual({ on: true })
-    expect((await editor.get(`${ui}/tokens`)).ok()).toBe(true)
+    expect((await editor.get(`${ui}/tokens`)).status()).toBe(403)
+    expect((await editor.delete(`${ui}/platforms/${platform}`, { headers: json })).status()).toBe(403)
+    expect((await admin.get(`${ui}/tokens`)).ok()).toBe(true)
   } finally {
     await Promise.all([admin, editor, viewer].map((context) => context.dispose()))
   }

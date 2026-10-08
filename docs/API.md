@@ -18,7 +18,7 @@ curl -H "Authorization: Bearer ptk_..." https://yourdomain.com/api/mobile/1.1.0
 
 - Tokens work on `GET`/`HEAD` of `/api/schemas`, `/api/{platform}`, `/api/{platform}/versions` and `/api/{platform}/{version}`. Writes with a token return `403`; dashboard endpoints under `/api/_ui/v1` don't accept tokens.
 - A token reads either every platform or a chosen list. Out-of-scope platforms return `404` and are omitted from `/api/schemas`.
-- Scope limits which platforms a token can request, not what their resolved `output` contains: a scoped platform's output includes values it inherits through `@extends` from other platforms, and its `dependencies` name them.
+- A schema's resolved `output` includes everything it inherits through `@extends`, so a scoped token can read a schema only when its scope covers every platform the schema extends, transitively. Otherwise the read returns `403`.
 - The plaintext is shown once at creation. Paramtune stores only its SHA-256 hash in Redis, records when it was last used, and audits creation and revocation.
 - An unknown or revoked token returns `401`; a Redis outage returns `503`.
 
@@ -44,6 +44,7 @@ Group settings are read on every request, so setting one also narrows sessions t
 
 - `DELETE /api/_ui/v1/platforms/{platform}` removes a platform, all of its versions, and their history.
 - `DELETE /api/_ui/v1/platforms/{platform}/versions/{version}` removes one version and its history.
+- `POST /api/{platform}` with a `versions` list that omits existing versions deletes them the same way: it needs the admin permission, runs the same dependency check, and removes their history.
 - Both return `409` with the blocking schemas when a schema on another platform still `@extends` what would be deleted. Deletion is permanent and audited.
 
 ## Response Format

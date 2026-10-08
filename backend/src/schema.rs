@@ -119,6 +119,36 @@ pub async fn blocking_dependents(
     }
     Ok(found)
 }
+/// Every platform whose content a saved schema's output includes, itself first,
+/// following `@extends` transitively through the stored revisions.
+pub async fn source_platforms(store: &Store, platform: &str, version: &str) -> Result<Vec<String>> {
+    let platforms = store.platforms().await?;
+    let mut found = vec![platform.to_owned()];
+    let mut visited = HashSet::new();
+    let mut pending = vec![(platform.to_owned(), version.to_owned())];
+    while let Some((p, v)) = pending.pop() {
+        if !visited.insert(format!("{p}/{v}")) {
+            continue;
+        }
+        let Some(latest) = store.latest(&key(&p, &v)).await? else {
+            continue;
+        };
+        for reference in dependencies(&latest["content"]) {
+            // An unresolvable reference names its platform; count it so scope stays closed.
+            let (rp, rv) = resolve(&reference, &platforms).unwrap_or_else(|_| {
+                let name = reference.split('/').next().unwrap_or_default();
+                (name.to_owned(), String::new())
+            });
+            if !found.contains(&rp) {
+                found.push(rp.clone());
+            }
+            if !rv.is_empty() {
+                pending.push((rp, rv));
+            }
+        }
+    }
+    Ok(found)
+}
 /// Deletes the history of each version and its dependency bookkeeping.
 pub async fn remove(store: &Store, platform: &str, versions: &[String]) -> Result<()> {
     let platforms = store.platforms().await?;

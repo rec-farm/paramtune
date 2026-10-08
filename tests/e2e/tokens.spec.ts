@@ -70,3 +70,33 @@ test('the tokens page creates, reveals once, and revokes a token', async ({ page
   await page.getByRole('button', { name: `Revoke ${name}` }).click()
   await expect(page.getByText(name)).toHaveCount(0)
 })
+
+test('a scoped token cannot read content inherited from platforms outside its scope', async ({ context, playwright }) => {
+  const request = context.request
+  expect((await request.post(`${authURL}/api/auth/dev-login`, { headers: { Origin: authURL } })).ok()).toBe(true)
+  const [secret, middle, app] = [`${prefix}-secret`, `${prefix}-middle`, `${prefix}-app`]
+  for (const platform of [secret, middle, app]) {
+    expect((await request.post(`/api/${platform}`, { data: { versions: ['1.0.0'] } })).status()).toBe(201)
+  }
+  const put = (p: string, content: object) => request.put(`${ui}/platforms/${p}/versions/1.0.0/schema`, { data: { content } })
+  expect((await put(secret, { apiKey: 'hidden' })).ok()).toBe(true)
+  expect((await put(middle, { '@extends': `${secret}/1.0.0` })).ok()).toBe(true)
+  // Transitive: app → middle → secret.
+  expect((await put(app, { '@extends': `${middle}/^1`, own: true })).ok()).toBe(true)
+  const tokenFor = async (platforms: string[]) => (await (await request.post(`${ui}/tokens`, { data: { name: `${prefix}-scope`, platforms } })).json()).token as string
+  const read = async (token: string) => {
+    const service = await playwright.request.newContext({ extraHTTPHeaders: { Authorization: `Bearer ${token}` } })
+    try {
+      const response = await service.get(`/api/${app}/1.0.0`)
+      return { status: response.status(), body: await response.text() }
+    } finally { await service.dispose() }
+  }
+  for (const scope of [[app], [app, middle]]) {
+    const denied = await read(await tokenFor(scope))
+    expect(denied.status, scope.join()).toBe(403)
+    expect(denied.body).not.toContain('hidden')
+  }
+  const allowed = await read(await tokenFor([app, middle, secret]))
+  expect(allowed.status).toBe(200)
+  expect(JSON.parse(allowed.body).output).toEqual({ apiKey: 'hidden', own: true })
+})

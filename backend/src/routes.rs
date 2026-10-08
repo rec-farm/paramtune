@@ -594,6 +594,19 @@ async fn public_api(State(state): State<AppState>, request: Request) -> Result<R
             .latest(&format!("platforms:{p}"))
             .await?
             .unwrap_or_else(|| json!({"name":p}));
+        // Replacing the list can drop versions, which is a delete: it needs the same
+        // permission and dependency check, and must not leave history to resurface.
+        let removed: Vec<String> = record["versions"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .filter(|existing| !deduped.contains(existing))
+            .filter_map(|existing| existing.as_str().map(str::to_owned))
+            .collect();
+        if !removed.is_empty() {
+            require_manage(&session)?;
+            in_use(&state, p, &removed).await?;
+        }
         record["versions"] = Value::from(deduped);
         if let Some(kind) = platform_kind(&data)? {
             record["kind"] = Value::from(kind);
@@ -603,12 +616,33 @@ async fn public_api(State(state): State<AppState>, request: Request) -> Result<R
             .store
             .append(&format!("platforms:{p}"), &record)
             .await?;
+        if !removed.is_empty() {
+            schema::remove(&state.0.store, p, &removed).await?;
+            for v in &removed {
+                audit(&state, &session, "delete", p, Some(v)).await;
+            }
+        }
         audit(&state, &session, "update", p, None).await;
         Ok(ok(true))
     } else if versions {
         Ok(Json(platform(&state, p).await?["versions"].clone()).into_response())
     } else if let Some(v) = path.get(2) {
         legacy_name(v, true)?;
+        if let Some(grant) = &grant {
+            // The resolved output embeds every platform it extends, so a scoped token
+            // must cover all of them, not just the one in the URL.
+            let outside: Vec<String> = schema::source_platforms(&state.0.store, p, v)
+                .await?
+                .into_iter()
+                .filter(|source| !grant.allows(source))
+                .collect();
+            if !outside.is_empty() {
+                return Err(ApiError(
+                    StatusCode::FORBIDDEN,
+                    "This schema extends platforms outside this token's scope".into(),
+                ));
+            }
+        }
         Ok(Json(
             state
                 .0

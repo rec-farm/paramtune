@@ -5,7 +5,7 @@ import { useState, useRef, useEffect } from 'react'
 import ThemeSwitcher from './ThemeSwitcher'
 
 export default function UserMenu() {
-  const { data: session } = useSession()
+  const { session } = useSession()
   const [isOpen, setIsOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const triggerRef = useRef<HTMLButtonElement>(null)

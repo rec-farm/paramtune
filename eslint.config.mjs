@@ -5,7 +5,7 @@ import jsxA11y from 'eslint-plugin-jsx-a11y'
 import globals from 'globals'
 
 export default tseslint.config(
-  { ignores: ['dist/**', '.vercel/**', '.next/**', 'out/**', 'build/**', 'coverage/**', 'test-results/**', 'playwright-report/**', 'next-env.d.ts'] },
+  { ignores: ['dist/**', 'build/**', 'coverage/**', 'test-results/**', 'playwright-report/**', 'backend/target/**', '.claude/**'] },
   js.configs.recommended,
   ...tseslint.configs.recommended,
   { languageOptions: { globals: { ...globals.browser, ...globals.node } } },

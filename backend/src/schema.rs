@@ -4,7 +4,12 @@ use crate::{
 };
 use node_semver::{Range, Version};
 use serde_json::{Value, json};
-use std::{collections::HashSet, future::Future, pin::Pin};
+use std::{
+    collections::HashSet,
+    future::Future,
+    pin::Pin,
+    sync::{Mutex, PoisonError},
+};
 
 pub fn key(platform: &str, version: &str) -> String {
     format!("schemas:{platform}:{version}")
@@ -119,6 +124,18 @@ pub async fn blocking_dependents(
     }
     Ok(found)
 }
+/// The platforms a stored revision's output came from. Revisions saved before this was
+/// recorded are only known when they extend nothing.
+pub fn stored_sources(platform: &str, record: &Value) -> Option<Vec<String>> {
+    match record["sources"].as_array() {
+        Some(sources) => sources
+            .iter()
+            .map(|s| s.as_str().map(str::to_owned))
+            .collect(),
+        None if dependencies(&record["content"]).is_empty() => Some(vec![platform.to_owned()]),
+        None => None,
+    }
+}
 /// Deletes the history of each version and its dependency bookkeeping.
 pub async fn remove(store: &Store, platform: &str, versions: &[String]) -> Result<()> {
     let platforms = store.platforms().await?;
@@ -156,12 +173,14 @@ pub fn merge(mut base: Value, overrides: Value) -> Value {
     }
     base
 }
+/// Resolves `@extends` in `node`, adding each platform it merges in to `sources`.
 fn process<'a>(
     store: &'a Store,
     node: Value,
     visited: HashSet<String>,
     platforms: &'a [Value],
     depth: usize,
+    sources: &'a Mutex<Vec<String>>,
 ) -> Pin<Box<dyn Future<Output = Result<Value>> + Send + 'a>> {
     Box::pin(async move {
         if depth > 128 {
@@ -171,7 +190,10 @@ fn process<'a>(
             Value::Array(items) => {
                 let mut output = Vec::new();
                 for item in items {
-                    output.push(process(store, item, visited.clone(), platforms, depth + 1).await?);
+                    output.push(
+                        process(store, item, visited.clone(), platforms, depth + 1, sources)
+                            .await?,
+                    );
                 }
                 Ok(Value::Array(output))
             }
@@ -189,21 +211,41 @@ fn process<'a>(
                             "Circular dependency detected at {id}"
                         )));
                     }
+                    {
+                        let mut found = sources.lock().unwrap_or_else(PoisonError::into_inner);
+                        if !found.contains(&platform) {
+                            found.push(platform.clone());
+                        }
+                    }
                     let base = store
                         .latest(&key(&platform, &version))
                         .await?
                         .and_then(|v| v.get("content").cloned())
                         .unwrap_or(json!({}));
-                    let base = process(store, base, child.clone(), platforms, depth + 1).await?;
+                    let base =
+                        process(store, base, child.clone(), platforms, depth + 1, sources).await?;
                     map.shift_remove("@extends");
-                    let overrides =
-                        process(store, Value::Object(map), child, platforms, depth + 1).await?;
+                    let overrides = process(
+                        store,
+                        Value::Object(map),
+                        child,
+                        platforms,
+                        depth + 1,
+                        sources,
+                    )
+                    .await?;
                     Ok(merge(base, overrides))
                 } else {
                     for value in map.values_mut() {
-                        *value =
-                            process(store, value.clone(), visited.clone(), platforms, depth + 1)
-                                .await?;
+                        *value = process(
+                            store,
+                            value.clone(),
+                            visited.clone(),
+                            platforms,
+                            depth + 1,
+                            sources,
+                        )
+                        .await?;
                     }
                     Ok(Value::Object(map))
                 }
@@ -261,8 +303,20 @@ fn save_tree<'a>(
             .iter()
             .map(|reference| resolve(reference, platforms))
             .collect::<Result<Vec<_>>>()?;
-        let output = process(store, content.clone(), HashSet::new(), platforms, 0).await?;
-        let mut value = json!({"dependencies": deps, "content": content, "output": output});
+        // Sources come from the same reads that build the output, so they always match it.
+        let sources = Mutex::new(vec![platform.clone()]);
+        let output = process(
+            store,
+            content.clone(),
+            HashSet::new(),
+            platforms,
+            0,
+            &sources,
+        )
+        .await?;
+        let sources = sources.into_inner().unwrap_or_else(PoisonError::into_inner);
+        let mut value =
+            json!({"dependencies": deps, "content": content, "output": output, "sources": sources});
         if !author.is_null() {
             value["author"] = author;
         }
@@ -338,6 +392,26 @@ mod tests {
         let ties = vec![json!({"name":"base","versions":["v1.2.3+first","1.2.3+second"]})];
         assert_eq!(resolve("base/latest", &ties).unwrap().1, "v1.2.3+first");
         assert_eq!(resolve("base/^1", &ties).unwrap().1, "v1.2.3+first");
+    }
+    #[test]
+    fn stored_sources_fail_closed_for_unrecorded_composition() {
+        let recorded = json!({"content":{"@extends":"a/1"},"sources":["app","a"]});
+        assert_eq!(
+            stored_sources("app", &recorded),
+            Some(vec!["app".into(), "a".into()])
+        );
+        assert_eq!(
+            stored_sources("app", &json!({"content":{"plain":true}})),
+            Some(vec!["app".into()])
+        );
+        assert_eq!(
+            stored_sources("app", &json!({"content":{"@extends":"a/1"}})),
+            None
+        );
+        assert_eq!(
+            stored_sources("app", &json!({"content":{},"sources":[1]})),
+            None
+        );
     }
     #[test]
     fn nested_arrays_dependencies_and_merge() {

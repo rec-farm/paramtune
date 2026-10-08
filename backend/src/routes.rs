@@ -594,6 +594,19 @@ async fn public_api(State(state): State<AppState>, request: Request) -> Result<R
             .latest(&format!("platforms:{p}"))
             .await?
             .unwrap_or_else(|| json!({"name":p}));
+        // Replacing the list can drop versions, which is a delete: it needs the same
+        // permission and dependency check, and must not leave history to resurface.
+        let removed: Vec<String> = record["versions"]
+            .as_array()
+            .into_iter()
+            .flatten()
+            .filter(|existing| !deduped.contains(existing))
+            .filter_map(|existing| existing.as_str().map(str::to_owned))
+            .collect();
+        if !removed.is_empty() {
+            require_manage(&session)?;
+            in_use(&state, p, &removed).await?;
+        }
         record["versions"] = Value::from(deduped);
         if let Some(kind) = platform_kind(&data)? {
             record["kind"] = Value::from(kind);
@@ -603,21 +616,36 @@ async fn public_api(State(state): State<AppState>, request: Request) -> Result<R
             .store
             .append(&format!("platforms:{p}"), &record)
             .await?;
+        if !removed.is_empty() {
+            schema::remove(&state.0.store, p, &removed).await?;
+            for v in &removed {
+                audit(&state, &session, "delete", p, Some(v)).await;
+            }
+        }
         audit(&state, &session, "update", p, None).await;
         Ok(ok(true))
     } else if versions {
         Ok(Json(platform(&state, p).await?["versions"].clone()).into_response())
     } else if let Some(v) = path.get(2) {
         legacy_name(v, true)?;
-        Ok(Json(
-            state
-                .0
-                .store
-                .latest(&schema::key(p, v))
-                .await?
-                .ok_or_else(|| ApiError::missing("Version not found"))?,
-        )
-        .into_response())
+        let record = state
+            .0
+            .store
+            .latest(&schema::key(p, v))
+            .await?
+            .ok_or_else(|| ApiError::missing("Version not found"))?;
+        // The resolved output embeds every platform it extends, so a scoped token
+        // must cover all of them, as recorded when the output was computed.
+        if let Some(grant) = &grant
+            && !schema::stored_sources(p, &record)
+                .is_some_and(|sources| sources.iter().all(|source| grant.allows(source)))
+        {
+            return Err(ApiError(
+                StatusCode::FORBIDDEN,
+                "This schema extends platforms outside this token's scope".into(),
+            ));
+        }
+        Ok(Json(record).into_response())
     } else {
         Ok(Json(platform(&state, p).await?).into_response())
     }

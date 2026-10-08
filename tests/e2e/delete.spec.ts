@@ -70,3 +70,34 @@ test('the dashboard deletes a version and a platform after typing its name', asy
   await expect(page).toHaveURL('/dashboard')
   expect((await context.request.get(`/api/${platform}`)).status()).toBe(404)
 })
+
+test('replacing a version list through the public API is a delete with the same checks', async ({ context, playwright }) => {
+  const request = context.request
+  expect((await request.post(`${authURL}/api/auth/dev-login`, { headers: { Origin: authURL } })).ok()).toBe(true)
+  const [base, child] = [`${prefix}-legacy-base`, `${prefix}-legacy-child`]
+  for (const platform of [base, child]) {
+    expect((await request.post(`/api/${platform}`, { data: { versions: ['1.0.0', '2.0.0'] } })).status()).toBe(201)
+  }
+  expect((await request.put(schema(base, '2.0.0'), { data: { content: { old: true } } })).ok()).toBe(true)
+  expect((await request.put(schema(child, '1.0.0'), { data: { content: { '@extends': `${base}/1.0.0` } } })).ok()).toBe(true)
+
+  const editor = await playwright.request.newContext()
+  try {
+    expect((await editor.post(`${authURL}/api/auth/dev-login`, { headers: { Origin: authURL }, data: { role: 'editor' } })).ok()).toBe(true)
+    // Editors may still add versions, but dropping one needs the admin permission when an admin group is set.
+    expect((await editor.post(`/api/${base}`, { data: { versions: ['1.0.0', '2.0.0', '3.0.0'] } })).status()).toBe(201)
+    expect((await editor.post(`/api/${base}`, { data: { versions: ['1.0.0', '3.0.0'] } })).status()).toBe(403)
+    expect((await editor.post(`/api/${base}`, { data: { versions: [] } })).status()).toBe(403)
+  } finally {
+    await editor.dispose()
+  }
+  const referenced = await request.post(`/api/${base}`, { data: { versions: ['2.0.0', '3.0.0'] } })
+  expect(referenced.status()).toBe(409)
+  expect(await (await request.get(`/api/${base}/versions`)).json()).toEqual(['1.0.0', '2.0.0', '3.0.0'])
+
+  expect((await request.post(`/api/${base}`, { data: { versions: ['1.0.0', '3.0.0'] } })).status()).toBe(201)
+  expect(await (await request.get(`/api/${base}/versions`)).json()).toEqual(['1.0.0', '3.0.0'])
+  // Re-adding the dropped version must not resurrect its history.
+  expect((await request.post(`/api/${base}`, { data: { versions: ['1.0.0', '2.0.0', '3.0.0'] } })).status()).toBe(201)
+  expect((await (await request.get(schema(base, '2.0.0'))).json()).history).toEqual([])
+})

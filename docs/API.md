@@ -6,6 +6,28 @@ All API endpoints return JSON responses. CORS is controlled via the `CORS_ORIGIN
 - Development: `http://localhost:3000/api`
 - Production: `https://yourdomain.com/api`
 
+## Authentication
+
+People use the dashboard session cookie, which allows reads and writes.
+
+Services and CI jobs use a read-only **API token**, created under **Dashboard → API tokens**:
+
+```bash
+curl -H "Authorization: Bearer ptk_..." https://yourdomain.com/api/mobile/1.1.0
+```
+
+- Tokens work on `GET`/`HEAD` of `/api/schemas`, `/api/{platform}`, `/api/{platform}/versions` and `/api/{platform}/{version}`. Writes with a token return `403`; dashboard endpoints under `/api/_ui/v1` don't accept tokens.
+- A token reads either every platform or a chosen list. Out-of-scope platforms return `404` and are omitted from `/api/schemas`.
+- Scope limits which platforms a token can request, not what their resolved `output` contains: a scoped platform's output includes values it inherits through `@extends` from other platforms, and its `dependencies` name them.
+- The plaintext is shown once at creation. Paramtune stores only its SHA-256 hash in Redis, records when it was last used, and audits creation and revocation.
+- An unknown or revoked token returns `401`; a Redis outage returns `503`.
+
+### Managing tokens (session required)
+
+- `GET /api/_ui/v1/tokens` lists tokens: `{ id, name, platforms (null = all), hint, createdAt, createdBy, lastUsedAt? }`
+- `POST /api/_ui/v1/tokens` with `{ "name": "ci", "platforms": ["ios"] }` (omit `platforms` for all) returns `201` with `{ token, record }`
+- `DELETE /api/_ui/v1/tokens/{id}` revokes a token immediately
+
 ## Response Format
 - Success: `200 OK` with JSON data
 - Created: `201 Created` for successful POST operations
@@ -240,7 +262,7 @@ All endpoints include proper error handling with:
 - CORS configured via `CORS_ORIGIN` environment variable
 - Security headers added via middleware
 - Input validation on all endpoints
-- All endpoints require an authenticated Paramtune session; requests without one receive `401 Unauthorized`
+- All endpoints require an authenticated Paramtune session or, for reads, an API token; requests without either receive `401 Unauthorized`
 
 ## Caching
 

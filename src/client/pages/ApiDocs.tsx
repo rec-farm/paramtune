@@ -144,6 +144,14 @@ const guideSteps = [
   { "name": "web", "versions": ["2.0.0"] }
 ]`,
   },
+  {
+    title: '5. Read from a service',
+    description:
+      'Create a read-only API token under Dashboard → API tokens, scoped to the platforms a service needs, and send it as a bearer token. Tokens can read but never change configuration.',
+    command: `curl http://localhost:3000/api/mobile/1.1.0 \\
+  -H "Authorization: Bearer ptk_..."`,
+    response: '{ "content": {...}, "dependencies": [...], "output": {...} }',
+  },
 ]
 
 const compositionExamples = [

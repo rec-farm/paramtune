@@ -1,7 +1,7 @@
 import { createBrowserRouter, Outlet, ScrollRestoration, useNavigation, useRouteError, isRouteErrorResponse, Link } from 'react-router'
 import type { LoaderFunctionArgs } from 'react-router'
 import { load, UI_API, schemaPath, ApiError } from '@/client/api'
-import type { Platform, Overview, SchemaDetail } from '@/shared/contracts'
+import type { Platform, Overview, SchemaDetail, ApiToken } from '@/shared/contracts'
 
 export type DashboardData = { platforms: Platform[]; redisAvailable: boolean }
 function Root() {
@@ -45,6 +45,14 @@ export function createRouter() {
         children: [
           { index: true, ErrorBoundary: RouteError, loader: ({ request }) => load<Overview>(`${UI_API}/overview`, request), lazy: async () => ({ Component: (await import('@/client/pages/Overview')).default }) },
           { path: 'compare', ErrorBoundary: RouteError, loader: ({ request }) => load<Platform[]>('/api/schemas', request), lazy: async () => ({ Component: (await import('@/client/pages/Compare')).default }) },
+          {
+            path: 'settings/tokens', ErrorBoundary: RouteError,
+            loader: async ({ request }) => {
+              const [tokens, platforms] = await Promise.all([load<ApiToken[]>(`${UI_API}/tokens`, request), load<Platform[]>('/api/schemas', request)])
+              return { tokens, platforms }
+            },
+            lazy: async () => ({ Component: (await import('@/client/pages/Tokens')).default }),
+          },
           { path: ':platform', ErrorBoundary: RouteError, loader: ({ request, params }) => load<Platform>(`/api/${encodeURIComponent(params.platform!)}`, request), lazy: async () => ({ Component: (await import('@/client/pages/Platform')).default }) },
           { path: ':platform/:version', ErrorBoundary: RouteError, loader: ({ request, params }) => load<SchemaDetail>(schemaPath(params.platform!, params.version!), request), lazy: async () => ({ Component: (await import('@/client/pages/Schema')).default }) },
         ],

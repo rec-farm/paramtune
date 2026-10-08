@@ -4,6 +4,7 @@ import { Link } from 'react-router'
 import { useLocation } from 'react-router'
 import {
   GitCompare,
+  KeyRound,
   LayoutDashboard,
   LogOut,
   Search,
@@ -56,6 +57,7 @@ export default function Sidebar({ platforms, version }: SidebarProps) {
   )
   const isOverviewActive = pathname === '/dashboard'
   const isCompareActive = pathname === '/dashboard/compare'
+  const isTokensActive = pathname === '/dashboard/settings/tokens'
   const navItem = (active: boolean) =>
     cn(
       'flex items-center gap-3 h-10 mx-3 px-3 rounded-sm text-base font-medium transition-colors duration-150',
@@ -144,6 +146,14 @@ export default function Sidebar({ platforms, version }: SidebarProps) {
           >
             <GitCompare className="h-5 w-5 shrink-0" strokeWidth={1.5} />
             Compare schemas
+          </Link>
+          <Link
+            to="/dashboard/settings/tokens"
+            aria-current={isTokensActive ? 'page' : undefined}
+            className={navItem(isTokensActive)}
+          >
+            <KeyRound className="h-5 w-5 shrink-0" strokeWidth={1.5} />
+            API tokens
           </Link>
         </div>
 

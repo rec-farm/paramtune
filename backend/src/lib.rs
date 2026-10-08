@@ -6,6 +6,7 @@ mod routes;
 pub mod schema;
 mod security;
 pub mod store;
+pub mod tokens;
 
 use axum::{
     Router,

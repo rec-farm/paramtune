@@ -59,3 +59,19 @@ export type CompareResult = {
   schemaAContent: Record<string, unknown>
   schemaBContent: Record<string, unknown>
 }
+
+export type ApiToken = {
+  id: string
+  name: string
+  /** Readable platforms; null grants every platform. */
+  platforms: string[] | null
+  hint: string
+  createdAt: number
+  createdBy: { id: string, name?: string }
+  lastUsedAt?: number
+}
+
+export type CreatedApiToken = {
+  token: string
+  record: ApiToken
+}

@@ -33,6 +33,7 @@
     "src/**/*.tsx",
     "scripts/**/*.ts",
     "tests/**/*.ts",
+    "tests/**/*.tsx",
     "*.config.ts"
   ],
   "exclude": [

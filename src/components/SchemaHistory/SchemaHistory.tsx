@@ -61,7 +61,8 @@ export default function SchemaHistory({
       case 'initial':
         return 'Initial schema'
       default: {
-        const prevEntry = history[index - 1]
+        // History is newest first, so the revision this one replaced is next
+        const prevEntry = history[index + 1]
         const currentKeys = Object.keys(entry.content || {})
         const prevKeys = Object.keys(prevEntry.content || {})
 

@@ -21,7 +21,7 @@ export default tseslint.config(
       'jsx-a11y/alt-text': 'error',
     },
   },
-  { files: ['tests/**/*.ts'], rules: { '@typescript-eslint/ban-ts-comment': 'warn' } },
+  { files: ['tests/**/*.{ts,tsx}'], rules: { '@typescript-eslint/ban-ts-comment': 'warn' } },
   {
     files: ['src/client/**/*.{ts,tsx}', 'src/components/**/*.{ts,tsx}', 'src/contexts/**/*.{ts,tsx}'],
     rules: {

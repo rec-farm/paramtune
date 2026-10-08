@@ -1,5 +1,6 @@
-import { useLoaderData, useParams, useRevalidator, useRouteLoaderData } from 'react-router'
-import { api, schemaPath } from '@/client/api'
+import { useLoaderData, useNavigate, useParams, useRevalidator, useRouteLoaderData } from 'react-router'
+import { api, schemaPath, UI_API } from '@/client/api'
+import DeleteZone from '@/components/DeleteZone'
 import type { SchemaDetail } from '@/shared/contracts'
 import { Suspense } from 'react'
 import { Link } from 'react-router'
@@ -18,6 +19,7 @@ export default function SchemaPage() {
   const kind = dashboard.platforms.find((platform) => platform.name === platformName)?.kind
   const shortHash = contentHash.slice(0, 8)
   const revalidator = useRevalidator()
+  const navigate = useNavigate()
 
   async function restoreVersion(content: Record<string, unknown>) {
     await api(schemaPath(platformName, versionName), { method: 'PUT', body: JSON.stringify({ content }) })
@@ -104,6 +106,20 @@ export default function SchemaPage() {
           />
         </div>
       </Suspense>
+
+      {dashboard.permissions.manage && (
+        <DeleteZone
+          noun="version"
+          confirmName={versionName}
+          description={`Removes ${platformName} ${versionName} and its ${history.length === 1 ? 'revision' : `${history.length} revisions`}. Schemas on other platforms that extend it must drop that reference first. This can't be undone.`}
+          onDelete={async () => {
+            await api(`${UI_API}/platforms/${encodeURIComponent(platformName)}/versions/${encodeURIComponent(versionName)}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' } })
+            await navigate(`/dashboard/${encodeURIComponent(platformName)}`)
+            // Refresh the sidebar's platform list, which plain navigation keeps.
+            await revalidator.revalidate()
+          }}
+        />
+      )}
     </div>
   )
 }

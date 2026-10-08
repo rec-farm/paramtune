@@ -173,6 +173,16 @@ impl Store {
             .await?;
         Ok(())
     }
+    pub async fn delete(&self, keys: &[String]) -> Result<()> {
+        if keys.is_empty() {
+            return Ok(());
+        }
+        let _: i64 = redis::cmd("DEL")
+            .arg(keys)
+            .query_async(&mut self.connection().await?)
+            .await?;
+        Ok(())
+    }
     pub async fn audit(&self, mut entry: Value) {
         entry["timestamp"] =
             Value::from(chrono::Utc::now().to_rfc3339_opts(chrono::SecondsFormat::Millis, true));

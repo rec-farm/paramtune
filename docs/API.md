@@ -40,6 +40,12 @@ Roles come from the OIDC claim named by `OIDC_ROLES_CLAIM` (default `groups`) at
 
 Group settings are read on every request, so setting one also narrows sessions that already exist. Forbidden requests return `403`. `GET /api/auth/get-session` includes `permissions: { write, manage }`.
 
+### Deleting (admin)
+
+- `DELETE /api/_ui/v1/platforms/{platform}` removes a platform, all of its versions, and their history.
+- `DELETE /api/_ui/v1/platforms/{platform}/versions/{version}` removes one version and its history.
+- Both return `409` with the blocking schemas when a schema on another platform still `@extends` what would be deleted. Deletion is permanent and audited.
+
 ## Response Format
 - Success: `200 OK` with JSON data
 - Created: `201 Created` for successful POST operations

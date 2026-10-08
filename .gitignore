@@ -8,10 +8,6 @@
 # testing
 /coverage
 
-# next.js
-/.next/
-/out/
-
 # production
 /build
 
@@ -34,20 +30,12 @@ yarn-error.log*
 .env
 .env*.local
 
-# vercel
-.vercel
-
 # typescript
 *.tsbuildinfo
-next-env.d.ts
-
-# auth database
-data/*.db
 
 /dist/
 /test-results/
 /playwright-report/
-data/*.db-*
 
 /backend/target/
 

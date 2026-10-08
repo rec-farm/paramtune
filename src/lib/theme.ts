@@ -44,6 +44,3 @@ export function subscribeThemeChoice(onChange: () => void) {
     window.removeEventListener('storage', onChange)
   }
 }
-
-// Runs in <head> before paint so Paper users never see a dark flash
-export const THEME_INIT_SCRIPT = `(function(){try{var c=localStorage.getItem('${THEME_STORAGE_KEY}');if(c==='system'){c=matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'}if(c==='light'||c==='dark'){document.documentElement.dataset.theme=c}}catch(e){}})()`

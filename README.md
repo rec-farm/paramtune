@@ -56,8 +56,7 @@ If you don't want portless, run `pnpm dev:direct` (or `PORTLESS=0 pnpm dev`) to 
 
 Rust is compiled at development startup; restart the dev command after Rust changes. Vite retains frontend hot reload.
 
-Rust stores authentication sessions in Redis; no SQLite migration is needed.
-
+Rust stores authentication sessions in Redis.
 
 ## Development Commands
 

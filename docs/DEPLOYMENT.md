@@ -1,6 +1,6 @@
 # Deployment
 
-One Rust process serves the Vite frontend, APIs, and Handstamp authentication. Node is used only for frontend builds and development. Redis persists configuration and sessions; SQLite is no longer required. See [Rust runtime](RUST_MIGRATION.md) for cutover and rollback.
+One Rust process serves the Vite frontend, APIs, and Handstamp authentication. Node is used only for frontend builds and development. Redis persists configuration and sessions. See [Rust runtime](RUST_MIGRATION.md) for the history of the cutover.
 
 | Variable | Meaning |
 | --- | --- |
@@ -20,7 +20,7 @@ Register the redirect at https://paramtune.example.com/api/auth/oauth2/callback/
 
 Handstamp must reach the back-channel endpoint. Identity uses issuer and subject, never email linking. Groups refresh on sign-in. Configure Google and other identity providers in Handstamp.
 
-Supply REDIS_PASSWORD, PUBLIC_ORIGIN, and OIDC credentials before building and starting Docker Compose. Persist redis_data. Keep the old auth_data volume separately for rollback; users sign in again after cutover.
+Supply REDIS_PASSWORD, PUBLIC_ORIGIN, and OIDC credentials before building and starting Docker Compose. Persist redis_data.
 
 Terminate HTTPS at the VPS reverse proxy and forward to Rust on port 3000. Set TRUST_PROXY=true only if the proxy sanitizes client-IP headers. Browser mutations must originate from PUBLIC_ORIGIN. VITE_* variables are public and must never contain credentials.
 

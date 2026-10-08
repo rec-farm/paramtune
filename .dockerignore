@@ -4,10 +4,6 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 
-# Next.js
-.next/
-out/
-
 # Environment variables
 .env.local
 .env.development.local
@@ -34,9 +30,6 @@ Thumbs.db
 # Logs
 *.log
 
-# Local auth database
-data/*.db
-
 # Testing
 coverage
 .nyc_output
@@ -46,10 +39,8 @@ coverage
 *.tar.gz
 
 dist
-.vercel
 test-results
 playwright-report
-data/*.db-*
 .env
 
 backend/target

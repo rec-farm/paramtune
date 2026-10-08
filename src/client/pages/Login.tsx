@@ -2,7 +2,7 @@ import { Suspense, useState } from 'react'
 import { useSearchParams, useLoaderData } from 'react-router'
 import type { LoginProviders } from '@/shared/auth'
 import { Loader2 } from 'lucide-react'
-import { signIn, signOut, useSession } from '@/lib/auth-client'
+import { devLogin, signIn, signOut, useSession } from '@/lib/auth-client'
 import Logo from '@/components/Logo'
 import { OIDC_PROVIDER_ID, displayEmail } from '@/shared/auth'
 
@@ -39,8 +39,7 @@ function DevLoginButton({ returnTo }: { returnTo: string }) {
   async function handleDevLogin() {
     setLoading(true)
     try {
-      const res = await fetch('/api/auth/dev-login', { method: 'POST' })
-      if (res.ok) {
+      if (await devLogin()) {
         window.location.assign(returnTo)
       }
     } finally {
@@ -87,7 +86,7 @@ function LoginContent({ oidc, development }: LoginProps) {
   const [searchParams] = useSearchParams()
   const requestedPath = searchParams.get('returnTo') || '/dashboard'
   const returnTo = requestedPath.startsWith('/') && !requestedPath.startsWith('//') && !requestedPath.includes('\\') ? requestedPath : '/dashboard'
-  const { data: session, isPending } = useSession()
+  const { session, isPending } = useSession()
   const [pending, setPending] = useState<Provider | null>(null)
   const [error, setError] = useState<string | null>(() =>
     signInErrorMessage(searchParams.get('error')),
@@ -98,12 +97,9 @@ function LoginContent({ oidc, development }: LoginProps) {
     setPending(provider)
     setError(null)
     try {
-      const result = await signIn.social({
-        provider,
-        callbackURL: returnTo,
-      })
-      if (result.error) {
-        setError(result.error.message || 'Sign-in didn’t start. Try again.')
+      const message = await signIn(returnTo)
+      if (message) {
+        setError(message)
         setPending(null)
       }
     } catch {

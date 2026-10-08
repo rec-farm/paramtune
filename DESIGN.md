@@ -1,127 +1,117 @@
 # Paramtune Console
 
 > Category: Developer Tools
-> A sharp, terminal-style console system: pure black ground, one lime signal color, monospace data, flat bordered surfaces, square corners, and monotone halftone illustrations.
+> The Paramtune dashboard on the REC Design System v1.4.1: warm ink and paper neutrals, REC purple for action, a mint product accent for place, pastel status tiles, near-square corners and hard offset shadows.
 
-Origin: extracted from the Paramtune configuration dashboard (Next.js, Tailwind v4, shadcn new-york). Version 1.1.0. Dark only.
+Origin: the Paramtune configuration dashboard (Vite, React, Tailwind v4, shadcn new-york). Two themes: Dark (default) and Paper, plus a System option that follows the OS.
+
+Source of truth is the code; this document summarizes it:
+
+- `src/client/tokens.css`: primitives, the semantic layer per theme, the product accent and shadcn aliases.
+- `src/client/globals.css`: Tailwind `@theme` mapping (fonts, radii, type scale, shadows, color utilities) and base styles.
+- `src/client/components.css`: `pt-` component classes.
+- `src/lib/theme.ts` and `src/components/ThemeSwitcher.tsx`: theme choice and persistence.
 
 ## 1. Visual Theme & Atmosphere
 
-A developer console for people who read keys, versions and diffs all day. The page is pure black; depth comes from lighter surface steps and 1px lines, never from glow, blur or gradients. Lime `#D9F99D` is the only signal color. Everything else is neutral grey so that status colors and the accent carry meaning.
+A developer console for people who read keys, versions and diffs all day. Surfaces are flat with 1px lines; emphasis comes from a few hard, blur-free offset shadows rather than glow, blur or gradients.
 
-- **Personality:** precise, technical, quiet, confident. One off-beat moment per product, never more.
-- **Density:** standard — 16–64px spacing, 40px controls.
-- **Signature moves:** Syncopate wordmark and page titles in wide-tracked uppercase; uppercase 12px labels with 0.08em tracking; 2px lime underline for the active tab; 2px lime inset edge for the selected row; halftone-toned line illustrations built from the product's own objects.
+- **Action vs place:** REC purple (`--primary-bg`) marks the primary action, links and the focus ring. The Paramtune mint accent (`--accent-bg`, set by `html[data-product='paramtune']`) marks where you are, such as the active navigation item. It never marks an action.
+- **Status:** pastel signals (mint, sun, rose, lilac) mean status and always come with an icon or a word.
+- **Density:** 36px controls, 14px body text.
 
-## 2. Color
+## 2. Themes
 
-All values are in `src/app/tokens.css`, prefixed `--pt-`. The shadcn variables (`--background`, `--primary`, `--muted-foreground`, …) are aliases of these, so Tailwind utilities like `bg-primary` and `text-muted-foreground` resolve to the palette. Contrast is measured on `--pt-bg` (#000).
+`index.html` renders `<html data-theme="dark" data-product="paramtune">`. An inline script in its `<head>` reads the stored choice before paint, so Paper users never see a dark flash.
 
-| Role         | Token                | Tailwind                   | Value     | Use                                         |
-| ------------ | -------------------- | -------------------------- | --------- | ------------------------------------------- |
-| Page         | `--pt-bg`            | `bg-background`            | `#000000` | Page ground                                 |
-| Surface 1    | `--pt-surface`       | `bg-surface`               | `#0A0A0A` | Cards, inputs, table headers                |
-| Surface 2    | `--pt-surface-2`     | `bg-surface-2`             | `#111111` | Secondary buttons, hover rows, popovers     |
-| Surface 3    | `--pt-surface-3`     | `bg-surface-3`             | `#1A1A1A` | Pressed / nested                            |
-| Line         | `--pt-border`        | `border-border`            | `#262626` | Dividers, card edges                        |
-| Line strong  | `--pt-border-strong` | `border-border-strong`     | `#404040` | Chips, secondary buttons, illustration tone |
-| Control edge | `--pt-input`         | `border-input`             | `#5C5C5C` | Inputs, checkboxes (3.1:1)                  |
-| Text         | `--pt-fg`            | `text-foreground`          | `#F5F5F5` | Body (19.3:1)                               |
-| Text muted   | `--pt-muted`         | `text-muted-foreground`    | `#A3A3A3` | Helper text (8.3:1)                         |
-| Text meta    | `--pt-meta`          | `text-meta`                | `#7A7A7A` | Timestamps, line numbers only (4.9:1)       |
-| Signal       | `--pt-accent`        | `text-primary`             | `#D9F99D` | Primary action, selection, focus            |
-| Signal ink   | `--pt-accent-on`     | `text-primary-foreground`  | `#0A0F02` | Text on lime                                |
-| Signal dim   | `--pt-accent-dim`    | `bg-accent-dim`            | 8% lime   | Background of the selected nav item or row  |
-| Success      | `--pt-success`       | `text-success`             | `#4ADE80` | Valid, live, added                          |
-| Warning      | `--pt-warn`          | `text-warn`                | `#FACC15` | Draft, unpublished, changed                 |
-| Danger       | `--pt-danger`        | `text-danger`              | `#F87171` | Error text and icons                        |
-| Danger fill  | `--pt-danger-fill`   | `bg-danger-fill`           | `#DC2626` | Destructive button fill, white text (4.8:1) |
-| Info         | `--pt-info`          | `text-info`                | `#7DD3FC` | Inherited, informational                    |
+- **Dark** (default): `:root` and `[data-theme='dark']`.
+- **Paper**: `[data-theme='light']`.
+- **System**: resolved to Dark or Paper from `prefers-color-scheme`, and followed live while selected.
 
-Rules:
+The choice is stored in `localStorage` under `paramtune-theme` (`src/lib/theme.ts`). `ThemeSwitcher` is a Dark / Paper / System segmented control in the user menu. Tailwind gets `dark:` and `paper:` custom variants for theme-specific styles. Logo files come in `-cream` (dark) and `-ink` (Paper) versions, switched with `.pt-on-dark` / `.pt-on-paper`.
 
-- Lime appears in exactly three places: the one primary button per view, the current selection, and the keyboard focus ring. Never in illustrations.
-- Status colors are text/icon colors on dark surfaces, used with a 10% tint background (`--pt-*-bg`). They are never large fills. A tint over a translucent gutter must be layered on an opaque surface, or the gutter color bleeds through.
-- `#DC2626` is never used as text on black (4.4:1 fails AA).
+## 3. Color
 
-## 3. Typography
+Components use the semantic layer only, never the primitives. The shadcn variables (`--background`, `--primary`, `--muted-foreground`, …) alias the semantic layer, so Tailwind utilities like `bg-primary` resolve per theme.
 
-- **Display:** Syncopate 700, uppercase, tracking 0.12em (`.pt-display`). Only for the wordmark, page titles and section titles. Never for body, buttons or data.
-- **UI and data:** Space Mono 400/700 for everything else — body, labels, buttons, tables, code, and the JSON editor.
-- **Scale:** 12 / 14 / 16 / 20 / 24 / 32 / 48 / 64, mapped to Tailwind `text-xs` … `text-4xl` (`text-lg` is 20px, `text-xl` 24px, `text-2xl` 32px). Page titles use `text-xl`, the Overview title `text-2xl`.
-- **Body:** 16px, line-height 1.6, prose capped at 68ch.
-- **Label:** 12px, 700, uppercase, tracking 0.08em (`.pt-label`) — field labels, table headers, badges, eyebrows; buttons use the same treatment at 14px.
-- **Numbers:** `font-variant-numeric: tabular-nums`, right-aligned in tables.
-- Fonts load through `next/font/google`: Space Mono 400/700 as `--font-fragmented`, Syncopate 700 as `--font-display`.
+| Role          | Token                     | Tailwind                          | Dark                | Paper                 |
+| ------------- | ------------------------- | --------------------------------- | ------------------- | --------------------- |
+| Page          | `--canvas`                | `bg-background`                   | ink-950 `#0A0B0C`   | paper-100 `#F7F1E3`   |
+| Surface 1     | `--surface-1`             | `bg-surface`                      | ink-900 `#101214`   | paper-50 `#FFFCF5`    |
+| Surface 2     | `--surface-2`             | `bg-surface-2`                    | ink-850 `#16191C`   | paper-200 `#EFE8D8`   |
+| Surface 3     | `--surface-3`             | `bg-surface-3`                    | ink-800 `#1D2125`   | paper-300 `#E5DDCB`   |
+| Sidebar       | `--sidebar-bg`            | `bg-sidebar`                      | ink-900 `#101214`   | deep-900 `#14262E`    |
+| Text          | `--fg`                    | `text-foreground`                 | cream `#F4EFE3`     | deep-900 `#14262E`    |
+| Text muted    | `--fg-muted`              | `text-muted-foreground`           | stone-400 `#A8A396` | slate-600 `#4B5B61`   |
+| Text meta     | `--fg-subtle`             | `text-meta`                       | stone-500 `#8A867E` | slate-500 `#5F6B67`   |
+| Line          | `--line`                  | `border-border`                   | ink-700 `#23272B`   | paper-400 `#DDD3BF`   |
+| Line strong   | `--line-strong`           | `border-border-strong`            | ink-600 `#3A4046`   | deep-900 `#14262E`    |
+| Primary       | `--primary-bg`            | `bg-primary`                      | purple-500 `#7638FA`| purple-600 `#6524E8`  |
+| Link / focus  | `--link`, `--focus-ring`  | `text-link`, `ring-ring`          | purple-300 `#AC8BFF`| purple-600 `#6524E8`  |
+| Product accent| `--accent-bg`             | `bg-accent`                       | mint-400 `#4CC79A`  | mint-300 `#A8D8C2`    |
+| Danger fill   | `--danger-solid`          | `bg-danger-fill`                  | `#D23758`           | rose-600 `#C42F52`    |
 
-## 4. Spacing, Shape & Elevation
+Status colors each have a text, icon, tile and soft token (`text-success`, `text-success-icon`, `bg-success-tile`, `bg-success-soft`; likewise `warn`, `danger`, `info`): mint for success, sun for warning, rose for danger, lilac for info. In Dark, tiles and soft tints are the `-950` shades; in Paper, tiles are `-300` and soft tints `-100`. Schema diffs use `diff-add`, `diff-del` and `diff-chg`, built from the success, danger and warning soft and text tokens.
 
-- **Spacing:** 4px base — 4, 8, 12, 16, 24, 32, 48, 64. No other values.
-- **Controls:** 32 (sm) / 40 (md) / 48 (lg) px tall.
-- **Radius:** 0 everywhere. `--radius-pill` exists only for radio dots and status dots.
-- **Borders:** 1px. `--pt-border` for structure, `--pt-border-strong` for interactive chrome, `--pt-input` for form controls.
-- **Elevation:** flat. Only dialogs, toasts and tooltips cast `--elev-raised`. No glows.
-- **Signature offset:** one hard, blur-free offset edge (6px, `--pt-border-strong`) with one panel overhanging its frame, allowed in exactly one place: the Overview hero illustration (`<PanelsArt signature />`). Not on buttons, cards, tiles or other illustrations.
-- **Focus:** 2px solid lime outline with a 2px offset on every interactive element.
+JSON syntax colors are `--syntax-key` (purple), `--syntax-string` (mint), `--syntax-number` (sun), `--syntax-literal` (rose), `--syntax-punct` (stone/slate) and `--syntax-extends` (lilac).
 
-## 5. Components
+## 4. Typography
 
-Class names are in `src/app/components.css` (prefix `pt-`); React components live in `src/components`.
+Fonts are self-hosted through Fontsource packages imported in `src/client/main.tsx`: `@fontsource-variable/archivo` (with the `wdth` axis), `@fontsource-variable/figtree` and `@fontsource-variable/geist-mono`. `globals.css` maps them to Tailwind font families:
 
-- **Button** (`.pt-btn` + `.pt-btn-primary | -secondary | -ghost | -destructive`): primary (lime, one per view), secondary (surface-2 + strong border), ghost, danger-ghost (red text, used at the entry point of a destructive action), destructive (red fill, only inside a confirmation step). Labels are uppercase verbs. States: hover, focus, active, disabled (40% opacity), loading (spinner + `aria-busy`).
-- **Field** (`.pt-input`, `.pt-select`): visible uppercase label, required marker in lime, helper text under the input, error below it with an icon and a fix instruction. Validate on blur. Multiple errors get an error summary that links to each field.
-- **Checkbox / radio / switch**: square 20px boxes; checked = lime fill with dark ink; switch shows an ON/OFF word beside it.
-- **Badge** (`ui/Badge`): status badges always include an icon or symbol. Version badges keep semver in normal case: latest = lime line, deprecated = strikethrough, draft = dashed.
-- **Tabs**: uppercase labels; active tab gets a 2px lime underline; arrow keys, Home and End move between tabs.
-- **Card** (`.pt-card`): 1px border on surface-1, no shadow. Interactive cards (`.pt-card-interactive`) step up on hover; selected = lime border on `--pt-accent-dim`.
-- **Table**: label-style headers, tabular numbers, hover row = surface-2, selected row = lime inset edge.
-- **Breadcrumbs** (`Breadcrumbs`): `Overview / platform / vX.Y.Z` above every page title below the Overview; 14px, muted links, current page in `--pt-fg`, `/` separators in meta grey.
-- **Dialog / toast / tooltip**: popover surface, strong border, `--elev-raised`. Destructive dialogs list consequences and require typing the resource name.
+- **Display** (`font-display`): Archivo Expanded (`wdth` 125), 700–800. For stamps, labels and stat numbers (`.pt-display`, `.pt-stat`, `.pt-label`, `.pt-eyebrow`). Never for sentences.
+- **Sans** (`font-sans`): Figtree. Body, titles and buttons.
+- **Mono** (`font-mono`): Geist Mono. Code, JSON, tags and anything a developer might copy.
 
-## 6. Paramtune Patterns
+Scale (`--text-*`): caption 12 · body-sm 13 · body 14 · body-lg 16 · heading 20 · title-2 28 · stat 40 · title-1 56 · stat-xl 64 · display-hero 72. Body is 14px with line-height 1.5.
 
-- **Sidebar navigation**: icon + name + count; the current item has a 2px lime left edge and `--pt-accent-dim` background. Opening a version expands its platform.
-- **@extends chip**: `@extends | ref | resolved-version`; a broken reference turns the border red and says "No match".
-- **Page header**: 12px meta eyebrow ("Your configs, at a glance"), Syncopate title, one muted sentence. The Overview header carries the signature hero illustration on the right from 768px.
-- **Stat grid** (`StatTiles`): bento, not equal columns. The headline count (Versions) takes a tall 2fr cell with a 64px number; two tiles sit beside it; the last spans the bottom row. 1px gutters, no gaps. Status tiles (Configured, Empty) use a 10% tint layered on the surface and always carry an icon. Only real counts; no invented metrics.
-- **JSON code** (`JsonOutput`, editor overlay): keys in `--pt-fg`, strings in info blue, numbers in yellow, literals in pink, punctuation in meta grey, `@`-keys in lime.
-- **Schema diff**: split view from 768px, a single merged column below it. Every changed line carries a symbol as well as a tint: `+` added, `−` removed, `~` changed (old value struck through in the merged view). A is the source, B the target.
-- **Audit log**: time · action icon + verb · target in mono · actor in muted · optional status badge.
-- **States**: every data region designs empty (illustration + why + next action, via `EmptyState`), loading (static skeleton shaped like the result, `.pt-skeleton`), and error (what failed + retry).
+- `.pt-title-1`: Figtree 800, 56px (40px below 768px), tracking -0.035em.
+- `.pt-title-2`: Figtree 800, 28px. `.pt-heading`: Figtree 700, 20px.
+- `.pt-label`: Archivo Expanded 700, 11px, uppercase, tracking 0.1em. `.pt-eyebrow` is the same in muted text at 0.14em.
+- `.pt-period`: the purple period after H1 and hero lines only.
+- `.pt-stat`: tabular numbers.
 
-## 7. Motion & Interaction
+## 5. Shape, Shadow & Spacing
 
-- Durations: 150ms (hover, color), 200ms (switches, tabs, dialogs), 300ms (toasts, list entrance) — `--pt-dur-fast | base | slow`.
-- Enter with `--pt-ease-out`; exit with `--pt-ease-in` at 65% of the enter duration (`--pt-dur-*-exit`). Stagger list items by 40ms (`--pt-stagger`).
-- Animate only opacity and transform. No floating, pulsing, shimmer-on-hover, or glitch effects. Illustrations never animate.
-- `prefers-reduced-motion` zeroes every duration token.
-- Hover styles live under `@media (hover: hover)`; hover never lightens or greys out text.
+- **Radius:** nearly square. 2px badges (`rounded-xs`), 4px controls and cards (`rounded-sm`), 6px overlays. Nothing above 6px.
+- **Borders:** 1px lines; 1.5px `--line-strong` on the primary button, the active nav item and the stat tile group.
+- **Hard offset shadows:** `shadow-hard-sm` (2px), `shadow-hard` (3px) and `shadow-hard-lg` (5px) in `--shadow-hard-color`, no blur. Used on the primary button, the active nav item and the stat tile group. Cards stay flat. Popovers use the soft `shadow-pop`.
+- **Controls:** buttons and inputs are 36px tall.
+- **Focus:** 2px solid `--focus-ring` outline with a 2px offset; inputs also get a purple ring on focus.
+
+## 6. Components
+
+Class names are in `src/client/components.css` (prefix `pt-`); React components live in `src/components`.
+
+- **Button** (`.pt-btn` + `-primary | -secondary | -ghost | -outline | -destructive`): Figtree 600, 14px, sentence case. Primary is purple with a strong border and a hard shadow and presses like a key; one per view. Outline uses the label style. Destructive (danger fill) appears only inside a confirmation step. Disabled is 40% opacity.
+- **Tertiary link** (`.pt-link-tertiary`): label style with an arrow, underlined on hover.
+- **Card** (`.pt-card`): surface-1, 1px line, 4px radius, no shadow. `.pt-card-elevated` uses surface-2; `.pt-card-interactive` strengthens the border on hover.
+- **Field** (`.pt-input`, `.pt-select`): 36px, field surface, input border, 4px radius.
+- **Code** (`.pt-code`): surface-2, 13px mono, line-height 1.6. `.pt-kbd` is a 12px mono chip.
+- **Badge** (`ui/Badge`): 22px mono tag, 2px radius, soft status tint with status text.
+- **Tabs** (`SchemaTabs`): active tab gets a 2px primary underline on `primary-soft` with link-colored text.
+- **Navigation** (`NavigationPlatforms/navItem.ts`): the active item is the product accent block with a strong border and a hard shadow; one per viewport.
+- **Stat tiles** (`StatTiles`): a bento grid with 1px dividers, a 1.5px strong outline and `shadow-hard-lg`. Status tiles use the tile color and always carry an icon.
+- **States:** loading uses `.pt-skeleton` shaped like the result; empty states use `EmptyState`.
+
+## 7. Motion
+
+- Durations: `--duration-instant` 80ms, `--duration-fast` 140ms, `--duration-base` 200ms, `--duration-slow` 320ms.
+- Easing: `--ease-out`, `--ease-in`, and `--ease-snap` for key presses.
+- List entrance (`.animate-in`, `.stagger-1..3`) animates opacity and transform only, 40ms stagger.
+- `prefers-reduced-motion` removes the entrance animation, the stagger and the button press translate, and disables smooth scrolling.
+- Hover styles live under `@media (hover: hover)`.
 
 ## 8. Accessibility
 
-- Body text ≥ 4.5:1; control edges and icons ≥ 3:1. `--pt-meta` is only for short metadata.
-- Status is never color alone: pair with an icon, a symbol (+ − ~) or a word.
-- Every icon-only button has an `aria-label`. Tooltips open on focus as well as hover and close with Esc.
-- Illustrations are decorative: `aria-hidden`, and the text beside them says everything they show.
-- Minimum interactive size 32px on desktop, 44px on touch layouts.
+- Status is never color alone: pair it with an icon, a symbol (+ − ~) or a word.
+- Every icon-only button has an `aria-label`; decorative icons and illustrations are `aria-hidden`.
+- Tabs support arrow keys and expose `aria-selected`.
 
 ## 9. Iconography
 
-Lucide outline icons only, 1.5px stroke, 16px inline and 20px in navigation, `currentColor`. No filled icons, no emoji, no icon next to every heading.
+Lucide outline icons, 1.5px stroke, `currentColor`.
 
 ## 10. Illustration
 
-Illustrations live in `src/components/illustrations` as React SVG components. They give empty, error and entry pages a moment of character without breaking the console's restraint.
-
-- **Monotone:** greys only — `--pt-fg` for primary strokes and marks, `--pt-muted` for secondary strokes, `--pt-meta` for small text, `--pt-border-strong` / `--pt-border` for tone, surfaces for fills. No lime, no status colors.
-- **Line + halftone:** 1.5px strokes with square caps and miter joins, matching Lucide. Tone comes from a halftone ramp (dots shrinking along a diagonal), never from gradients or opacity washes. Halftone needs about 200px of width to read; below that, use line only.
-- **Built from the product:** a tuning dial, `{ }` braces, a version branch with a dashed draft node, version cards, the `@extends` arrow, `+ − ~` diff marks. Never generic scenes, people or mascots.
-- **Composition:** panel grids with unequal cells (2:1 splits). Square corners, 1.5px `--pt-border-strong` frames.
-- **Where:** the Overview hero (`PanelsArt signature`), login (`PanelsArt`), empty states (`PlatformsArt`, `ExtendsArt`, `CompareArt`), 404 (`NoMatchArt`) and error pages (`PeggedDialArt`). Never inside data regions: tables, the editor, diffs or history lists.
-- **Sizes:** 320px in the hero, 200–300px elsewhere; always `h-auto` so they scale down.
-
-## 11. Do and Don't
-
-**Do:** one lime primary per view · uppercase labels · mono for anything a developer might copy · square corners · flat surfaces with 1px borders · tinted status badges with icons · monotone halftone illustrations built from product objects · one bento stat grid on the Overview.
-
-**Don't:** glassmorphism or backdrop blur · glows, neon or text-shadow · gradient text or gradient backgrounds · rounded cards · warm or tinted page grounds · Inter/Roboto as display type · lime used decoratively or in illustrations · saturated status fills (`bg-green-500`) · invented metrics in sample data · offset edges or tilted elements anywhere but the Overview hero.
+Spot illustrations live in `src/components/illustrations` as React SVG components: line art in the theme's ink, built from the product's own objects (a tuning dial, version cards, `@extends`, `+ − ~` diff marks), with tone from a halftone dot ramp. Current exports are `CompareArt`, `NoMatchArt` (404) and `PeggedDialArt` (errors). Page headers and empty states use the generated files in `public/brand`. `.pt-dot-grid` is a dot texture for behind illustrations and empty states, never behind text.

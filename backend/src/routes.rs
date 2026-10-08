@@ -1,6 +1,6 @@
 use crate::{
     AppState,
-    auth::{require_manage, require_write},
+    auth::{require_manage, require_platform_write, require_write},
     diff,
     error::{ApiError, Result},
     schema, tokens,
@@ -294,6 +294,12 @@ async fn ui(State(state): State<AppState>, request: Request) -> Result<Response>
         _ if !matches!(method_name.as_str(), "GET" | "HEAD") => require_write(&session)?,
         _ => {}
     }
+    // Writes inside a platform also need that platform's editor group, when it has one.
+    if let ["platforms", p, ..] = path.as_slice()
+        && !matches!(method_name.as_str(), "GET" | "HEAD")
+    {
+        require_platform_write(&session, p)?;
+    }
     match path.as_slice() {
         ["overview"] if method_name == "GET" || method_name == "HEAD" => {
             let platforms = state.0.store.platforms().await?;
@@ -342,6 +348,7 @@ async fn ui(State(state): State<AppState>, request: Request) -> Result<Response>
                 &Value::from(data["name"].as_str().unwrap_or_default().trim()),
                 false,
             )?;
+            require_platform_write(&session, &p)?;
             if state
                 .0
                 .store
@@ -547,7 +554,7 @@ async fn public_api(State(state): State<AppState>, request: Request) -> Result<R
     }
     legacy_name(p, false)?;
     if method_name == "POST" {
-        require_write(&session)?;
+        require_platform_write(&session, p)?;
     }
     if grant.as_ref().is_some_and(|grant| !grant.allows(p)) {
         // Out-of-scope platforms look absent, so a token can't probe for names.

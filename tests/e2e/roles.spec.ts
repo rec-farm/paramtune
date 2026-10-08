@@ -17,9 +17,9 @@ test('roles from OIDC groups gate writes and administration on the server', asyn
   }
   const [admin, editor, viewer] = [await signIn(), await signIn('editor'), await signIn('member')]
   try {
-    expect((await (await admin.get('/api/auth/get-session')).json()).permissions).toEqual({ write: true, manage: true })
-    expect((await (await editor.get('/api/auth/get-session')).json()).permissions).toEqual({ write: true, manage: false })
-    expect((await (await viewer.get('/api/auth/get-session')).json()).permissions).toEqual({ write: false, manage: false })
+    expect((await (await admin.get('/api/auth/get-session')).json()).permissions).toMatchObject({ write: true, manage: true })
+    expect((await (await editor.get('/api/auth/get-session')).json()).permissions).toMatchObject({ write: true, manage: false })
+    expect((await (await viewer.get('/api/auth/get-session')).json()).permissions).toMatchObject({ write: false, manage: false })
     expect((await (await playwright.request.newContext()).post(`${authURL}/api/auth/dev-login`, { headers: { Origin: authURL }, data: { role: 'owner' } })).status()).toBe(400)
 
     expect((await editor.post(`${ui}/platforms`, { data: { name: platform } })).status()).toBe(201)

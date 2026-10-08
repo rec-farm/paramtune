@@ -1,6 +1,7 @@
 import { useLoaderData, useNavigate, useParams, useRevalidator, useRouteLoaderData } from 'react-router'
 import { api, schemaPath, UI_API } from '@/client/api'
 import DeleteZone from '@/components/DeleteZone'
+import PlatformReadOnly, { canWritePlatform } from '@/components/PlatformReadOnly'
 import type { SchemaDetail } from '@/shared/contracts'
 import { Suspense } from 'react'
 import { Link } from 'react-router'
@@ -85,6 +86,7 @@ export default function SchemaPage() {
         </p>
       </header>
 
+      {dashboard.permissions.write && !canWritePlatform(dashboard.permissions, platformName) && <PlatformReadOnly platform={platformName} />}
       {history.length === 0 && <SetupGuide step={2} />}
 
       <Suspense

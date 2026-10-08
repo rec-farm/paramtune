@@ -1,6 +1,7 @@
 import { useLoaderData, useNavigate, useRevalidator, useRouteLoaderData } from 'react-router'
 import type { DashboardData } from '@/client/router'
 import DeleteZone from '@/components/DeleteZone'
+import PlatformReadOnly, { canWritePlatform } from '@/components/PlatformReadOnly'
 import { api, UI_API } from '@/client/api'
 import type { Platform } from '@/shared/contracts'
 import PageTitle from '@/components/PageTitle'
@@ -79,6 +80,7 @@ export default function PlatformPage() {
   return (
     <div className="space-y-8">
       <PageTitle platform={platformName} kind={platform?.kind} />
+      {permissions.write && !canWritePlatform(permissions, platformName) && <PlatformReadOnly platform={platformName} />}
 
       {platform.versions.length === 0 && <SetupGuide step={1} href="#add-version" action="Add first version" />}
       <Card title="Versions">

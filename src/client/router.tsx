@@ -3,7 +3,7 @@ import type { LoaderFunctionArgs } from 'react-router'
 import { load, UI_API, schemaPath, ApiError } from '@/client/api'
 import type { Platform, Overview, SchemaDetail, ApiToken } from '@/shared/contracts'
 
-export type Permissions = { write: boolean; manage: boolean }
+export type Permissions = { write: boolean; manage: boolean; restricted?: string[] }
 export type DashboardData = { platforms: Platform[]; redisAvailable: boolean; permissions: Permissions }
 function Root() {
   const navigation = useNavigation()

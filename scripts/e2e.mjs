@@ -14,8 +14,10 @@ const env = {
   CORS_ORIGIN: baseURL,
   // Rate limits live in shared Redis; a per-run prefix keeps earlier runs from throttling this one.
   RATE_LIMIT_PREFIX: `ratelimit:e2e-${process.pid}-${Date.now()}`,
-  // All three servers share one API bucket from 127.0.0.1; the auth limit keeps its default.
-  RATE_LIMIT_API_MAX: '10000',
+  // All three servers share one bucket per limit from 127.0.0.1, and each spec signs in several times.
+  RATE_LIMIT_API_MAX: '10000', RATE_LIMIT_AUTH_MAX: '1000',
+  // Members are read-only; there is no admin group, so editors also manage.
+  OIDC_EDITOR_GROUP: 'paramtune-editors', OIDC_ADMIN_GROUP: '',
 }
 const children = []
 let timedOut = false

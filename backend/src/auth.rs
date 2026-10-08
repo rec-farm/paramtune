@@ -146,6 +146,47 @@ pub async fn session(state: &AppState, headers: &HeaderMap) -> Result<Value> {
     }
     Ok(row["public"].clone())
 }
+/// What a signed-in user may do. Roles come from OIDC groups at sign-in; the group
+/// settings are read per request, so configuring a group restricts existing sessions too.
+pub struct Permissions {
+    /// Create platforms and versions, and save schemas.
+    pub write: bool,
+    /// Delete platforms and versions, and manage API tokens.
+    pub manage: bool,
+}
+pub fn permissions(session: &Value) -> Permissions {
+    grant(
+        session["user"]["role"].as_str().unwrap_or_default(),
+        !setting("OIDC_EDITOR_GROUP", "").is_empty(),
+        !setting("OIDC_ADMIN_GROUP", "").is_empty(),
+    )
+}
+fn grant(role: &str, editor_group: bool, admin_group: bool) -> Permissions {
+    // Without an editor group every member edits; without an admin group every editor manages.
+    let write = matches!(role, "admin" | "editor") || role == "member" && !editor_group;
+    let manage = role == "admin" || write && !admin_group;
+    Permissions { write, manage }
+}
+pub fn require_write(session: &Value) -> Result<()> {
+    if permissions(session).write {
+        Ok(())
+    } else {
+        Err(ApiError(
+            StatusCode::FORBIDDEN,
+            "Your role can view configuration but not change it".into(),
+        ))
+    }
+}
+pub fn require_manage(session: &Value) -> Result<()> {
+    if permissions(session).manage {
+        Ok(())
+    } else {
+        Err(ApiError(
+            StatusCode::FORBIDDEN,
+            "Only administrators can do this".into(),
+        ))
+    }
+}
 async fn issue(
     state: &AppState,
     user: Value,
@@ -363,17 +404,25 @@ async fn callback(state: &AppState, request: Request) -> Result<Response> {
     if profile["sub"] != sub {
         return Err(unauthorized());
     }
-    let group = setting("OIDC_ADMIN_GROUP", "");
     let roles = &profile[setting("OIDC_ROLES_CLAIM", "groups")];
-    let admin = !group.is_empty()
-        && (roles
-            .as_array()
-            .is_some_and(|v| v.iter().any(|v| v == &group))
-            || roles
-                .as_str()
-                .is_some_and(|v| v.split_whitespace().any(|v| v == group)));
+    let member_of = |group: String| {
+        !group.is_empty()
+            && (roles
+                .as_array()
+                .is_some_and(|v| v.iter().any(|v| v == &group))
+                || roles
+                    .as_str()
+                    .is_some_and(|v| v.split_whitespace().any(|v| v == group)))
+    };
+    let role = if member_of(setting("OIDC_ADMIN_GROUP", "")) {
+        "admin"
+    } else if member_of(setting("OIDC_EDITOR_GROUP", "")) {
+        "editor"
+    } else {
+        "member"
+    };
     let subject = subject_key(&setting("OIDC_ISSUER", ""), sub);
-    let user = json!({"id":subject,"name":profile["name"].as_str().or(profile["preferred_username"].as_str()).unwrap_or(""),"email":profile["email"].as_str().unwrap_or(""),"image":profile["picture"],"role":if admin {"admin"} else {"member"}});
+    let user = json!({"id":subject,"name":profile["name"].as_str().or(profile["preferred_username"].as_str()).unwrap_or(""),"email":profile["email"].as_str().unwrap_or(""),"image":profile["picture"],"role":role});
     let mut response = issue(
         state,
         user,
@@ -496,7 +545,7 @@ pub async fn handle(State(state): State<AppState>, request: Request) -> Result<R
     let path = request.uri().path();
     match (request.method(),path) {
         (&Method::GET,"/api/auth/providers") => Ok(Json(json!({"oidc":if setting("OIDC_ISSUER","").is_empty() { Value::Null } else { json!({"label":setting("OIDC_DISPLAY_NAME","Handstamp")}) },"development":!state.0.config.production})).into_response()),
-        (&Method::GET,"/api/auth/get-session") => match session(&state,request.headers()).await { Ok(row) => Ok(Json(row).into_response()), Err(error) if error.0 == StatusCode::UNAUTHORIZED => Ok(Json(Value::Null).into_response()), Err(error) => Err(error) },
+        (&Method::GET,"/api/auth/get-session") => match session(&state,request.headers()).await { Ok(mut row) => { let permissions = permissions(&row); row["permissions"] = json!({"write":permissions.write,"manage":permissions.manage}); Ok(Json(row).into_response()) }, Err(error) if error.0 == StatusCode::UNAUTHORIZED => Ok(Json(Value::Null).into_response()), Err(error) => Err(error) },
         (&Method::POST,"/api/auth/sign-in/social") => {
             let bytes = axum::body::to_bytes(request.into_body(),16384).await.map_err(|_| ApiError::bad("Invalid sign-in body"))?;
             start(&state,serde_json::from_slice(&bytes).map_err(|_| ApiError::bad("Invalid sign-in JSON"))?).await
@@ -504,7 +553,14 @@ pub async fn handle(State(state): State<AppState>, request: Request) -> Result<R
         (&Method::GET,"/api/auth/oauth2/callback/oidc" | "/api/auth/callback/oidc") => callback(&state,request).await,
         (&Method::POST,"/api/auth/sign-out") => sign_out(&state,request.headers()).await,
         (&Method::POST,"/api/auth/backchannel-logout") => backchannel(&state,request).await,
-        (&Method::POST,"/api/auth/dev-login") if !state.0.config.production => issue(&state,json!({"id":"development","name":setting("DEV_USER_NAME","Developer"),"email":setting("DEV_USER_EMAIL","developer@paramtune.local"),"role":"admin","image":null}),"development","",None).await,
+        (&Method::POST,"/api/auth/dev-login") if !state.0.config.production => {
+            // Development may sign in with a narrower role to preview permissions.
+            let bytes = axum::body::to_bytes(request.into_body(),1024).await.map_err(|_| ApiError::bad("Invalid sign-in body"))?;
+            let body: Value = serde_json::from_slice(&bytes).unwrap_or(Value::Null);
+            let role = match body["role"].as_str() { None => "admin", Some(role @ ("admin"|"editor"|"member")) => role, Some(_) => return Err(ApiError::bad("Unknown role")) };
+            let id = if role == "admin" { "development".to_owned() } else { format!("development-{role}") };
+            issue(&state,json!({"id":id,"name":setting("DEV_USER_NAME","Developer"),"email":setting("DEV_USER_EMAIL","developer@paramtune.local"),"role":role,"image":null}),&id,"",None).await
+        },
         _ => Err(ApiError::missing("Not found")),
     }
 }
@@ -526,6 +582,23 @@ mod tests {
             safe_return(Some("/dashboard/platforms")),
             "/dashboard/platforms"
         );
+    }
+    #[test]
+    fn group_settings_narrow_permissions() {
+        let can = |role, editor_group, admin_group| {
+            let p = grant(role, editor_group, admin_group);
+            (p.write, p.manage)
+        };
+        // No groups configured: everyone signed in may edit and manage, as before roles.
+        assert_eq!(can("member", false, false), (true, true));
+        // An admin group reserves deletes and tokens for admins.
+        assert_eq!(can("member", false, true), (true, false));
+        assert_eq!(can("admin", false, true), (true, true));
+        // An editor group makes everyone else read-only.
+        assert_eq!(can("member", true, false), (false, false));
+        assert_eq!(can("editor", true, false), (true, true));
+        assert_eq!(can("editor", true, true), (true, false));
+        assert_eq!(can("", false, false), (false, false));
     }
     #[test]
     fn ambiguous_cookies_are_rejected() {

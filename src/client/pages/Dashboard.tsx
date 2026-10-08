@@ -7,7 +7,7 @@ import { version } from '../../../package.json'
 
 
 export default function DashboardLayout() {
-  const { platforms, redisAvailable } = useLoaderData() as DashboardData
+  const { platforms, redisAvailable, permissions } = useLoaderData() as DashboardData
 
   if (!redisAvailable) {
     return (
@@ -46,11 +46,18 @@ export default function DashboardLayout() {
   return (
     <SidebarProvider>
       <div className="flex h-screen">
-        <Sidebar platforms={platforms} version={version} />
+        <Sidebar platforms={platforms} version={version} canManage={permissions.manage} />
         <div className="flex flex-1 min-w-0 flex-col">
           <DashboardTopBar />
           <main className="flex-1 overflow-y-auto">
-            <div className="mx-auto max-w-[1296px] px-4 py-6 md:px-8 md:py-8 xl:px-12"><Outlet /></div>
+            <div className="mx-auto max-w-[1296px] px-4 py-6 md:px-8 md:py-8 xl:px-12">
+              {!permissions.write && (
+                <p role="status" className="pt-card mb-6 border-l-4 border-l-accent p-4 text-sm text-muted-foreground">
+                  <span className="font-semibold text-foreground">View only.</span> Your role can read configuration but not change it. Ask an administrator for editor access.
+                </p>
+              )}
+              <Outlet />
+            </div>
           </main>
         </div>
       </div>

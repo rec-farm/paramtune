@@ -15,6 +15,9 @@ One Rust process serves the Vite frontend, APIs, and Handstamp authentication. N
 | OIDC_CA_CERT_FILE | Optional private-provider CA PEM file |
 | CORS_ORIGIN | Defaults to PUBLIC_ORIGIN |
 | REDIS_URL | Redis connection URL, credentials, and database |
+| RATE_LIMIT_API_MAX | API requests per client IP per minute; defaults to 100 |
+| RATE_LIMIT_AUTH_MAX | Sign-in requests per client IP per 15 minutes; defaults to 10 |
+| RATE_LIMIT_PREFIX | Redis key prefix for shared rate-limit counters; defaults to ratelimit |
 
 Register the redirect at https://paramtune.example.com/api/auth/oauth2/callback/oidc, post-logout redirect at https://paramtune.example.com/, and back-channel logout at https://paramtune.example.com/api/auth/backchannel-logout.
 
@@ -24,4 +27,4 @@ Supply REDIS_PASSWORD, PUBLIC_ORIGIN, and OIDC credentials before building and s
 
 Terminate HTTPS at the VPS reverse proxy and forward to Rust on port 3000. Set TRUST_PROXY=true only if the proxy sanitizes client-IP headers. Browser mutations must originate from PUBLIC_ORIGIN. VITE_* variables are public and must never contain credentials.
 
-/healthz checks process readiness. Verify login, roles, deep links, saving, and both logout directions on the actual deployment.
+Use /healthz for liveness (process restarts) and /readyz for readiness (routing traffic): /readyz returns 503 while Redis or, when configured, Handstamp discovery is unreachable. The Docker healthcheck stays on /healthz so a Redis or provider outage does not restart healthy processes. Rate limits are shared across replicas through Redis; tune them with RATE_LIMIT_API_MAX and RATE_LIMIT_AUTH_MAX. Verify login, roles, deep links, saving, and both logout directions on the actual deployment.

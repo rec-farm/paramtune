@@ -43,7 +43,15 @@ pub async fn middleware(State(state): State<AppState>, request: Request, next: N
     };
     decorate(&state, response, api, origin.as_deref(), &path)
 }
-/// Counts one request for `key`; returns seconds to wait once `max` is exceeded within `window`.
+/// Bounds the shared limiter so a slow Redis never stalls requests for long.
+const SHARED_LIMIT_TIMEOUT: Duration = Duration::from_millis(500);
+/// After a shared-limiter failure, skip Redis for this long instead of retrying every request.
+const SHARED_LIMIT_BACKOFF: Duration = Duration::from_secs(5);
+/// Seconds to wait once `count` exceeds `max`, with `remaining` left in the window.
+fn retry_after(count: u64, max: u32, remaining: Duration) -> Option<u64> {
+    (count > u64::from(max)).then(|| remaining.as_secs() + 1)
+}
+/// Counts one request for `key` in process memory; returns seconds to wait once `max` is exceeded within `window`.
 fn rate_limit_retry(
     rates: &mut HashMap<String, (u32, Instant)>,
     key: String,
@@ -54,7 +62,35 @@ fn rate_limit_retry(
     rates.retain(|_, (_, deadline)| *deadline > now);
     let (count, deadline) = rates.entry(key).or_insert((0, now + window));
     *count += 1;
-    (*count > max).then(|| deadline.duration_since(now).as_secs() + 1)
+    retry_after(u64::from(*count), max, deadline.duration_since(now))
+}
+/// Counts in Redis so replicas share limits; falls back to the per-process limiter while Redis is unavailable.
+async fn rate_limit(state: &AppState, key: String, max: u32, window: Duration) -> Option<u64> {
+    let now = Instant::now();
+    let backoff = *state
+        .0
+        .rate_backoff
+        .lock()
+        .unwrap_or_else(PoisonError::into_inner);
+    if backoff.is_none_or(|until| until <= now) {
+        let shared = format!("{}:{key}", state.0.config.rate_limit_prefix);
+        match tokio::time::timeout(SHARED_LIMIT_TIMEOUT, state.0.store.hit(&shared, window)).await {
+            Ok(Ok((count, remaining))) => {
+                return retry_after(count, max, Duration::from_millis(remaining));
+            }
+            _ => {
+                tracing::warn!("Shared rate limiter unavailable; using per-process limits");
+                *state
+                    .0
+                    .rate_backoff
+                    .lock()
+                    .unwrap_or_else(PoisonError::into_inner) = Some(now + SHARED_LIMIT_BACKOFF);
+            }
+        }
+    }
+    // A panic elsewhere must not poison the limiter and fail every later request.
+    let mut rates = state.0.rates.lock().unwrap_or_else(PoisonError::into_inner);
+    rate_limit_retry(&mut rates, key, max, window, now)
 }
 async fn protect(state: &AppState, request: Request, next: Next) -> Response {
     let path = request.uri().path();
@@ -69,18 +105,12 @@ async fn protect(state: &AppState, request: Request, next: Next) -> Response {
         )
     });
     let (max, window) = if auth {
-        (10, Duration::from_secs(900))
+        (state.0.config.rate_limit_auth_max, Duration::from_secs(900))
     } else {
-        (100, Duration::from_secs(60))
+        (state.0.config.rate_limit_api_max, Duration::from_secs(60))
     };
-    let now = Instant::now();
-    let retry = {
-        // A panic elsewhere must not poison the limiter and fail every later request.
-        let mut rates = state.0.rates.lock().unwrap_or_else(PoisonError::into_inner);
-        let key = format!("{}:{ip}", if auth { "auth" } else { "api" });
-        rate_limit_retry(&mut rates, key, max, window, now)
-    };
-    if let Some(retry) = retry {
+    let key = format!("{}:{ip}", if auth { "auth" } else { "api" });
+    if let Some(retry) = rate_limit(state, key, max, window).await {
         let mut response =
             ApiError(StatusCode::TOO_MANY_REQUESTS, "Too many requests".into()).into_response();
         response
@@ -209,5 +239,12 @@ mod tests {
             rate_limit_retry(&mut rates, "a".into(), 2, window, later),
             None
         );
+    }
+    #[test]
+    fn shared_counts_round_retry_up() {
+        let remaining = Duration::from_millis(59_001);
+        assert_eq!(retry_after(10, 10, remaining), None);
+        assert_eq!(retry_after(11, 10, remaining), Some(60));
+        assert_eq!(retry_after(11, 10, Duration::ZERO), Some(1));
     }
 }

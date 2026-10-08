@@ -54,13 +54,16 @@ try {
   const port = await freePort()
   const baseURL = `http://127.0.0.1:${port}`
   // Closure above runs only after baseURL has been initialized.
-  const child = spawn('backend/target/debug/paramtune-api', [], { env: { ...process.env, NODE_ENV: 'production', TRUST_PROXY: 'true', HOST: '127.0.0.1', PORT: String(port), PUBLIC_ORIGIN: baseURL, CORS_ORIGIN: baseURL, REDIS_URL: process.env.E2E_REDIS_URL || process.env.REDIS_URL || 'redis://127.0.0.1:6379/15', OIDC_ISSUER: issuer, OIDC_CLIENT_ID: 'paramtune', OIDC_CLIENT_SECRET: 'test-secret', OIDC_ADMIN_GROUP: 'paramtune-admin', OIDC_ROLES_CLAIM: 'groups', OIDC_SCOPES: 'openid profile email groups', OIDC_CA_CERT_FILE: join(directory, 'tls.crt') }, stdio: 'inherit' })
+  const child = spawn('backend/target/debug/paramtune-api', [], { env: { ...process.env, NODE_ENV: 'production', TRUST_PROXY: 'true', HOST: '127.0.0.1', PORT: String(port), PUBLIC_ORIGIN: baseURL, CORS_ORIGIN: baseURL, REDIS_URL: process.env.E2E_REDIS_URL || process.env.REDIS_URL || 'redis://127.0.0.1:6379/15', OIDC_ISSUER: issuer, OIDC_CLIENT_ID: 'paramtune', OIDC_CLIENT_SECRET: 'test-secret', OIDC_ADMIN_GROUP: 'paramtune-admin', OIDC_ROLES_CLAIM: 'groups', OIDC_SCOPES: 'openid profile email groups', OIDC_CA_CERT_FILE: join(directory, 'tls.crt'), RATE_LIMIT_PREFIX: `ratelimit:test-oidc-${subject}` }, stdio: 'inherit' })
   children.push(child)
   for (let attempt = 0; ; attempt++) {
     try { if ((await fetch(`${baseURL}/healthz`)).ok) break } catch { /* starting */ }
     if (attempt > 100 || child.exitCode !== null) throw new Error('Rust auth test server did not start')
     await new Promise((resolve) => setTimeout(resolve, 50))
   }
+  const readiness = await fetch(`${baseURL}/readyz`)
+  assert.equal(readiness.status, 200)
+  assert.deepEqual(await readiness.json(), { ok: true, checks: { redis: 'ok', oidc: 'ok' } })
   let requestNumber = 0
   async function request(path, { cookie, body, ...options } = {}) {
     return fetch(`${baseURL}${path}`, { redirect: 'manual', ...options, headers: { 'X-Forwarded-For': `192.0.2.${++requestNumber}`, ...(cookie ? { Cookie: cookie } : {}), ...(body ? { 'Content-Type': 'application/json' } : {}), ...options.headers }, ...(body ? { body: JSON.stringify(body) } : {}) })

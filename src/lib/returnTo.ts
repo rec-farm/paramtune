@@ -5,8 +5,10 @@ export function safeReturnTo(raw: string | null, origin = window.location.origin
   if (!raw || !raw.startsWith('/') || unsafe) return '/dashboard'
   try {
     const url = new URL(raw, origin)
-    if (url.origin !== origin || url.pathname.startsWith('/api/')) return '/dashboard'
-    return url.pathname + url.search + url.hash
+    const path = url.pathname + url.search + url.hash
+    // Normalizing dot segments can turn '/.//evil.example' into the network path '//evil.example'.
+    if (url.origin !== origin || path.startsWith('//') || url.pathname.startsWith('/api/')) return '/dashboard'
+    return path
   } catch {
     return '/dashboard'
   }

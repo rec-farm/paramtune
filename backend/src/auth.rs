@@ -26,10 +26,10 @@ fn setting(key: &str, default: &str) -> String {
         .filter(|v| !v.is_empty())
         .unwrap_or_else(|| default.into())
 }
-fn random() -> String {
+pub(crate) fn random() -> String {
     URL_SAFE_NO_PAD.encode(rand::random::<[u8; 32]>())
 }
-fn hash(value: &str) -> String {
+pub(crate) fn hash(value: &str) -> String {
     format!("{:x}", Sha256::digest(value.as_bytes()))
 }
 fn unauthorized() -> ApiError {

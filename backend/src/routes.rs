@@ -1,7 +1,7 @@
 use crate::{
     AppState, diff,
     error::{ApiError, Result},
-    schema,
+    schema, tokens,
 };
 use axum::{
     Json, Router,
@@ -40,6 +40,9 @@ fn name(value: &Value, version: bool) -> Result<String> {
                 if version { "version" } else { "platform" }
             ))
         })
+}
+pub(crate) fn platform_name(value: &Value) -> Result<String> {
+    name(value, false)
 }
 fn semver(value: &str) -> bool {
     // node-semver's Rust parser is lenient about leading zeroes. Writes must
@@ -381,6 +384,21 @@ async fn ui(State(state): State<AppState>, request: Request) -> Result<Response>
                 )
             }
         }
+        ["tokens"] if method_name == "GET" || method_name == "HEAD" => {
+            Ok(Json(tokens::list(&state).await?).into_response())
+        }
+        ["tokens"] if method_name == "POST" => {
+            let data = body(request, "Body must be a JSON object").await?;
+            Ok((
+                StatusCode::CREATED,
+                Json(tokens::create(&state, &session, &data).await?),
+            )
+                .into_response())
+        }
+        ["tokens", id] if method_name == "DELETE" => {
+            tokens::revoke(&state, &session, id).await?;
+            Ok(ok(false))
+        }
         ["validate"] if method_name == "POST" => {
             let data = body(request, "Body must be a JSON object").await?;
             Ok(Json(schema::validate(&state.0.store, &content(&data)?).await?).into_response())
@@ -414,6 +432,8 @@ async fn ui(State(state): State<AppState>, request: Request) -> Result<Response>
         | ["platforms"]
         | ["platforms", _, "versions"]
         | ["platforms", _, "versions", _, "schema"]
+        | ["tokens"]
+        | ["tokens", _]
         | ["validate"]
         | ["compare"] => Err(ApiError::missing("Not found")),
         _ => Err(ApiError::missing("Not found")),
@@ -432,7 +452,21 @@ async fn public_api(State(state): State<AppState>, request: Request) -> Result<R
     if !(matches!(method_name.as_str(), "GET" | "HEAD") || method_name == "POST" && writable) {
         return Err(method());
     }
-    let session = state.session(request.headers()).await?;
+    // Services read with a bearer API token; people use their session for reads and writes.
+    let grant = match tokens::bearer(request.headers()) {
+        Some(token) => Some(tokens::authenticate(&state, token).await?),
+        None => None,
+    };
+    if grant.is_some() && method_name == "POST" {
+        return Err(ApiError(
+            StatusCode::FORBIDDEN,
+            "API tokens are read-only".into(),
+        ));
+    }
+    let session = match grant {
+        Some(_) => Value::Null,
+        None => state.session(request.headers()).await?,
+    };
     let path = segments(request.uri().path()).map_err(|_| {
         let platform_raw = raw.split('/').next().unwrap_or_default();
         let label = if segments(platform_raw).is_err() {
@@ -444,9 +478,18 @@ async fn public_api(State(state): State<AppState>, request: Request) -> Result<R
     })?;
     let p = path.get(1).map(String::as_str).unwrap_or_default();
     if is_schemas {
-        return Ok(Json(state.0.store.platforms().await?).into_response());
+        let mut platforms = state.0.store.platforms().await?;
+        if let Some(grant) = &grant {
+            platforms
+                .retain(|platform| grant.allows(platform["name"].as_str().unwrap_or_default()));
+        }
+        return Ok(Json(platforms).into_response());
     }
     legacy_name(p, false)?;
+    if grant.as_ref().is_some_and(|grant| !grant.allows(p)) {
+        // Out-of-scope platforms look absent, so a token can't probe for names.
+        return Err(ApiError::missing("Platform not found"));
+    }
     if method_name == "POST" {
         let data = parse_body(request).await?;
         if !versions && !data.is_object() && !data.is_array() {

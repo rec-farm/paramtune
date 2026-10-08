@@ -12,6 +12,10 @@ const env = {
   REDIS_URL: process.env.E2E_REDIS_URL || 'redis://127.0.0.1:6379/15',
   E2E_SETUP_URL: setupURL, E2E_BASE_URL: baseURL, E2E_AUTH_URL: authURL, E2E_PRODUCTION: '1',
   CORS_ORIGIN: baseURL,
+  // Rate limits live in shared Redis; a per-run prefix keeps earlier runs from throttling this one.
+  RATE_LIMIT_PREFIX: `ratelimit:e2e-${process.pid}-${Date.now()}`,
+  // All three servers share one API bucket from 127.0.0.1; the auth limit keeps its default.
+  RATE_LIMIT_API_MAX: '10000',
 }
 const children = []
 let timedOut = false

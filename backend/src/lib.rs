@@ -19,7 +19,7 @@ use error::{ApiError, Result};
 use serde_json::{Value, json};
 use std::{
     collections::HashMap,
-    sync::{Arc, Mutex},
+    sync::{Arc, Mutex, PoisonError},
     time::{Duration, Instant},
 };
 use tower::ServiceExt;
@@ -31,6 +31,26 @@ pub struct Config {
     pub production: bool,
     pub trust_proxy: bool,
     pub client_dir: String,
+    /// Redis key prefix for shared rate-limit counters.
+    pub rate_limit_prefix: String,
+    /// Requests per client IP per 60 seconds on the API.
+    pub rate_limit_api_max: u32,
+    /// Sign-in requests per client IP per 15 minutes.
+    pub rate_limit_auth_max: u32,
+}
+impl Default for Config {
+    fn default() -> Self {
+        Self {
+            public_origin: "http://localhost:3000".into(),
+            cors_origin: "http://localhost:3000".into(),
+            production: true,
+            trust_proxy: false,
+            client_dir: "dist/client".into(),
+            rate_limit_prefix: "ratelimit".into(),
+            rate_limit_api_max: 100,
+            rate_limit_auth_max: 10,
+        }
+    }
 }
 #[derive(Clone)]
 pub struct AppState(pub Arc<Inner>);
@@ -38,7 +58,10 @@ pub struct Inner {
     pub store: store::Store,
     pub config: Config,
     pub client: reqwest::Client,
+    /// Per-process limiter used only while the shared Redis limiter is unavailable.
     pub rates: Mutex<HashMap<String, (u32, Instant)>>,
+    pub rate_backoff: Mutex<Option<Instant>>,
+    pub oidc_ready_until: Mutex<Option<Instant>>,
 }
 impl AppState {
     pub fn new(
@@ -59,6 +82,8 @@ impl AppState {
             config,
             client,
             rates: Mutex::new(HashMap::new()),
+            rate_backoff: Mutex::new(None),
+            oidc_ready_until: Mutex::new(None),
         })))
     }
     pub async fn session(&self, headers: &HeaderMap) -> Result<Value> {
@@ -68,6 +93,7 @@ impl AppState {
 pub fn router(state: AppState) -> Router {
     Router::new()
         .route("/healthz", get(health))
+        .route("/readyz", get(ready))
         .route("/api/auth/{*path}", any(auth::handle))
         .route("/api/auth", any(auth::handle))
         .nest("/api/_ui/v1", routes::dashboard())
@@ -81,6 +107,76 @@ pub fn router(state: AppState) -> Router {
 }
 async fn health(State(_state): State<AppState>) -> Response {
     axum::Json(json!({"ok":true,"backend":"rust"})).into_response()
+}
+/// Successful provider discovery is reused briefly so frequent probes do not hammer Handstamp.
+const OIDC_READY_TTL: Duration = Duration::from_secs(30);
+async fn oidc_ready(state: &AppState, issuer: &str) -> bool {
+    let now = Instant::now();
+    let cached = *state
+        .0
+        .oidc_ready_until
+        .lock()
+        .unwrap_or_else(PoisonError::into_inner);
+    if cached.is_some_and(|until| until > now) {
+        return true;
+    }
+    let issuer = issuer.trim_end_matches('/');
+    let check = async {
+        let url = url::Url::parse(issuer).ok()?;
+        if url.scheme() != "https" && state.0.config.production {
+            return None;
+        }
+        let document: Value = state
+            .0
+            .client
+            .get(format!("{issuer}/.well-known/openid-configuration"))
+            .timeout(Duration::from_secs(2))
+            .send()
+            .await
+            .ok()?
+            .error_for_status()
+            .ok()?
+            .json()
+            .await
+            .ok()?;
+        Some(document["issuer"].as_str()?.trim_end_matches('/') == issuer)
+    };
+    let ready = check.await == Some(true);
+    if ready {
+        *state
+            .0
+            .oidc_ready_until
+            .lock()
+            .unwrap_or_else(PoisonError::into_inner) = Some(now + OIDC_READY_TTL);
+    }
+    ready
+}
+/// Readiness: Redis answers and, when configured, Handstamp discovery is reachable. Failures expose only the check name.
+async fn ready(State(state): State<AppState>) -> Response {
+    let issuer = std::env::var("OIDC_ISSUER").unwrap_or_default();
+    let (redis, oidc) = tokio::join!(state.0.store.ping(Duration::from_secs(1)), async {
+        (!issuer.is_empty()).then_some(oidc_ready(&state, &issuer).await)
+    });
+    let status = |ok: bool| if ok { "ok" } else { "unavailable" };
+    let mut checks = serde_json::Map::new();
+    checks.insert("redis".into(), status(redis).into());
+    if let Some(oidc) = oidc {
+        checks.insert("oidc".into(), status(oidc).into());
+    }
+    let ok = redis && oidc != Some(false);
+    if !ok {
+        tracing::warn!(?checks, "Readiness check failed");
+    }
+    (
+        if ok {
+            StatusCode::OK
+        } else {
+            StatusCode::SERVICE_UNAVAILABLE
+        },
+        [("cache-control", "no-store")],
+        axum::Json(json!({"ok":ok,"checks":checks})),
+    )
+        .into_response()
 }
 async fn frontend(State(state): State<AppState>, request: Request) -> Response {
     let path = request.uri().path().to_owned();

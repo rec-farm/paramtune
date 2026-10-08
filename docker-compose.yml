@@ -32,6 +32,8 @@ services:
       - OIDC_ROLES_CLAIM=${OIDC_ROLES_CLAIM:-}
       - OIDC_ADMIN_GROUP=${OIDC_ADMIN_GROUP:-}
       - OIDC_DISPLAY_NAME=${OIDC_DISPLAY_NAME:-}
+      - RATE_LIMIT_API_MAX=${RATE_LIMIT_API_MAX:-}
+      - RATE_LIMIT_AUTH_MAX=${RATE_LIMIT_AUTH_MAX:-}
     depends_on:
       redis:
         condition: service_healthy

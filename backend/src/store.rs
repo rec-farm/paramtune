@@ -1,6 +1,7 @@
 use crate::error::{ApiError, Result};
 use redis::aio::ConnectionManager;
 use serde_json::Value;
+use std::time::Duration;
 use tokio::sync::OnceCell;
 
 pub struct Store {
@@ -29,6 +30,28 @@ impl Store {
             })
             .await?
             .clone())
+    }
+    /// Bounded PING for readiness probes; any error or delay reports not ready.
+    pub async fn ping(&self, timeout: Duration) -> bool {
+        let ping = async {
+            let pong: String = redis::cmd("PING")
+                .query_async(&mut self.connection().await?)
+                .await?;
+            Ok::<_, ApiError>(pong == "PONG")
+        };
+        matches!(tokio::time::timeout(timeout, ping).await, Ok(Ok(true)))
+    }
+    /// Counts one hit in a fixed window shared by all replicas; returns the count and remaining milliseconds.
+    pub async fn hit(&self, key: &str, window: Duration) -> Result<(u64, u64)> {
+        // INCR and expiry are atomic; a key that somehow lost its TTL is repaired instead of locking forever.
+        let script = redis::Script::new(
+            "local n = redis.call('INCR', KEYS[1]); local ttl = redis.call('PTTL', KEYS[1]); if ttl < 0 then redis.call('PEXPIRE', KEYS[1], ARGV[1]); ttl = tonumber(ARGV[1]) end; return {n, ttl}",
+        );
+        Ok(script
+            .key(key)
+            .arg(window.as_millis() as u64)
+            .invoke_async(&mut self.connection().await?)
+            .await?)
     }
     pub async fn latest(&self, key: &str) -> Result<Option<Value>> {
         let rows: Vec<String> = redis::cmd("ZREVRANGEBYSCORE")

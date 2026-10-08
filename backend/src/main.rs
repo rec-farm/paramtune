@@ -6,6 +6,13 @@ fn setting(name: &str, default: &str) -> String {
         .filter(|v| !v.is_empty())
         .unwrap_or_else(|| default.into())
 }
+fn limit(name: &str, default: &str) -> Result<u32, String> {
+    setting(name, default)
+        .parse()
+        .ok()
+        .filter(|v| *v > 0)
+        .ok_or_else(|| format!("{name} must be a positive integer"))
+}
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn std::error::Error>> {
     tracing_subscriber::fmt()
@@ -22,6 +29,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
         production,
         trust_proxy: setting("TRUST_PROXY", "false") == "true",
         client_dir: setting("CLIENT_DIR", "dist/client"),
+        rate_limit_prefix: setting("RATE_LIMIT_PREFIX", "ratelimit"),
+        rate_limit_api_max: limit("RATE_LIMIT_API_MAX", "100")?,
+        rate_limit_auth_max: limit("RATE_LIMIT_AUTH_MAX", "10")?,
     };
     let redis_url = match env::var("REDIS_URL").ok().filter(|v| !v.is_empty()) {
         Some(url) => url,

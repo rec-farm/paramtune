@@ -20,7 +20,9 @@ Keep the registered Handstamp callback at PUBLIC_ORIGIN/api/auth/oauth2/callback
 
 Existing Better Auth sessions are not migrated: users sign in again. Redis configuration records, history, and audit data remain compatible. Historical authors keep their stored identity; new author IDs derive from issuer and subject. Keep the old SQLite volume separately for rollback.
 
-Persist Redis, which now stores authentication and revocation state too. Losing auth state signs users out. Replicas share sessions when using the same Redis database and public origin. /healthz checks process readiness, not Redis or provider connectivity.
+Persist Redis, which now stores authentication and revocation state too. Losing auth state signs users out. Replicas share sessions when using the same Redis database and public origin. /healthz reports process liveness only. /readyz returns 200 when Redis answers PING within one second and, when OIDC_ISSUER is set, Handstamp discovery is reachable (successes are cached for 30 seconds); otherwise it returns 503 naming the failed check without error details.
+
+Rate limits (RATE_LIMIT_AUTH_MAX sign-in requests per 15 minutes, default 10; RATE_LIMIT_API_MAX API requests per minute, default 100; per client IP) are fixed-window counters in Redis under RATE_LIMIT_PREFIX, so replicas share them. If Redis fails or takes longer than 500 ms, each process falls back to its own in-memory limiter and retries Redis after five seconds.
 
 ## Verification and rollback
 

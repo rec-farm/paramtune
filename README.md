@@ -81,6 +81,9 @@ Rust stores authentication sessions in Redis; no SQLite migration is needed.
 - `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD`, `REDIS_DB` – Individual Redis settings when URL is not provided
 - `PUBLIC_ORIGIN` – Public application origin
 - `OIDC_ISSUER`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET` – Handstamp application credentials
+- `RATE_LIMIT_API_MAX` – API requests per client IP per 60 seconds (default 100)
+- `RATE_LIMIT_AUTH_MAX` – Sign-in requests per client IP per 15 minutes (default 10)
+- `RATE_LIMIT_PREFIX` – Redis key prefix for rate-limit counters shared by replicas (default `ratelimit`)
 
 ## Features
 

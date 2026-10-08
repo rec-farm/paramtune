@@ -4,7 +4,12 @@ use crate::{
 };
 use node_semver::{Range, Version};
 use serde_json::{Value, json};
-use std::{collections::HashSet, future::Future, pin::Pin};
+use std::{
+    collections::HashSet,
+    future::Future,
+    pin::Pin,
+    sync::{Mutex, PoisonError},
+};
 
 pub fn key(platform: &str, version: &str) -> String {
     format!("schemas:{platform}:{version}")
@@ -119,31 +124,6 @@ pub async fn blocking_dependents(
     }
     Ok(found)
 }
-/// Every platform whose content `content`'s output merges in, itself first. Computed
-/// with the same platform snapshot as the output, so it matches what was merged even
-/// if version ranges later resolve elsewhere.
-async fn sources(
-    store: &Store,
-    platforms: &[Value],
-    platform: &str,
-    content: &Value,
-) -> Result<Vec<String>> {
-    let mut found = vec![platform.to_owned()];
-    let mut visited = HashSet::new();
-    let mut pending = dependencies(content);
-    while let Some(reference) = pending.pop() {
-        let (p, v) = resolve(&reference, platforms)?;
-        if !found.contains(&p) {
-            found.push(p.clone());
-        }
-        if visited.insert(format!("{p}/{v}"))
-            && let Some(latest) = store.latest(&key(&p, &v)).await?
-        {
-            pending.extend(dependencies(&latest["content"]));
-        }
-    }
-    Ok(found)
-}
 /// The platforms a stored revision's output came from. Revisions saved before this was
 /// recorded are only known when they extend nothing.
 pub fn stored_sources(platform: &str, record: &Value) -> Option<Vec<String>> {
@@ -193,12 +173,14 @@ pub fn merge(mut base: Value, overrides: Value) -> Value {
     }
     base
 }
+/// Resolves `@extends` in `node`, adding each platform it merges in to `sources`.
 fn process<'a>(
     store: &'a Store,
     node: Value,
     visited: HashSet<String>,
     platforms: &'a [Value],
     depth: usize,
+    sources: &'a Mutex<Vec<String>>,
 ) -> Pin<Box<dyn Future<Output = Result<Value>> + Send + 'a>> {
     Box::pin(async move {
         if depth > 128 {
@@ -208,7 +190,10 @@ fn process<'a>(
             Value::Array(items) => {
                 let mut output = Vec::new();
                 for item in items {
-                    output.push(process(store, item, visited.clone(), platforms, depth + 1).await?);
+                    output.push(
+                        process(store, item, visited.clone(), platforms, depth + 1, sources)
+                            .await?,
+                    );
                 }
                 Ok(Value::Array(output))
             }
@@ -226,21 +211,41 @@ fn process<'a>(
                             "Circular dependency detected at {id}"
                         )));
                     }
+                    {
+                        let mut found = sources.lock().unwrap_or_else(PoisonError::into_inner);
+                        if !found.contains(&platform) {
+                            found.push(platform.clone());
+                        }
+                    }
                     let base = store
                         .latest(&key(&platform, &version))
                         .await?
                         .and_then(|v| v.get("content").cloned())
                         .unwrap_or(json!({}));
-                    let base = process(store, base, child.clone(), platforms, depth + 1).await?;
+                    let base =
+                        process(store, base, child.clone(), platforms, depth + 1, sources).await?;
                     map.shift_remove("@extends");
-                    let overrides =
-                        process(store, Value::Object(map), child, platforms, depth + 1).await?;
+                    let overrides = process(
+                        store,
+                        Value::Object(map),
+                        child,
+                        platforms,
+                        depth + 1,
+                        sources,
+                    )
+                    .await?;
                     Ok(merge(base, overrides))
                 } else {
                     for value in map.values_mut() {
-                        *value =
-                            process(store, value.clone(), visited.clone(), platforms, depth + 1)
-                                .await?;
+                        *value = process(
+                            store,
+                            value.clone(),
+                            visited.clone(),
+                            platforms,
+                            depth + 1,
+                            sources,
+                        )
+                        .await?;
                     }
                     Ok(Value::Object(map))
                 }
@@ -298,8 +303,18 @@ fn save_tree<'a>(
             .iter()
             .map(|reference| resolve(reference, platforms))
             .collect::<Result<Vec<_>>>()?;
-        let output = process(store, content.clone(), HashSet::new(), platforms, 0).await?;
-        let sources = sources(store, platforms, &platform, &content).await?;
+        // Sources come from the same reads that build the output, so they always match it.
+        let sources = Mutex::new(vec![platform.clone()]);
+        let output = process(
+            store,
+            content.clone(),
+            HashSet::new(),
+            platforms,
+            0,
+            &sources,
+        )
+        .await?;
+        let sources = sources.into_inner().unwrap_or_else(PoisonError::into_inner);
         let mut value =
             json!({"dependencies": deps, "content": content, "output": output, "sources": sources});
         if !author.is_null() {

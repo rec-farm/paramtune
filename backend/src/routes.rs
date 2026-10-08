@@ -227,6 +227,20 @@ async fn exists(state: &AppState, p: &str, v: &str) -> Result<()> {
     }
     Ok(())
 }
+/// Refuses to delete versions that other platforms' schemas still extend.
+async fn in_use(state: &AppState, p: &str, versions: &[String]) -> Result<()> {
+    let dependents = schema::blocking_dependents(&state.0.store, p, versions).await?;
+    if dependents.is_empty() {
+        return Ok(());
+    }
+    Err(ApiError(
+        StatusCode::CONFLICT,
+        format!(
+            "Still extended by {}. Remove those @extends references first.",
+            dependents.join(", ")
+        ),
+    ))
+}
 async fn audit(state: &AppState, session: &Value, action: &str, p: &str, v: Option<&str>) {
     let mut entry = json!({"action":action,"platform":p,"userId":session["user"]["id"],"userEmail":session["user"]["email"]});
     if let Some(v) = v {
@@ -274,6 +288,7 @@ async fn ui(State(state): State<AppState>, request: Request) -> Result<Response>
     let method_name = request.method().as_str().to_owned();
     match path.as_slice() {
         ["tokens", ..] => require_manage(&session)?,
+        _ if method_name == "DELETE" => require_manage(&session)?,
         // Validation and comparison are reads that happen to POST a body.
         ["validate"] | ["compare"] => {}
         _ if !matches!(method_name.as_str(), "GET" | "HEAD") => require_write(&session)?,
@@ -350,6 +365,40 @@ async fn ui(State(state): State<AppState>, request: Request) -> Result<Response>
                 .await?;
             audit(&state, &session, "create", &p, None).await;
             Ok(ok(true))
+        }
+        ["platforms", p] if method_name == "DELETE" => {
+            let p = name(&Value::from(*p), false)?;
+            let record = platform(&state, &p).await?;
+            let versions: Vec<String> = record["versions"]
+                .as_array()
+                .into_iter()
+                .flatten()
+                .filter_map(|v| v.as_str().map(str::to_owned))
+                .collect();
+            in_use(&state, &p, &versions).await?;
+            schema::remove(&state.0.store, &p, &versions).await?;
+            state.0.store.delete(&[format!("platforms:{p}")]).await?;
+            audit(&state, &session, "delete", &p, None).await;
+            Ok(ok(false))
+        }
+        ["platforms", p, "versions", v] if method_name == "DELETE" => {
+            let p = name(&Value::from(*p), false)?;
+            let v = name(&Value::from(*v), true)?;
+            exists(&state, &p, &v).await?;
+            let versions = [v.clone()];
+            in_use(&state, &p, &versions).await?;
+            let mut record = platform(&state, &p).await?;
+            if let Some(list) = record["versions"].as_array_mut() {
+                list.retain(|version| version != v.as_str());
+            }
+            state
+                .0
+                .store
+                .append(&format!("platforms:{p}"), &record)
+                .await?;
+            schema::remove(&state.0.store, &p, &versions).await?;
+            audit(&state, &session, "delete", &p, Some(&v)).await;
+            Ok(ok(false))
         }
         ["platforms", p, "versions"] if method_name == "POST" => {
             let p = name(&Value::from(*p), false)?;
@@ -439,7 +488,9 @@ async fn ui(State(state): State<AppState>, request: Request) -> Result<Response>
         }
         ["overview"]
         | ["platforms"]
+        | ["platforms", _]
         | ["platforms", _, "versions"]
+        | ["platforms", _, "versions", _]
         | ["platforms", _, "versions", _, "schema"]
         | ["tokens"]
         | ["tokens", _]

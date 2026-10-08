@@ -86,6 +86,59 @@ pub fn resolve(reference: &str, platforms: &[Value]) -> Result<(String, String)>
             .into(),
     ))
 }
+fn dependents_key(platform: &str, version: &str) -> String {
+    format!("schemas:dependents:{platform}:{version}")
+}
+/// Saved schemas outside `platform` whose `@extends` currently resolve to one of `versions`.
+pub async fn blocking_dependents(
+    store: &Store,
+    platform: &str,
+    versions: &[String],
+) -> Result<Vec<String>> {
+    let platforms = store.platforms().await?;
+    let mut found = Vec::new();
+    for version in versions {
+        for dependent in store.members(&dependents_key(platform, version)).await? {
+            let Some((p, v)) = dependent.split_once('/') else {
+                continue;
+            };
+            if (p == platform && versions.iter().any(|own| own == v)) || found.contains(&dependent)
+            {
+                continue;
+            }
+            // The set can hold stale members; trust only references that still resolve here.
+            if let Some(latest) = store.latest(&key(p, v)).await?
+                && dependencies(&latest["content"]).iter().any(|reference| {
+                    resolve(reference, &platforms)
+                        .is_ok_and(|(rp, rv)| rp == platform && &rv == version)
+                })
+            {
+                found.push(dependent);
+            }
+        }
+    }
+    Ok(found)
+}
+/// Deletes the history of each version and its dependency bookkeeping.
+pub async fn remove(store: &Store, platform: &str, versions: &[String]) -> Result<()> {
+    let platforms = store.platforms().await?;
+    let mut keys = Vec::new();
+    for version in versions {
+        let id = format!("{platform}/{version}");
+        if let Some(latest) = store.latest(&key(platform, version)).await? {
+            for reference in dependencies(&latest["content"]) {
+                if let Ok((p, v)) = resolve(&reference, &platforms) {
+                    store
+                        .membership("SREM", &dependents_key(&p, &v), &id)
+                        .await?;
+                }
+            }
+        }
+        keys.push(key(platform, version));
+        keys.push(dependents_key(platform, version));
+    }
+    store.delete(&keys).await
+}
 pub fn merge(mut base: Value, overrides: Value) -> Value {
     if let (Some(base), Some(overrides)) = (base.as_object_mut(), overrides.as_object()) {
         for (key, value) in overrides {

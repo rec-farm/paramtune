@@ -1,4 +1,6 @@
-import { useLoaderData, useNavigate, useRevalidator } from 'react-router'
+import { useLoaderData, useNavigate, useRevalidator, useRouteLoaderData } from 'react-router'
+import type { DashboardData } from '@/client/router'
+import DeleteZone from '@/components/DeleteZone'
 import { api, UI_API } from '@/client/api'
 import type { Platform } from '@/shared/contracts'
 import PageTitle from '@/components/PageTitle'
@@ -41,6 +43,7 @@ export default function PlatformPage() {
   const platformName = platform?.name ?? ''
   const navigate = useNavigate()
   const revalidator = useRevalidator()
+  const { permissions } = useRouteLoaderData('dashboard') as DashboardData
 
   if (!platform) {
     return (
@@ -126,6 +129,20 @@ export default function PlatformPage() {
       <Card id="add-version" title="Add a version">
         <AddVersionForm action={createVersion} initialVersion={platform.versions.length === 0 ? '1.0.0' : ''} />
       </Card>
+
+      {permissions.manage && (
+        <DeleteZone
+          noun="platform"
+          confirmName={platformName}
+          description={`Removes ${platformName}, its ${platform.versions.length === 1 ? 'version' : `${platform.versions.length} versions`} and their history. Services reading it will get 404. This can't be undone.`}
+          onDelete={async () => {
+            await api(`${UI_API}/platforms/${encodeURIComponent(platformName)}`, { method: 'DELETE', headers: { 'Content-Type': 'application/json' } })
+            await navigate('/dashboard')
+            // Refresh the sidebar's platform list, which plain navigation keeps.
+            await revalidator.revalidate()
+          }}
+        />
+      )}
     </div>
   )
 }

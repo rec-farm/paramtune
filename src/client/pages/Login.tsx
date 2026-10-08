@@ -1,4 +1,5 @@
 import { Suspense, useState } from 'react'
+import { safeReturnTo } from '@/lib/returnTo'
 import { useSearchParams, useLoaderData } from 'react-router'
 import type { LoginProviders } from '@/shared/auth'
 import { Loader2 } from 'lucide-react'
@@ -84,8 +85,7 @@ type Provider = typeof OIDC_PROVIDER_ID
 
 function LoginContent({ oidc, development }: LoginProps) {
   const [searchParams] = useSearchParams()
-  const requestedPath = searchParams.get('returnTo') || '/dashboard'
-  const returnTo = requestedPath.startsWith('/') && !requestedPath.startsWith('//') && !requestedPath.includes('\\') ? requestedPath : '/dashboard'
+  const returnTo = safeReturnTo(searchParams.get('returnTo'))
   const { session, isPending } = useSession()
   const [pending, setPending] = useState<Provider | null>(null)
   const [error, setError] = useState<string | null>(() =>

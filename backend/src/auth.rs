@@ -82,7 +82,8 @@ fn safe_return(value: Option<&str>) -> &str {
         .filter(|v| {
             v.starts_with('/')
                 && !v.starts_with("//")
-                && !v.contains(['\\', '\r', '\n'])
+                // Browsers drop tabs and newlines while parsing, so "/\t/evil" becomes "//evil".
+                && !v.chars().any(|c| c == '\\' || c.is_control())
                 && !v.starts_with("/api/")
         })
         .unwrap_or("/dashboard")
@@ -640,6 +641,8 @@ mod tests {
             "https://evil.example",
             "/api/auth/sign-out",
             "/dashboard\r\nLocation: evil",
+            "/\t/evil.example",
+            "/\u{7f}/evil.example",
         ] {
             assert_eq!(safe_return(Some(value)), "/dashboard");
         }

@@ -167,6 +167,65 @@ fn grant(role: &str, editor_group: bool, admin_group: bool) -> Permissions {
     let manage = role == "admin" || write && !admin_group;
     Permissions { write, manage }
 }
+/// `OIDC_PLATFORM_EDITORS`, e.g. `ios:team-ios,team-mobile;web:team-web`: platforms whose
+/// writes are limited to members of the listed groups (and admins).
+fn platform_rules(raw: &str) -> Vec<(String, Vec<String>)> {
+    raw.split(';')
+        .filter_map(|rule| {
+            let (platform, groups) = rule.split_once(':')?;
+            let groups: Vec<String> = groups
+                .split(',')
+                .map(str::trim)
+                .filter(|g| !g.is_empty())
+                .map(str::to_owned)
+                .collect();
+            let platform = platform.trim();
+            (!platform.is_empty() && !groups.is_empty()).then(|| (platform.to_owned(), groups))
+        })
+        .collect()
+}
+fn may_write_platform(session: &Value, rules: &[(String, Vec<String>)], platform: &str) -> bool {
+    let user = &session["user"];
+    user["role"] == "admin"
+        || rules
+            .iter()
+            .filter(|(p, _)| p == platform)
+            .all(|(_, groups)| {
+                // Sessions from before groups were recorded have none, so they fail closed.
+                user["groups"].as_array().is_some_and(|mine| {
+                    mine.iter()
+                        .any(|g| g.as_str().is_some_and(|g| groups.iter().any(|r| r == g)))
+                })
+            })
+}
+/// Restricted platforms this session may not write, for the dashboard to show as view-only.
+pub fn restricted_platforms(session: &Value) -> Vec<String> {
+    let rules = platform_rules(&setting("OIDC_PLATFORM_EDITORS", ""));
+    let mut restricted: Vec<String> = rules
+        .iter()
+        .map(|(p, _)| p.clone())
+        .filter(|p| !may_write_platform(session, &rules, p))
+        .collect();
+    restricted.dedup();
+    restricted
+}
+/// Writes to one platform need the general write permission plus, when the platform
+/// is listed in `OIDC_PLATFORM_EDITORS`, membership in one of its groups.
+pub fn require_platform_write(session: &Value, platform: &str) -> Result<()> {
+    require_write(session)?;
+    if may_write_platform(
+        session,
+        &platform_rules(&setting("OIDC_PLATFORM_EDITORS", "")),
+        platform,
+    ) {
+        Ok(())
+    } else {
+        Err(ApiError(
+            StatusCode::FORBIDDEN,
+            format!("Only this platform's editors can change {platform}"),
+        ))
+    }
+}
 pub fn require_write(session: &Value) -> Result<()> {
     if permissions(session).write {
         Ok(())
@@ -422,7 +481,12 @@ async fn callback(state: &AppState, request: Request) -> Result<Response> {
         "member"
     };
     let subject = subject_key(&setting("OIDC_ISSUER", ""), sub);
-    let user = json!({"id":subject,"name":profile["name"].as_str().or(profile["preferred_username"].as_str()).unwrap_or(""),"email":profile["email"].as_str().unwrap_or(""),"image":profile["picture"],"role":role});
+    let groups: Vec<&str> = match roles {
+        Value::Array(values) => values.iter().filter_map(Value::as_str).collect(),
+        Value::String(value) => value.split_whitespace().collect(),
+        _ => Vec::new(),
+    };
+    let user = json!({"id":subject,"name":profile["name"].as_str().or(profile["preferred_username"].as_str()).unwrap_or(""),"email":profile["email"].as_str().unwrap_or(""),"image":profile["picture"],"role":role,"groups":groups});
     let mut response = issue(
         state,
         user,
@@ -545,7 +609,7 @@ pub async fn handle(State(state): State<AppState>, request: Request) -> Result<R
     let path = request.uri().path();
     match (request.method(),path) {
         (&Method::GET,"/api/auth/providers") => Ok(Json(json!({"oidc":if setting("OIDC_ISSUER","").is_empty() { Value::Null } else { json!({"label":setting("OIDC_DISPLAY_NAME","Handstamp")}) },"development":!state.0.config.production})).into_response()),
-        (&Method::GET,"/api/auth/get-session") => match session(&state,request.headers()).await { Ok(mut row) => { let permissions = permissions(&row); row["permissions"] = json!({"write":permissions.write,"manage":permissions.manage}); Ok(Json(row).into_response()) }, Err(error) if error.0 == StatusCode::UNAUTHORIZED => Ok(Json(Value::Null).into_response()), Err(error) => Err(error) },
+        (&Method::GET,"/api/auth/get-session") => match session(&state,request.headers()).await { Ok(mut row) => { let permissions = permissions(&row); row["permissions"] = json!({"write":permissions.write,"manage":permissions.manage,"restricted":restricted_platforms(&row)}); Ok(Json(row).into_response()) }, Err(error) if error.0 == StatusCode::UNAUTHORIZED => Ok(Json(Value::Null).into_response()), Err(error) => Err(error) },
         (&Method::POST,"/api/auth/sign-in/social") => {
             let bytes = axum::body::to_bytes(request.into_body(),16384).await.map_err(|_| ApiError::bad("Invalid sign-in body"))?;
             start(&state,serde_json::from_slice(&bytes).map_err(|_| ApiError::bad("Invalid sign-in JSON"))?).await
@@ -558,8 +622,9 @@ pub async fn handle(State(state): State<AppState>, request: Request) -> Result<R
             let bytes = axum::body::to_bytes(request.into_body(),1024).await.map_err(|_| ApiError::bad("Invalid sign-in body"))?;
             let body: Value = serde_json::from_slice(&bytes).unwrap_or(Value::Null);
             let role = match body["role"].as_str() { None => "admin", Some(role @ ("admin"|"editor"|"member")) => role, Some(_) => return Err(ApiError::bad("Unknown role")) };
+            let groups: Vec<&str> = body["groups"].as_array().into_iter().flatten().filter_map(Value::as_str).collect();
             let id = if role == "admin" { "development".to_owned() } else { format!("development-{role}") };
-            issue(&state,json!({"id":id,"name":setting("DEV_USER_NAME","Developer"),"email":setting("DEV_USER_EMAIL","developer@paramtune.local"),"role":role,"image":null}),&id,"",None).await
+            issue(&state,json!({"id":id,"name":setting("DEV_USER_NAME","Developer"),"email":setting("DEV_USER_EMAIL","developer@paramtune.local"),"role":role,"groups":groups,"image":null}),&id,"",None).await
         },
         _ => Err(ApiError::missing("Not found")),
     }
@@ -599,6 +664,23 @@ mod tests {
         assert_eq!(can("editor", true, false), (true, true));
         assert_eq!(can("editor", true, true), (true, false));
         assert_eq!(can("", false, false), (false, false));
+    }
+    #[test]
+    fn platform_editor_groups_gate_listed_platforms() {
+        let rules = platform_rules(" ios : team-ios, team-mobile ;web:team-web;bad;:x;empty:");
+        assert_eq!(rules.len(), 2);
+        let user = |role: &str, groups: Value| json!({"user":{"role":role,"groups":groups}});
+        let mobile = user("editor", json!(["team-mobile"]));
+        assert!(may_write_platform(&mobile, &rules, "ios"));
+        assert!(!may_write_platform(&mobile, &rules, "web"));
+        assert!(may_write_platform(&mobile, &rules, "android"));
+        assert!(may_write_platform(&user("admin", json!([])), &rules, "web"));
+        // Sessions created before groups were recorded fail closed.
+        assert!(!may_write_platform(
+            &json!({"user":{"role":"member"}}),
+            &rules,
+            "ios"
+        ));
     }
     #[test]
     fn ambiguous_cookies_are_rejected() {

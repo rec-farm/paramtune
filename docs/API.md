@@ -37,8 +37,9 @@ Roles come from the OIDC claim named by `OIDC_ROLES_CLAIM` (default `groups`) at
 | neither group set | everyone signed in can edit and administer (the default) |
 | `OIDC_EDITOR_GROUP` | only its members (and admins) can change configuration; others are view-only |
 | `OIDC_ADMIN_GROUP` | only its members can delete platforms or versions and manage API tokens |
+| `OIDC_PLATFORM_EDITORS` | e.g. `ios:team-ios,team-mobile;web:team-web` — writes to a listed platform also need one of its groups (admins are exempt); other platforms are unaffected |
 
-Group settings are read on every request, so setting one also narrows sessions that already exist. Forbidden requests return `403`. `GET /api/auth/get-session` includes `permissions: { write, manage }`.
+Group settings are read on every request, so setting one also narrows sessions that already exist. Forbidden requests return `403`. `GET /api/auth/get-session` includes `permissions: { write, manage, restricted }`, where `restricted` lists the platforms this user can't change. Groups are recorded at sign-in, so sessions from before platform groups were configured can't write restricted platforms until the user signs in again.
 
 ### Deleting (admin)
 

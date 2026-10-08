@@ -18,6 +18,8 @@ const env = {
   RATE_LIMIT_API_MAX: '10000', RATE_LIMIT_AUTH_MAX: '1000',
   // Members are read-only and editors can't administer; dev login defaults to admin.
   OIDC_EDITOR_GROUP: 'paramtune-editors', OIDC_ADMIN_GROUP: 'paramtune-admins',
+  // Only this group's members (and admins) may change the e2e-restricted platform.
+  OIDC_PLATFORM_EDITORS: 'e2e-restricted:team-restricted',
 }
 const children = []
 let timedOut = false

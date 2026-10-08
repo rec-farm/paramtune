@@ -270,28 +270,40 @@ async fn ui(State(state): State<AppState>, request: Request) -> Result<Response>
     match path.as_slice() {
         ["overview"] if method_name == "GET" || method_name == "HEAD" => {
             let platforms = state.0.store.platforms().await?;
-            let mut statuses = Vec::new();
-            let mut failed = 0;
-            for platform in &platforms {
-                for version in platform["versions"].as_array().into_iter().flatten() {
+            let pairs: Vec<(&str, &str)> = platforms
+                .iter()
+                .flat_map(|platform| {
                     let p = platform["name"].as_str().unwrap_or_default();
-                    let v = version.as_str().unwrap_or_default();
-                    match state.0.store.history(&schema::key(p, v), 1).await {
-                        Ok(history) => {
-                            let latest = history.first();
-                            let mut status = json!({"platform":p,"version":v,"hasContent":latest.and_then(|s| s["content"].as_object()).is_some_and(|c| !c.is_empty())});
+                    platform["versions"]
+                        .as_array()
+                        .into_iter()
+                        .flatten()
+                        .map(move |version| (p, version.as_str().unwrap_or_default()))
+                })
+                .collect();
+            let keys: Vec<String> = pairs.iter().map(|(p, v)| schema::key(p, v)).collect();
+            // One pipelined read instead of a round trip per version; a failed read
+            // degrades to an overview without statuses rather than an error page.
+            let (statuses, failed) = match state.0.store.latest_many(&keys).await {
+                Ok(latest) => (
+                    pairs
+                        .iter()
+                        .zip(latest)
+                        .map(|((p, v), latest)| {
+                            let mut status = json!({"platform":p,"version":v,"hasContent":latest.as_ref().and_then(|s| s["content"].as_object()).is_some_and(|c| !c.is_empty())});
                             if let Some(latest) = latest {
                                 status["savedAt"] = latest["timestamp"].clone();
                                 if latest["author"]["name"].is_string() {
                                     status["author"] = latest["author"]["name"].clone();
                                 }
                             }
-                            statuses.push(status);
-                        }
-                        Err(_) => failed += 1,
-                    }
-                }
-            }
+                            status
+                        })
+                        .collect(),
+                    0,
+                ),
+                Err(_) => (Vec::new(), pairs.len()),
+            };
             Ok(
                 Json(json!({"platforms":platforms,"statuses":statuses,"failed":failed}))
                     .into_response(),

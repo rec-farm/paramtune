@@ -43,6 +43,17 @@ test('Rust API preserves composition, cascading updates and history', async ({ c
   const cyclic = await request.put(detail(base), { data: { content: { '@extends': `${base}/1.0.0` } } })
   expect(cyclic.status()).toBe(400)
   expect((await cyclic.json()).error).toContain('Circular dependency')
+  // The overview reads every version's latest revision in one batch.
+  const overview = await (await request.get(`${ui}/overview`)).json()
+  expect(overview.failed).toBe(0)
+  const statuses = overview.statuses.filter((s: { platform: string }) => s.platform.startsWith(prefix))
+  expect(statuses).toHaveLength(9)
+  const baseStatus = statuses.find((s: { platform: string, version: string }) => s.platform === base && s.version === '1.0.0')
+  expect(baseStatus).toMatchObject({ hasContent: true, author: 'Reviewer' })
+  expect(typeof baseStatus.savedAt).toBe('number')
+  expect(statuses.find((s: { platform: string, version: string }) => s.platform === child && s.version === '2.0.0')).toEqual({ platform: child, version: '2.0.0', hasContent: false })
+  const listed = overview.platforms.find((p: { name: string }) => p.name === base)
+  expect(listed).toEqual({ name: base, versions: ['1.0.0', '1.5.0+build.5', '2.0.0'] })
   const compare = { platformA: base, versionA: '1.0.0', platformB: child, versionB: '1.0.0' }
   const rustDiff = await request.post(`${ui}/compare`, { data: compare })
   expect(rustDiff.ok()).toBe(true)

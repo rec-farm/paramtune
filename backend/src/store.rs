@@ -3,6 +3,13 @@ use redis::aio::ConnectionManager;
 use serde_json::Value;
 use tokio::sync::OnceCell;
 
+fn member(raw: &str, timestamp: f64) -> Option<Value> {
+    let mut value: Value = serde_json::from_str(raw).ok()?;
+    value
+        .as_object_mut()?
+        .insert("timestamp".into(), Value::from(timestamp as i64));
+    Some(value)
+}
 pub struct Store {
     client: redis::Client,
     connection: OnceCell<ConnectionManager>,
@@ -59,13 +66,46 @@ impl Store {
                 break;
             }
         }
-        let mut platforms = Vec::new();
-        for key in keys {
-            if let Some(value) = self.latest(&key).await? {
-                platforms.push(value);
-            }
+        let keys: Vec<String> = keys.into_iter().collect();
+        Ok(self
+            .latest_many(&keys)
+            .await?
+            .into_iter()
+            .flatten()
+            .map(|mut platform| {
+                // Platform records are returned as stored, without the sorted-set score.
+                if let Some(record) = platform.as_object_mut() {
+                    record.remove("timestamp");
+                }
+                platform
+            })
+            .collect())
+    }
+    /// Latest member of each sorted set in one round trip, with its score as `timestamp`.
+    pub async fn latest_many(&self, keys: &[String]) -> Result<Vec<Option<Value>>> {
+        if keys.is_empty() {
+            return Ok(Vec::new());
         }
-        Ok(platforms)
+        let mut pipe = redis::pipe();
+        for key in keys {
+            pipe.cmd("ZREVRANGEBYSCORE")
+                .arg(key)
+                .arg("+inf")
+                .arg("-inf")
+                .arg("WITHSCORES")
+                .arg("LIMIT")
+                .arg(0)
+                .arg(1);
+        }
+        let rows: Vec<Vec<(String, f64)>> = pipe.query_async(&mut self.connection().await?).await?;
+        Ok(rows
+            .into_iter()
+            .map(|row| {
+                row.into_iter()
+                    .next()
+                    .and_then(|(raw, timestamp)| member(&raw, timestamp))
+            })
+            .collect())
     }
     pub async fn append(&self, key: &str, value: &Value) -> Result<()> {
         // Atomic append + trim; preserve the existing sorted-set JSON member format.
@@ -93,13 +133,7 @@ impl Store {
             .await?;
         Ok(rows
             .into_iter()
-            .filter_map(|(raw, timestamp)| {
-                let mut value: Value = serde_json::from_str(&raw).ok()?;
-                value
-                    .as_object_mut()?
-                    .insert("timestamp".into(), Value::from(timestamp as i64));
-                Some(value)
-            })
+            .filter_map(|(raw, timestamp)| member(&raw, timestamp))
             .collect())
     }
     pub async fn members(&self, key: &str) -> Result<Vec<String>> {

@@ -31,7 +31,7 @@ export default function MockDashboard() {
             >
               <Icon className="w-5 h-5 shrink-0" strokeWidth={1.5} />
               <span className="flex-1 truncate">{name}</span>
-              <span className="text-xs text-meta tabular-nums">{versions}</span>
+              <span className={`text-xs tabular-nums ${current ? '' : 'text-meta'}`}>{versions}</span>
             </li>
           ))}
         </ul>

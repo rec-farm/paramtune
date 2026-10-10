@@ -75,7 +75,7 @@
 
   /* The purple period on H1 and hero lines only */
   .pt-period {
-    color: var(--primary-bg);
+    color: var(--primary);
   }
 
   /* Buttons (§8): 28 / 36 / 44px, radius 4, Figtree 600, sentence case */
@@ -95,7 +95,7 @@
   /* One per view: purple, strong border, hard offset shadow, presses like a key */
   .pt-btn-primary {
     @apply bg-primary text-primary-foreground shadow-hard;
-    border: 1.5px solid var(--line-strong);
+    border: 1.5px solid var(--border-strong);
   }
   .pt-btn-primary:active {
     transform: translate(2px, 2px);
@@ -152,11 +152,12 @@
   /* Destructive fill: only inside a confirmation step */
   .pt-btn-destructive {
     @apply bg-danger-fill text-white;
-    border: 1.5px solid var(--line-strong);
+    border: 1.5px solid var(--border-strong);
   }
   @media (hover: hover) {
+    /* Darken, never lighten: white on danger-solid is only 4.74:1 in dark (§13.1) */
     .pt-btn-destructive:hover {
-      filter: brightness(1.08);
+      filter: brightness(0.92);
     }
   }
 
@@ -215,7 +216,7 @@
   .pt-input:focus,
   .pt-select:focus {
     @apply border-primary;
-    box-shadow: 0 0 0 3px color-mix(in oklab, var(--primary-bg) 25%, transparent);
+    box-shadow: 0 0 0 3px color-mix(in oklab, var(--primary) 25%, transparent);
   }
 
   /* Code and JSON blocks (§8): surface-2, 13/1.6 mono, padding 16 */
@@ -233,7 +234,7 @@
   /* JSON editor: the textarea's text is transparent over the highlight layer,
      so an opaque selection would hide the code. Use a see-through tint. */
   .pt-editor-input::selection {
-    background: color-mix(in oklab, var(--primary-bg) 35%, transparent);
+    background: color-mix(in oklab, var(--primary) 35%, transparent);
     color: transparent;
   }
 
@@ -246,7 +247,7 @@
   .pt-dot-grid {
     background-image: radial-gradient(
       circle at 1px 1px,
-      color-mix(in oklab, var(--line) 60%, transparent) 1px,
+      color-mix(in oklab, var(--border) 60%, transparent) 1px,
       transparent 0
     );
     background-size: 8px 8px;

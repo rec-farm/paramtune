@@ -78,7 +78,7 @@ const AutocompletePopup = forwardRef<HTMLDivElement, AutocompletePopupProps>(
                 'text-sm text-foreground',
                 'transition-colors duration-150',
                 index === selectedIndex
-                  ? 'bg-surface-3 shadow-[inset_2px_0_0_var(--primary-bg)]'
+                  ? 'bg-surface-3 shadow-[inset_2px_0_0_var(--primary)]'
                   : 'hover:bg-surface-3'
               )}
               onClick={() => handleItemClick(suggestion)}

@@ -76,7 +76,7 @@ export default function Sidebar({ platforms, version, canManage }: SidebarProps)
 
       {/* Workspace card (§10.3) */}
       <div className="mx-3 flex items-center gap-3 rounded-sm border border-sidebar-border p-3">
-        <span className="h-8 w-8 shrink-0 flex items-center justify-center rounded-xs bg-[var(--lilac-300)] text-sm font-bold text-[var(--ink-950)]">
+        <span className="h-8 w-8 shrink-0 flex items-center justify-center rounded-xs bg-[var(--color-lilac-300)] text-sm font-bold text-[var(--color-ink-950)]">
           M
         </span>
         <div className="min-w-0 flex-1">

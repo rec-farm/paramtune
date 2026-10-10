@@ -6,12 +6,12 @@
   "private": true,
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/RodrigoEspinosa/paramtune.git"
+    "url": "git+https://github.com/rec-farm/paramtune.git"
   },
   "bugs": {
-    "url": "https://github.com/RodrigoEspinosa/paramtune/issues"
+    "url": "https://github.com/rec-farm/paramtune/issues"
   },
-  "homepage": "https://github.com/RodrigoEspinosa/paramtune#readme",
+  "homepage": "https://github.com/rec-farm/paramtune#readme",
   "scripts": {
     "dev": "portless paramtune pnpm dev:direct",
     "dev:direct": "tsx scripts/dev.ts",

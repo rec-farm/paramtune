@@ -6,7 +6,7 @@ import { useSidebar } from '@/contexts/SidebarContext'
 
 import AuthNav from './AuthNav'
 
-const REPO_URL = 'https://github.com/RodrigoEspinosa/paramtune'
+const REPO_URL = 'https://github.com/rec-farm/paramtune'
 
 // Breadcrumb trail for each dashboard route (§10.4)
 function crumbsFor(pathname: string): Crumb[] {

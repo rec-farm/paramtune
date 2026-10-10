@@ -2,7 +2,7 @@ import { Link } from 'react-router'
 import Logo from './Logo'
 import ThemeSwitcher from './ThemeSwitcher'
 
-const REPO_URL = 'https://github.com/RodrigoEspinosa/paramtune'
+const REPO_URL = 'https://github.com/rec-farm/paramtune'
 
 const linkClass =
   'inline-flex items-center min-h-8 text-base text-muted-foreground hover:text-foreground transition-colors duration-150'

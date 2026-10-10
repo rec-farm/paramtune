@@ -85,8 +85,20 @@ fn safe_return(value: Option<&str>) -> &str {
                 // Browsers drop tabs and newlines while parsing, so "/\t/evil" becomes "//evil".
                 && !v.chars().any(|c| c == '\\' || c.is_control())
                 && !v.starts_with("/api/")
+                && !has_dot_segment(v)
         })
         .unwrap_or("/dashboard")
+}
+// Browsers collapse "." and ".." segments (also as "%2e"), so "/./api/x" lands on "/api/x" and
+// "/.//evil.example" on "//evil.example". Mirrors safeReturnTo in src/lib/returnTo.ts.
+fn has_dot_segment(value: &str) -> bool {
+    let path = value.split(['?', '#']).next().unwrap_or_default();
+    path.split('/').any(|segment| {
+        matches!(
+            segment.to_ascii_lowercase().replace("%2e", ".").as_str(),
+            "." | ".."
+        )
+    })
 }
 fn subject_key(issuer: &str, sub: &str) -> String {
     hash(&format!("{issuer}\n{sub}"))
@@ -643,12 +655,22 @@ mod tests {
             "/dashboard\r\nLocation: evil",
             "/\t/evil.example",
             "/\u{7f}/evil.example",
+            "/.//evil.example",
+            "/..//evil.example",
+            "/a/..//evil.example",
+            "/./api/x",
+            "/%2e/api/x",
+            "/%2E%2e//evil.example",
         ] {
             assert_eq!(safe_return(Some(value)), "/dashboard");
         }
         assert_eq!(
             safe_return(Some("/dashboard/platforms")),
             "/dashboard/platforms"
+        );
+        assert_eq!(
+            safe_return(Some("/dashboard/ios/1.0.0?tab=history#../x")),
+            "/dashboard/ios/1.0.0?tab=history#../x"
         );
     }
     #[test]

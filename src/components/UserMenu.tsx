@@ -59,7 +59,7 @@ export default function UserMenu() {
             className="h-8 w-8 rounded-xs border border-border-strong"
           />
         ) : (
-          <span className="h-8 w-8 flex items-center justify-center rounded-xs border border-border-strong bg-[var(--lilac-300)] text-sm font-bold text-[var(--ink-950)]">
+          <span className="h-8 w-8 flex items-center justify-center rounded-xs border border-border-strong bg-[var(--color-lilac-300)] text-sm font-bold text-[var(--color-ink-950)]">
             {initial}
           </span>
         )}

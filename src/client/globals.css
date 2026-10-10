@@ -1,10 +1,7 @@
-/* REC Design System v1.4.1 (reciam-brand DESIGN.md). Tokens in tokens.css, components in components.css */
-@import 'tailwindcss';
+/* REC Design System v1.7.0 (rec-brand DESIGN.md). Tailwind, tokens and the dark/light
+   variants come from tokens.css (§14); components are in components.css */
 @import './tokens.css';
 @import './components.css';
-
-@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *, :root:not([data-theme='light']) *));
-@custom-variant paper (&:where([data-theme='light'], [data-theme='light'] *));
 
 @theme inline {
   /* Archivo Expanded for stamps and stats, Figtree for people, Geist Mono for machines (§4) */
@@ -46,13 +43,6 @@
   --text-6xl: 4.5rem;
   --text-6xl--line-height: 0.95;
 
-  --shadow-hard-sm: 2px 2px 0 0 var(--shadow-hard-color);
-  --shadow-hard: 3px 3px 0 0 var(--shadow-hard-color);
-  --shadow-hard-lg: 5px 5px 0 0 var(--shadow-hard-color);
-  --shadow-pop: var(--pop-shadow);
-
-  --ease-snap: cubic-bezier(0.3, 1.4, 0.5, 1);
-
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
@@ -61,7 +51,7 @@
   --color-popover-foreground: var(--popover-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
-  --color-primary-hover: var(--primary-bg-hover);
+  --color-primary-hover: var(--primary-hover);
   --color-primary-soft: var(--primary-soft);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
@@ -75,12 +65,12 @@
   --color-link: var(--link);
 
   /* Product signature accent: active place only, never action (§3.4) */
-  --color-accent: var(--accent-bg);
+  --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-fg);
   --color-accent-tile: var(--accent-tile);
   --color-accent-text: var(--accent-text);
 
-  --color-sidebar: var(--sidebar-bg);
+  --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-fg);
   --color-sidebar-muted: var(--sidebar-fg-muted);
   --color-sidebar-hover: var(--sidebar-hover);
@@ -91,7 +81,7 @@
   --color-surface-2: var(--surface-2);
   --color-surface-3: var(--surface-3);
   --color-field: var(--field);
-  --color-border-strong: var(--line-strong);
+  --color-border-strong: var(--border-strong);
   --color-meta: var(--fg-subtle);
   --color-tile-foreground: var(--tile-fg);
 
@@ -137,6 +127,9 @@
     @apply border-border;
   }
   html {
+    /* §14 sets html to 14px, but Paramtune's rem scale (globals @theme above, Tailwind
+       spacing) assumes a 16px root and sets 14px body text on body instead */
+    font-size: 100%;
     scroll-behavior: smooth;
   }
   body {

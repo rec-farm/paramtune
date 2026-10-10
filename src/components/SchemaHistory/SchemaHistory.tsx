@@ -152,7 +152,7 @@ export default function SchemaHistory({
                     aria-current={isSelected ? 'true' : undefined}
                     className={`w-full text-left px-4 py-3 text-sm transition-colors duration-150 ${
                       isSelected
-                        ? 'bg-surface-3 shadow-[inset_2px_0_0_var(--primary-bg)]'
+                        ? 'bg-surface-3 shadow-[inset_2px_0_0_var(--primary)]'
                         : 'hover:bg-surface-2'
                     }`}
                     onClick={() => setSelectedIndex(index)}

@@ -198,7 +198,7 @@ export default function OverviewPage() {
                   {/* Item card (§8): surface-2, padding 16, mono title, chevron nudges right */}
                   <Link
                     to={href}
-                    className="group flex h-full flex-col justify-between gap-4 rounded-sm border border-border bg-surface-2 paper:bg-surface p-4 transition-colors duration-150 hover:border-border-strong"
+                    className="group flex h-full flex-col justify-between gap-4 rounded-sm border border-border bg-surface-2 light:bg-surface p-4 transition-colors duration-150 hover:border-border-strong"
                   >
                     <div className="flex items-start justify-between gap-2">
                       <div className="min-w-0 space-y-1">

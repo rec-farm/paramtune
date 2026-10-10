@@ -73,7 +73,11 @@ impl AppState {
             .redirect(reqwest::redirect::Policy::none())
             .no_proxy()
             .timeout(Duration::from_secs(10));
-        if let Ok(path) = std::env::var("OIDC_CA_CERT_FILE") {
+        // Empty means unset, so Compose can pass the variable through unconditionally
+        if let Some(path) = std::env::var("OIDC_CA_CERT_FILE")
+            .ok()
+            .filter(|p| !p.is_empty())
+        {
             client =
                 client.add_root_certificate(reqwest::Certificate::from_pem(&std::fs::read(path)?)?);
         }

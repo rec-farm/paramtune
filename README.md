@@ -40,7 +40,7 @@ pnpm install
 3) Start Redis
 
 ```bash
-docker-compose -f docker-compose.dev.yml up redis
+docker compose -f docker-compose.dev.yml up redis
 ```
 
 4) Start development server
@@ -65,7 +65,7 @@ Rust stores authentication sessions in Redis.
 - `pnpm build` – frontend assets and Rust release build
 - `pnpm backend:check` – Rust formatting and Clippy
 - `pnpm backend:test` – Rust unit/HTTP tests
-- `pnpm start` – run production server locally
+- `pnpm start` – run the built Rust server locally (after `pnpm build`)
 - `pnpm lint` – lint with ESLint
 - `pnpm typecheck` – TypeScript type checking
 - `pnpm test` – run tests with Vitest
@@ -79,7 +79,9 @@ Rust stores authentication sessions in Redis.
 - `REDIS_URL` – Full Redis connection URL (preferred)
 - `REDIS_HOST`, `REDIS_PORT`, `REDIS_PASSWORD`, `REDIS_DB` – Individual Redis settings when URL is not provided
 - `PUBLIC_ORIGIN` – Public application origin
-- `OIDC_ISSUER`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET` – Handstamp application credentials
+- `OIDC_ISSUER`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET` – Handstamp (or any OpenID Connect provider) application credentials
+- `OIDC_SCOPES`, `OIDC_ROLES_CLAIM`, `OIDC_ADMIN_GROUP`, `OIDC_EDITOR_GROUP`, `OIDC_PLATFORM_EDITORS`, `OIDC_DISPLAY_NAME`, `OIDC_CA_CERT_FILE` – optional sign-in and role settings (see [Deployment](docs/DEPLOYMENT.md))
+- `TRUST_PROXY` – `true` only behind a proxy that sanitizes client-IP headers (default `false`)
 - `RATE_LIMIT_API_MAX` – API requests per client IP per 60 seconds (default 100)
 - `RATE_LIMIT_AUTH_MAX` – Sign-in requests per client IP per 15 minutes (default 10)
 - `RATE_LIMIT_PREFIX` – Redis key prefix for rate-limit counters shared by replicas (default `ratelimit`)
@@ -122,12 +124,11 @@ Rust stores authentication sessions in Redis.
 
 ```bash
 # Development
-docker-compose -f docker-compose.dev.yml up --build
+docker compose -f docker-compose.dev.yml up --build
 
-# Production
-export REDIS_PASSWORD="$(openssl rand -base64 24)"
-export PUBLIC_ORIGIN="http://localhost:3000"
-docker-compose up --build -d
+# Production: register the app in Handstamp (see docs/DEPLOYMENT.md), then
+cp .env.example .env   # set REDIS_PASSWORD, PUBLIC_ORIGIN and OIDC_*
+docker compose up --build -d
 ```
 
 ### rec-farm

@@ -22,7 +22,7 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=production
-      - CORS_ORIGIN=${CORS_ORIGIN:-http://localhost:3000}
+      - CORS_ORIGIN=${CORS_ORIGIN:-}
       - REDIS_URL=redis://:${REDIS_PASSWORD}@redis:6379/2
       - PUBLIC_ORIGIN=${PUBLIC_ORIGIN:-http://localhost:3000}
       - OIDC_ISSUER=${OIDC_ISSUER:-}
@@ -31,9 +31,15 @@ services:
       - OIDC_SCOPES=${OIDC_SCOPES:-}
       - OIDC_ROLES_CLAIM=${OIDC_ROLES_CLAIM:-}
       - OIDC_ADMIN_GROUP=${OIDC_ADMIN_GROUP:-}
+      - OIDC_EDITOR_GROUP=${OIDC_EDITOR_GROUP:-}
+      - OIDC_PLATFORM_EDITORS=${OIDC_PLATFORM_EDITORS:-}
       - OIDC_DISPLAY_NAME=${OIDC_DISPLAY_NAME:-}
+      # Path inside the container: mount the PEM file too (see docs/DEPLOYMENT.md)
+      - OIDC_CA_CERT_FILE=${OIDC_CA_CERT_FILE:-}
+      - TRUST_PROXY=${TRUST_PROXY:-false}
       - RATE_LIMIT_API_MAX=${RATE_LIMIT_API_MAX:-}
       - RATE_LIMIT_AUTH_MAX=${RATE_LIMIT_AUTH_MAX:-}
+      - RATE_LIMIT_PREFIX=${RATE_LIMIT_PREFIX:-}
     depends_on:
       redis:
         condition: service_healthy

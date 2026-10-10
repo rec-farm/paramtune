@@ -92,18 +92,28 @@ async fn rate_limit(state: &AppState, key: String, max: u32, window: Duration) -
     let mut rates = state.0.rates.lock().unwrap_or_else(PoisonError::into_inner);
     rate_limit_retry(&mut rates, key, max, window, now)
 }
+/// Sign-in style endpoints share the stricter auth rate limit.
+fn is_auth_flow(path: &str) -> bool {
+    path.strip_prefix("/api/auth/").is_some_and(|tail| {
+        matches!(
+            tail.split('/').next(),
+            Some("sign-in" | "sign-up" | "callback" | "oauth2" | "dev-login")
+        )
+    })
+}
+/// Provider redirects arrive cross-site, so these skip the origin and fetch-site mutation checks.
+fn is_oauth_callback(path: &str) -> bool {
+    path.strip_prefix("/api/auth/callback/")
+        .or_else(|| path.strip_prefix("/api/auth/oauth2/callback/"))
+        .is_some_and(|tail| !tail.is_empty() && !tail.contains('/'))
+}
 async fn protect(state: &AppState, request: Request, next: Next) -> Response {
     let path = request.uri().path();
     if path == "/api/auth/backchannel-logout" {
         return next.run(request).await;
     }
     let ip = client_ip(state, &request);
-    let auth = path.strip_prefix("/api/auth/").is_some_and(|tail| {
-        matches!(
-            tail.split('/').next(),
-            Some("sign-in" | "sign-up" | "callback" | "oauth2" | "dev-login")
-        )
-    });
+    let auth = is_auth_flow(path);
     let (max, window) = if auth {
         (state.0.config.rate_limit_auth_max, Duration::from_secs(900))
     } else {
@@ -121,10 +131,7 @@ async fn protect(state: &AppState, request: Request, next: Next) -> Response {
     if request.method() == "OPTIONS" {
         return StatusCode::NO_CONTENT.into_response();
     }
-    let callback = path
-        .strip_prefix("/api/auth/callback/")
-        .or_else(|| path.strip_prefix("/api/auth/oauth2/callback/"))
-        .is_some_and(|tail| !tail.is_empty() && !tail.contains('/'));
+    let callback = is_oauth_callback(path);
     if request.method() != "GET" && request.method() != "HEAD" && !callback {
         if header(&request, "origin").is_some_and(|v| v != state.0.config.public_origin) {
             return ApiError(StatusCode::FORBIDDEN, "Untrusted request origin".into())
@@ -246,5 +253,33 @@ mod tests {
         assert_eq!(retry_after(10, 10, remaining), None);
         assert_eq!(retry_after(11, 10, remaining), Some(60));
         assert_eq!(retry_after(11, 10, Duration::ZERO), Some(1));
+    }
+    #[test]
+    fn auth_flows_use_the_strict_rate_limit() {
+        for path in [
+            "/api/auth/sign-in",
+            "/api/auth/sign-in/oidc",
+            "/api/auth/callback/oidc",
+            "/api/auth/oauth2/callback/oidc",
+            "/api/auth/dev-login",
+        ] {
+            assert!(is_auth_flow(path), "{path}");
+        }
+        for path in ["/api/auth/session", "/api/auth/sign-out", "/api/platforms"] {
+            assert!(!is_auth_flow(path), "{path}");
+        }
+    }
+    #[test]
+    fn only_single_segment_callbacks_skip_mutation_checks() {
+        assert!(is_oauth_callback("/api/auth/callback/oidc"));
+        assert!(is_oauth_callback("/api/auth/oauth2/callback/oidc"));
+        for path in [
+            "/api/auth/callback/",
+            "/api/auth/callback/oidc/extra",
+            "/api/auth/oauth2/callback/",
+            "/api/auth/sign-out",
+        ] {
+            assert!(!is_oauth_callback(path), "{path}");
+        }
     }
 }

@@ -8,7 +8,7 @@ Security fixes are handled on the `master` branch until the project publishes ve
 
 Please do not open public issues for suspected vulnerabilities.
 
-Report security issues privately through GitHub's private vulnerability reporting if it is enabled on the repository. If that is unavailable, contact the maintainer through the GitHub profile linked from the repository.
+Report security issues privately through GitHub's private vulnerability reporting: https://github.com/rec-farm/paramtune/security/advisories/new
 
 Include:
 

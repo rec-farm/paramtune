@@ -22,7 +22,7 @@ Authors come from the session. Existing /api/schemas, /api/:platform, /api/:plat
 
 Run lint, typecheck, unit/HTTP contract tests, production build, and audit. Run the production browser suite against dedicated Redis: it uses Redis-backed test sessions and checks HTML, redirects, cookies, creation, saving, history/restore, composition, comparison, mobile navigation, reload, sign-out, and page errors.
 
-Build the Docker image and verify Rust startup. Validate Handstamp OIDC and the rec-farm HTTPS reverse proxy on the actual deployment; local development login does not prove a live provider callback.
+Build the Docker image and verify Rust startup. Validate Handstamp OIDC and the HTTPS reverse proxy on the actual deployment; local development login does not prove a live provider callback.
 
 ## Reuse across projects
 

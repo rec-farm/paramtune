@@ -3,6 +3,10 @@ name = "paramtune-api"
 version = "0.1.0"
 edition = "2024"
 rust-version = "1.92"
+description = "Paramtune API server: platform schemas and versioned feature configuration on Redis"
+license = "MIT"
+repository = "https://github.com/rec-farm/paramtune"
+homepage = "https://rec.farm/paramtune/"
 publish = false
 
 [dependencies]

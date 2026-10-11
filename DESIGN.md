@@ -1,7 +1,7 @@
 # Paramtune Console
 
 > Category: Developer Tools
-> The Paramtune dashboard on the REC Design System v1.4.1: warm ink and paper neutrals, REC purple for action, a mint product accent for place, pastel status tiles, near-square corners and hard offset shadows.
+> The Paramtune dashboard on the R.E.C. Design System v1.7.0 ([rec-farm/rec-brand](https://github.com/rec-farm/rec-brand)): warm ink and paper neutrals, R.E.C. purple for action, a mint product accent for place, pastel status tiles, near-square corners and hard offset shadows.
 
 Origin: the Paramtune configuration dashboard (Vite, React, Tailwind v4, shadcn new-york). Two themes: Dark (default) and Paper, plus a System option that follows the OS.
 
@@ -16,7 +16,7 @@ Source of truth is the code; this document summarizes it:
 
 A developer console for people who read keys, versions and diffs all day. Surfaces are flat with 1px lines; emphasis comes from a few hard, blur-free offset shadows rather than glow, blur or gradients.
 
-- **Action vs place:** REC purple (`--primary-bg`) marks the primary action, links and the focus ring. The Paramtune mint accent (`--accent-bg`, set by `html[data-product='paramtune']`) marks where you are, such as the active navigation item. It never marks an action.
+- **Action vs place:** R.E.C. purple (`--primary-bg`) marks the primary action, links and the focus ring. The Paramtune mint accent (`--accent-bg`, set by `html[data-product='paramtune']`) marks where you are, such as the active navigation item. It never marks an action.
 - **Status:** pastel signals (mint, sun, rose, lilac) mean status and always come with an icon or a word.
 - **Density:** 36px controls, 14px body text.
 

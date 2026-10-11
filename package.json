@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "description": "Self-hosted platform schema and feature configuration management.",
   "license": "MIT",
+  "author": "Rodrigo Espinosa Curbelo",
   "private": true,
   "repository": {
     "type": "git",
@@ -11,7 +12,7 @@
   "bugs": {
     "url": "https://github.com/rec-farm/paramtune/issues"
   },
-  "homepage": "https://github.com/rec-farm/paramtune#readme",
+  "homepage": "https://rec.farm/paramtune/",
   "scripts": {
     "dev": "portless paramtune pnpm dev:direct",
     "dev:direct": "tsx scripts/dev.ts",

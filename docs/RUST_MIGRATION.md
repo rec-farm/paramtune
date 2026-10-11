@@ -12,7 +12,7 @@ Sessions use random 256-bit tokens; Redis stores only their hashes with a seven-
 
 Local sign-out deletes the session and returns Handstamp's end-session URL. Signed back-channel logout revokes all sessions of the subject. Signature, issuer, audience, recent issued-at, token ID, and logout event are checked; nonce is forbidden. Replay detection and revocation are atomic in Redis across replicas. Signing keys are fetched during verification to support rotation.
 
-Development login is enabled only with NODE_ENV=development. Configure Google and password authentication in Handstamp; Paramtune has no direct production login for those methods.
+Development login is enabled only with NODE_ENV=development. Sign-in methods are configured in Handstamp (or your OIDC provider); Paramtune has no production login of its own and stores no passwords.
 
 ## Cutover
 
@@ -32,4 +32,4 @@ The image starts Rust directly. Local startup scripts wrap that binary with Node
 
 Keep the previous image and SQLite volume for rollback using current Redis configuration data.
 
-Local tests do not verify live Handstamp registration or the VPS proxy. Verify login, roles, deep links, saves, and both logout directions on deployment before switching traffic.
+Local tests do not verify live Handstamp registration or the reverse proxy. Verify login, roles, deep links, saves, and both logout directions on deployment before switching traffic.

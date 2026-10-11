@@ -1,5 +1,7 @@
 # Paramtune
 
+Product page and docs: [rec.farm/paramtune](https://rec.farm/paramtune/)
+
 Paramtune is a React application with a Vite frontend and Rust/Axum API with native Handstamp OIDC authentication for managing platform schemas and versioned feature configuration with dependency resolution and Redis persistence.
 
 ## Overview
@@ -131,10 +133,10 @@ cp .env.example .env   # set REDIS_PASSWORD, PUBLIC_ORIGIN and OIDC_*
 docker compose up --build -d
 ```
 
-### rec-farm
+### Other Docker hosts (Dokploy, Coolify, ...)
 
-Deploy the Rust Docker application on rec-farm with persistent Redis
-storage. The Rust process serves the frontend and API behind the HTTPS reverse
+Deploy the Docker image on any container platform with persistent Redis
+storage. The Rust process serves the frontend and API behind your HTTPS reverse
 proxy. See [Deployment](docs/DEPLOYMENT.md) for configuration and rollback.
 
 ## Architecture
@@ -147,8 +149,7 @@ proxy. See [Deployment](docs/DEPLOYMENT.md) for configuration and rollback.
 
 Production serves frontend and API on one port. Development uses PORT (default
 3000, or assigned by portless) and an automatically allocated local API port
-with a same-origin proxy. Set API_PORT only when a fixed, free port is needed. The existing portless workflow remains available. Use herdr-run for
-long-running processes inside Herdr.
+with a same-origin proxy. Set API_PORT only when a fixed, free port is needed. The existing portless workflow remains available.
 
 Public pages are prerendered without database access. Dashboard reads and writes
 use authenticated APIs. Lint rejects Node built-in imports in browser code.
@@ -157,38 +158,29 @@ use authenticated APIs. Lint rejects Node built-in imports in browser code.
 
 - [API Reference](docs/API.md)
 - [Architecture](docs/ARCHITECTURE.md)
-- [Rust migration and rollback](docs/RUST_MIGRATION.md)
 - [Deployment Guide](docs/DEPLOYMENT.md)
 - [Docker Setup](docs/DOCKER.md)
 - [Troubleshooting](docs/TROUBLESHOOTING.md)
 
-## Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for development setup, coding conventions, and pull request expectations.
-
-Before opening a pull request, run:
-
-```bash
-pnpm lint
-pnpm typecheck
-pnpm test
-pnpm backend:check
-pnpm backend:test
-pnpm build
-pnpm audit --audit-level moderate
-```
-
-## Security
-
-Please report vulnerabilities privately using the guidance in [SECURITY.md](SECURITY.md).
-
-## License
-
-Paramtune is released under the [MIT License](LICENSE).
+History: Paramtune began as a Next.js app. [docs/VITE_MIGRATION.md](docs/VITE_MIGRATION.md)
+records the move to Vite and React Router, and [docs/RUST_MIGRATION.md](docs/RUST_MIGRATION.md)
+the move to the Rust/Axum server with Handstamp OIDC, including rollback notes.
 
 ## Browser integration
 
 After building, install a browser with `pnpm exec playwright install chromium`.
 Run `E2E_REDIS_URL=redis://127.0.0.1:6379/15 pnpm test:e2e:ci` against dedicated
 Redis. The bounded browser suite owns ports 4481/4482/4483 and uses a dedicated test Redis database.
-Use E2E_CHROME=1 for installed Chrome. See [Migration and reuse](docs/VITE_MIGRATION.md).
+Use E2E_CHROME=1 for installed Chrome.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for setup, the full check to run before a pull request, and project conventions.
+
+## Security
+
+Report vulnerabilities privately through [GitHub private vulnerability reporting](https://github.com/rec-farm/paramtune/security/advisories/new). See [SECURITY.md](SECURITY.md).
+
+## License
+
+MIT · © 2026 Rodrigo Espinosa Curbelo. Names and logos: see [NOTICE](NOTICE).

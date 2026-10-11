@@ -1,5 +1,3 @@
-'use client'
-
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { validateJson } from '../utils/validation'
 import type { ValidationIssue } from '../types'

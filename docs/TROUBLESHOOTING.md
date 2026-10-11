@@ -2,7 +2,7 @@
 
 ## Build or startup fails
 - Use Node 22.12+ as required by `engines` in `package.json`.
-- Verify runtime environment variables are configured on rec-farm, including `PUBLIC_ORIGIN`, `OIDC_ISSUER`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET`, and Redis settings.
+- Verify runtime environment variables are configured in your deployment (for example `.env` for Docker Compose), including `PUBLIC_ORIGIN`, `OIDC_ISSUER`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET`, and Redis settings.
 - Ensure Redis is reachable and its data volume is persistent.
 
 ## Redis connection errors

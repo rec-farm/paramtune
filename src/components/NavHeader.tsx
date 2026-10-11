@@ -4,7 +4,7 @@ import Logo from './Logo'
 
 import AuthNav from './AuthNav'
 
-const REPO_URL = 'https://github.com/RodrigoEspinosa/paramtune'
+const REPO_URL = 'https://github.com/rec-farm/paramtune'
 
 export default function NavHeader() {
   return (

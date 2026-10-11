@@ -7,7 +7,7 @@ import MockDashboard from '@/components/MockDashboard'
 
 import QuickStart from '@/components/QuickStart'
 
-const REPO_URL = 'https://github.com/RodrigoEspinosa/paramtune'
+const REPO_URL = 'https://github.com/rec-farm/paramtune'
 
 const AUDIENCES = [
   {

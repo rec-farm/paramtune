@@ -1,27 +1,54 @@
-# Deploys StillUp monitoring as code. GitHub vouches for each run, so no key is stored here.
-name: Monitoring
+name: Production monitoring
+
 on:
+  pull_request:
+    paths:
+      - 'monitoring/**'
+      - '.github/workflows/monitoring.yml'
   push:
-    branches: ['master']
+    branches: [master]
+    paths:
+      - 'monitoring/**'
+      - '.github/workflows/monitoring.yml'
   workflow_dispatch:
+
 permissions:
   contents: read
-concurrency:
-  group: stillup-monitoring
-  cancel-in-progress: false
+
 jobs:
-  deploy:
+  validate:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      id-token: write
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
           node-version: 24
-      # If your configuration imports @rec/stillup, install your dependencies here and run
-      # the stillup binary from them instead of npx.
-      - run: npx --yes @rec/stillup@0.1.0 apply --config 'stillup.config.ts' --yes
+      - name: Validate monitoring configuration
+        run: npm exec --yes --package=@rec/stillup@0.2.0 -- stillup validate --config monitoring/stillup.config.json
+
+  deploy:
+    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/master'
+    needs: validate
+    runs-on: ubuntu-latest
+    environment: monitoring-production
+    permissions:
+      contents: read
+      id-token: write
+    concurrency:
+      group: paramtune-production-monitoring
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - name: Install pinned monitoring CLI
+        run: npm install --prefix "$RUNNER_TEMP/stillup-cli" --no-audit --no-fund @rec/stillup@0.2.0
+      - name: Test, preview, and apply production checks
         env:
           STILLUP_URL: 'https://stillup.rec.farm/api'
+        run: |
+          set -eu
+          "$RUNNER_TEMP/stillup-cli/node_modules/.bin/stillup" test --config monitoring/stillup.config.json --yes
+          "$RUNNER_TEMP/stillup-cli/node_modules/.bin/stillup" diff --config monitoring/stillup.config.json
+          "$RUNNER_TEMP/stillup-cli/node_modules/.bin/stillup" apply --config monitoring/stillup.config.json --yes

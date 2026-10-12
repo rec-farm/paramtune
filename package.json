@@ -14,6 +14,10 @@
   },
   "homepage": "https://rec.farm/paramtune/",
   "scripts": {
+    "monitoring:validate": "npm exec --yes --package=@rec/stillup@0.2.0 -- stillup validate --config monitoring/stillup.config.json",
+    "monitoring:test": "npm exec --yes --package=@rec/stillup@0.2.0 -- stillup test --config monitoring/stillup.config.json --yes",
+    "monitoring:diff": "npm exec --yes --package=@rec/stillup@0.2.0 -- stillup diff --config monitoring/stillup.config.json",
+    "monitoring:apply": "npm exec --yes --package=@rec/stillup@0.2.0 -- stillup apply --config monitoring/stillup.config.json --yes",
     "dev": "portless paramtune pnpm dev:direct",
     "dev:direct": "tsx scripts/dev.ts",
     "build": "pnpm build:web && pnpm backend:build",

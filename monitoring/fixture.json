@@ -1,0 +1,7 @@
+{
+  "monitoring": {
+    "service": "paramtune",
+    "fixtureVersion": 1,
+    "enabled": true
+  }
+}

@@ -1,5 +1,7 @@
 # Deployment
 
+Production HTTP monitoring is defined in [`monitoring/stillup.config.json`](../monitoring/stillup.config.json). Follow the [StillUp setup guide](../monitoring/README.md) to provision the read-only fixture token, notifications, and GitHub deployment environment.
+
 One Rust process serves the Vite frontend, APIs, and Handstamp authentication. Node is used only for frontend builds and development. Redis persists configuration and sessions. See [Rust runtime](RUST_MIGRATION.md) for the history of the cutover.
 
 | Variable | Meaning |

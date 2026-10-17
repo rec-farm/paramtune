@@ -1,0 +1,77 @@
+{
+  "version": 1,
+  "project": "paramtune-production",
+  "checks": [
+    {
+      "id": "readiness",
+      "config": {
+        "name": "Paramtune production readiness",
+        "url": "https://paramtune.rec.farm/readyz",
+        "intervalSeconds": 60,
+        "timeoutMs": 10000,
+        "expectedStatus": 200,
+        "failureThreshold": 2,
+        "recoveryThreshold": 1,
+        "headerAssertions": [
+          {
+            "name": "content-type",
+            "operator": "contains",
+            "value": "application/json"
+          }
+        ],
+        "jsonAssertions": [
+          { "path": "$.ok", "equals": true },
+          { "path": "$.checks.redis", "equals": "ok" },
+          { "path": "$.checks.oidc", "equals": "ok" }
+        ],
+        "public": false
+      }
+    },
+    {
+      "id": "configuration-read",
+      "config": {
+        "name": "Paramtune production configuration read",
+        "url": "https://paramtune.rec.farm/api/monitoring/1.0.0",
+        "headers": { "Authorization": "Bearer {{PARAMTUNE_MONITOR_TOKEN}}" },
+        "intervalSeconds": 60,
+        "timeoutMs": 10000,
+        "expectedStatus": 200,
+        "failureThreshold": 2,
+        "recoveryThreshold": 1,
+        "headerAssertions": [
+          {
+            "name": "content-type",
+            "operator": "contains",
+            "value": "application/json"
+          }
+        ],
+        "jsonAssertions": [
+          { "path": "$.output.monitoring.service", "equals": "paramtune" },
+          { "path": "$.output.monitoring.fixtureVersion", "equals": 1 },
+          { "path": "$.output.monitoring.enabled", "equals": true }
+        ],
+        "public": false
+      }
+    },
+    {
+      "id": "frontend",
+      "config": {
+        "name": "Paramtune production frontend",
+        "url": "https://paramtune.rec.farm/",
+        "intervalSeconds": 60,
+        "timeoutMs": 10000,
+        "expectedStatus": 200,
+        "failureThreshold": 2,
+        "recoveryThreshold": 1,
+        "headerAssertions": [
+          {
+            "name": "content-type",
+            "operator": "contains",
+            "value": "text/html"
+          }
+        ],
+        "public": false
+      }
+    }
+  ]
+}

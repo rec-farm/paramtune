@@ -32,6 +32,8 @@ export type Platform = {
   kind?: PlatformKind
   name: string
   versions: string[]
+  /** Readable through the public API without a token. */
+  public?: boolean
 }
 
 export type VersionStatus = {

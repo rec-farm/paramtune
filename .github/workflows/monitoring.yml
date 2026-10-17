@@ -1,0 +1,27 @@
+# Deploys StillUp monitoring as code. GitHub vouches for each run, so no key is stored here.
+name: Monitoring
+on:
+  push:
+    branches: ['master']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: stillup-monitoring
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      # If your configuration imports @rec/stillup, install your dependencies here and run
+      # the stillup binary from them instead of npx.
+      - run: npx --yes @rec/stillup@0.1.0 apply --config 'stillup.config.ts' --yes
+        env:
+          STILLUP_URL: 'https://stillup.rec.farm/api'

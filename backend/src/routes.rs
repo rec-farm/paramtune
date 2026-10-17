@@ -211,6 +211,18 @@ async fn platform(state: &AppState, platform: &str) -> Result<Value> {
         .await?
         .ok_or_else(|| ApiError::missing("Platform not found"))
 }
+/// Platforms anyone may read through the public API without a token.
+async fn public_platforms(state: &AppState) -> Result<Vec<String>> {
+    Ok(state
+        .0
+        .store
+        .platforms()
+        .await?
+        .iter()
+        .filter(|platform| platform["public"] == true)
+        .filter_map(|platform| platform["name"].as_str().map(str::to_owned))
+        .collect())
+}
 async fn exists(state: &AppState, p: &str, v: &str) -> Result<()> {
     if !state
         .0
@@ -289,6 +301,8 @@ async fn ui(State(state): State<AppState>, request: Request) -> Result<Response>
     match path.as_slice() {
         ["tokens", ..] => require_manage(&session)?,
         _ if method_name == "DELETE" => require_manage(&session)?,
+        // Publishing a platform opens it to anonymous reads.
+        ["platforms", _] if method_name == "PATCH" => require_manage(&session)?,
         // Validation and comparison are reads that happen to POST a body.
         ["validate"] | ["compare"] => {}
         _ if !matches!(method_name.as_str(), "GET" | "HEAD") => require_write(&session)?,
@@ -372,6 +386,35 @@ async fn ui(State(state): State<AppState>, request: Request) -> Result<Response>
                 .await?;
             audit(&state, &session, "create", &p, None).await;
             Ok(ok(true))
+        }
+        ["platforms", p] if method_name == "PATCH" => {
+            let p = name(&Value::from(*p), false)?;
+            let data = body(request, "Body must be a JSON object").await?;
+            let public = data["public"]
+                .as_bool()
+                .ok_or_else(|| ApiError::bad("\"public\" must be true or false"))?;
+            let mut record = platform(&state, &p).await?;
+            if (record["public"] == true) != public {
+                if public {
+                    record["public"] = Value::from(true);
+                } else if let Some(fields) = record.as_object_mut() {
+                    fields.remove("public");
+                }
+                state
+                    .0
+                    .store
+                    .append(&format!("platforms:{p}"), &record)
+                    .await?;
+                audit(
+                    &state,
+                    &session,
+                    if public { "publish" } else { "unpublish" },
+                    &p,
+                    None,
+                )
+                .await;
+            }
+            Ok(Json(record).into_response())
         }
         ["platforms", p] if method_name == "DELETE" => {
             let p = name(&Value::from(*p), false)?;
@@ -530,9 +573,21 @@ async fn public_api(State(state): State<AppState>, request: Request) -> Result<R
             "API tokens are read-only".into(),
         ));
     }
+    // Without a token or session, only reads of public platforms are allowed.
+    let mut anonymous = None;
     let session = match grant {
         Some(_) => Value::Null,
-        None => state.session(request.headers()).await?,
+        None => match state.session(request.headers()).await {
+            Err(error)
+                if error.0 == StatusCode::UNAUTHORIZED
+                    && !is_schemas
+                    && matches!(method_name.as_str(), "GET" | "HEAD") =>
+            {
+                anonymous = Some(error);
+                Value::Null
+            }
+            other => other?,
+        },
     };
     let path = segments(request.uri().path()).map_err(|_| {
         let platform_raw = raw.split('/').next().unwrap_or_default();
@@ -560,6 +615,17 @@ async fn public_api(State(state): State<AppState>, request: Request) -> Result<R
         // Out-of-scope platforms look absent, so a token can't probe for names.
         return Err(ApiError::missing("Platform not found"));
     }
+    // Private and missing platforms answer an anonymous read alike, as before public ones existed.
+    let public = match anonymous {
+        Some(unauthorized) => {
+            let public = public_platforms(&state).await?;
+            if !public.iter().any(|name| name == p) {
+                return Err(unauthorized);
+            }
+            Some(public)
+        }
+        None => None,
+    };
     if method_name == "POST" {
         let data = parse_body(request).await?;
         if !versions && !data.is_object() && !data.is_array() {
@@ -650,6 +716,18 @@ async fn public_api(State(state): State<AppState>, request: Request) -> Result<R
             return Err(ApiError(
                 StatusCode::FORBIDDEN,
                 "This schema extends platforms outside this token's scope".into(),
+            ));
+        }
+        if let Some(public) = &public
+            && !schema::stored_sources(p, &record).is_some_and(|sources| {
+                sources
+                    .iter()
+                    .all(|source| public.iter().any(|name| name == source))
+            })
+        {
+            return Err(ApiError(
+                StatusCode::FORBIDDEN,
+                "This schema extends platforms that aren't public".into(),
             ));
         }
         Ok(Json(record).into_response())

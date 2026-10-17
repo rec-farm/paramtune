@@ -11,7 +11,7 @@ One Rust process serves the Vite frontend, APIs, and Handstamp authentication. N
 | OIDC_CLIENT_SECRET | Client secret, authenticated using HTTP Basic |
 | OIDC_SCOPES | Defaults to openid profile email groups |
 | OIDC_ROLES_CLAIM | Defaults to groups |
-| OIDC_ADMIN_GROUP | Group mapped to admin; when set, only admins delete platforms/versions and manage API tokens |
+| OIDC_ADMIN_GROUP | Group mapped to admin; when set, only admins delete platforms/versions, make platforms public, and manage API tokens |
 | OIDC_EDITOR_GROUP | When set, only this group (and admins) can change configuration; other users are view-only |
 | OIDC_PLATFORM_EDITORS | Optional per-platform editor groups, e.g. `ios:team-ios,team-mobile;web:team-web`; admins are exempt |
 | OIDC_DISPLAY_NAME | Defaults to Handstamp |

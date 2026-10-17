@@ -22,6 +22,22 @@ curl -H "Authorization: Bearer ptk_..." https://yourdomain.com/api/mobile/1.1.0
 - The plaintext is shown once at creation. Paramtune stores only its SHA-256 hash in Redis, records when it was last used, and audits creation and revocation.
 - An unknown or revoked token returns `401`; a Redis outage returns `503`.
 
+### Public platforms
+
+An admin can make a platform **public** from its page in the dashboard. Anyone can then read it without a session or token:
+
+```bash
+curl https://yourdomain.com/api/mobile/1.1.0
+```
+
+- Anonymous reads work on `GET`/`HEAD` of `/api/{platform}`, `/api/{platform}/versions` and `/api/{platform}/{version}` for public platforms only. `/api/schemas`, writes and dashboard endpoints still require a session.
+- Private and missing platforms both return `401` to anonymous callers, so names can't be probed.
+- A version is readable anonymously only when every platform in its recorded `sources` is public, transitively, like scoped tokens. Otherwise the read returns `403`, so a public platform never reveals content it inherits from a private one.
+- An invalid or expired session cookie on a public read is treated as anonymous.
+- `PATCH /api/_ui/v1/platforms/{platform}` with `{ "public": true }` or `{ "public": false }` (admin) returns the platform record. Changes are audited as `publish` and `unpublish`, and take effect on the next request.
+
+Only publish configuration that is safe for anyone to read, such as values shipped inside an app.
+
 ### Managing tokens (session required)
 
 - `GET /api/_ui/v1/tokens` lists tokens: `{ id, name, platforms (null = all), hint, createdAt, createdBy, lastUsedAt? }`
@@ -36,7 +52,7 @@ Roles come from the OIDC claim named by `OIDC_ROLES_CLAIM` (default `groups`) at
 | --- | --- |
 | neither group set | everyone signed in can edit and administer (the default) |
 | `OIDC_EDITOR_GROUP` | only its members (and admins) can change configuration; others are view-only |
-| `OIDC_ADMIN_GROUP` | only its members can delete platforms or versions and manage API tokens |
+| `OIDC_ADMIN_GROUP` | only its members can delete platforms or versions, make platforms public, and manage API tokens |
 | `OIDC_PLATFORM_EDITORS` | e.g. `ios:team-ios,team-mobile;web:team-web` — writes to a listed platform also need one of its groups (admins are exempt); other platforms are unaffected |
 
 Group settings are read on every request, so setting one also narrows sessions that already exist. Forbidden requests return `403`. `GET /api/auth/get-session` includes `permissions: { write, manage, restricted }`, where `restricted` lists the platforms this user can't change. Groups are recorded at sign-in, so sessions from before platform groups were configured can't write restricted platforms until the user signs in again.

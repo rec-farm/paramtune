@@ -1,6 +1,7 @@
 import { useLoaderData, useNavigate, useRevalidator, useRouteLoaderData } from 'react-router'
 import type { DashboardData } from '@/client/router'
 import DeleteZone from '@/components/DeleteZone'
+import PublicAccess from '@/components/PublicAccess'
 import PlatformReadOnly, { canWritePlatform } from '@/components/PlatformReadOnly'
 import { api, UI_API } from '@/client/api'
 import type { Platform } from '@/shared/contracts'
@@ -131,6 +132,16 @@ export default function PlatformPage() {
       <Card id="add-version" title="Add a version">
         <AddVersionForm action={createVersion} initialVersion={platform.versions.length === 0 ? '1.0.0' : ''} />
       </Card>
+
+      <PublicAccess
+        platform={platformName}
+        isPublic={platform.public === true}
+        canManage={permissions.manage}
+        onChange={async (isPublic) => {
+          await api(`${UI_API}/platforms/${encodeURIComponent(platformName)}`, { method: 'PATCH', body: JSON.stringify({ public: isPublic }) })
+          await revalidator.revalidate()
+        }}
+      />
 
       {permissions.manage && (
         <DeleteZone

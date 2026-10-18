@@ -84,3 +84,14 @@ test('managers publish a platform from its page', async ({ page, context }) => {
   await page.getByRole('button', { name: 'Make private' }).click()
   await expect(page.getByTestId('public-status')).toHaveText(/^Private/)
 })
+
+test('people who cannot manage see why they cannot publish', async ({ page, context }) => {
+  const platform = `${prefix}-editor`
+  expect((await context.request.post(`${authURL}/api/auth/dev-login`, { headers: { Origin: authURL } })).ok()).toBe(true)
+  expect((await context.request.post(`/api/${platform}`, { data: { versions: ['1.0.0'] } })).status()).toBe(201)
+  expect((await context.request.post(`${authURL}/api/auth/dev-login`, { headers: { Origin: authURL }, data: { role: 'editor' } })).ok()).toBe(true)
+  await page.goto(`/dashboard/${platform}`)
+  await expect(page.getByTestId('public-status')).toHaveText(/^Private/)
+  await expect(page.getByTestId('public-manage-hint')).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Make public' })).toHaveCount(0)
+})

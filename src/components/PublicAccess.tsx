@@ -49,6 +49,11 @@ export default function PublicAccess({ platform, isPublic, canManage, onChange }
             {error}
           </p>
         )}
+        {!canManage && (
+          <p className="text-sm text-muted-foreground" data-testid="public-manage-hint">
+            Only Paramtune administrators can change this.
+          </p>
+        )}
         {canManage && (
           <Button type="button" variant="secondary" disabled={saving} onClick={toggle}>
             {saving && <Loader2 className="h-4 w-4 animate-spin" strokeWidth={1.5} aria-hidden="true" />}

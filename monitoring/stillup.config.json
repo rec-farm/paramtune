@@ -32,7 +32,6 @@
       "config": {
         "name": "Paramtune production configuration read",
         "url": "https://paramtune.rec.farm/api/monitoring/1.0.0",
-        "headers": { "Authorization": "Bearer {{PARAMTUNE_MONITOR_TOKEN}}" },
         "intervalSeconds": 60,
         "timeoutMs": 10000,
         "expectedStatus": 200,

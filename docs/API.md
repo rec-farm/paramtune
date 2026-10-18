@@ -57,6 +57,12 @@ Roles come from the OIDC claim named by `OIDC_ROLES_CLAIM` (default `groups`) at
 
 Group settings are read on every request, so setting one also narrows sessions that already exist. Forbidden requests return `403`. `GET /api/auth/get-session` includes `permissions: { write, manage, restricted }`, where `restricted` lists the platforms this user can't change. Groups are recorded at sign-in, so sessions from before platform groups were configured can't write restricted platforms until the user signs in again.
 
+### Agents through farmhand
+
+With `GATEWAY_ISSUER` set to the public origin of [farmhand](https://rec.farm/farmhand/), the rec.farm MCP gateway, the dashboard API (`/api/_ui/v1`) and the legacy API also accept `Authorization: Bearer <assertion>`: a one-minute JWT farmhand signs for one person, the agent acting for them, and the scopes they allowed (`paramtune:read`, `paramtune:write`). It stands for the session that person would have after signing in: their role comes from the `groups` in the assertion through the settings above, and `OIDC_PLATFORM_EDITORS` applies. The person must come from `OIDC_ISSUER`.
+
+The scopes cap that role: without `paramtune:write` the agent only reads, and an agent never has the admin permission, so deleting, making platforms public and API tokens stay with people. Schemas an agent saves record it in `author.agent`, and audit entries in `agent`.
+
 ### Deleting (admin)
 
 - `DELETE /api/_ui/v1/platforms/{platform}` removes a platform, all of its versions, and their history.

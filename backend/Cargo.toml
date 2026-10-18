@@ -33,5 +33,6 @@ base64 = "0.22"
 jsonwebtoken = { version = "10", default-features = false, features = ["rust_crypto"] }
 
 [dev-dependencies]
+ed25519-dalek = { version = "2", features = ["pkcs8"] }
 http-body-util = "0.1"
 tempfile = "3"

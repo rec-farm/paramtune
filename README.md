@@ -83,6 +83,7 @@ Rust stores authentication sessions in Redis.
 - `PUBLIC_ORIGIN` – Public application origin
 - `OIDC_ISSUER`, `OIDC_CLIENT_ID`, `OIDC_CLIENT_SECRET` – Handstamp (or any OpenID Connect provider) application credentials
 - `OIDC_SCOPES`, `OIDC_ROLES_CLAIM`, `OIDC_ADMIN_GROUP`, `OIDC_EDITOR_GROUP`, `OIDC_PLATFORM_EDITORS`, `OIDC_DISPLAY_NAME`, `OIDC_CA_CERT_FILE` – optional sign-in and role settings (see [Deployment](docs/DEPLOYMENT.md))
+- `GATEWAY_ISSUER` – optional: farmhand's public origin, so agents can act for people through the rec.farm MCP gateway (see [API](docs/API.md#agents-through-farmhand))
 - `TRUST_PROXY` – `true` only behind a proxy that sanitizes client-IP headers (default `false`)
 - `RATE_LIMIT_API_MAX` – API requests per client IP per 60 seconds (default 100)
 - `RATE_LIMIT_AUTH_MAX` – Sign-in requests per client IP per 15 minutes (default 10)

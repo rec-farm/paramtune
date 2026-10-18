@@ -255,6 +255,9 @@ async fn in_use(state: &AppState, p: &str, versions: &[String]) -> Result<()> {
 }
 async fn audit(state: &AppState, session: &Value, action: &str, p: &str, v: Option<&str>) {
     let mut entry = json!({"action":action,"platform":p,"userId":session["user"]["id"],"userEmail":session["user"]["email"]});
+    if let Some(agent) = session["agent"]["name"].as_str() {
+        entry["agent"] = Value::from(agent);
+    }
     if let Some(v) = v {
         entry["version"] = Value::from(v);
     }
@@ -469,6 +472,9 @@ async fn ui(State(state): State<AppState>, request: Request) -> Result<Response>
                 if let Some(image) = user["image"].as_str().filter(|v| !v.is_empty()) {
                     author["image"] = Value::from(image);
                 }
+                if let Some(agent) = session["agent"]["name"].as_str() {
+                    author["agent"] = Value::from(agent);
+                }
                 schema::save(&state.0.store, &p, &v, content(&data)?, author).await?;
                 audit(&state, &session, "update", &p, Some(&v)).await;
                 Ok(ok(false))
@@ -563,7 +569,8 @@ async fn public_api(State(state): State<AppState>, request: Request) -> Result<R
         return Err(method());
     }
     // Services read with a bearer API token; people use their session for reads and writes.
-    let grant = match tokens::bearer(request.headers()) {
+    let grant = match tokens::bearer(request.headers()).filter(|t| !crate::gateway::is_assertion(t))
+    {
         Some(token) => Some(tokens::authenticate(&state, token).await?),
         None => None,
     };

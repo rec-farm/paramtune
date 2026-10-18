@@ -1,6 +1,7 @@
 pub mod auth;
 pub mod diff;
 pub mod error;
+pub mod gateway;
 pub mod json;
 mod routes;
 pub mod schema;
@@ -63,6 +64,7 @@ pub struct Inner {
     pub rates: Mutex<HashMap<String, (u32, Instant)>>,
     pub rate_backoff: Mutex<Option<Instant>>,
     pub oidc_ready_until: Mutex<Option<Instant>>,
+    pub gateway_keys: gateway::Keys,
 }
 impl AppState {
     pub fn new(
@@ -89,6 +91,7 @@ impl AppState {
             rates: Mutex::new(HashMap::new()),
             rate_backoff: Mutex::new(None),
             oidc_ready_until: Mutex::new(None),
+            gateway_keys: Default::default(),
         })))
     }
     pub async fn session(&self, headers: &HeaderMap) -> Result<Value> {

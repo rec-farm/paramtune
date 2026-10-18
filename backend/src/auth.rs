@@ -20,7 +20,7 @@ use sha2::{Digest, Sha256};
 use std::env;
 const SESSION_TTL: u64 = 604800;
 const FLOW_TTL: u64 = 600;
-fn setting(key: &str, default: &str) -> String {
+pub(crate) fn setting(key: &str, default: &str) -> String {
     env::var(key)
         .ok()
         .filter(|v| !v.is_empty())
@@ -100,7 +100,26 @@ fn has_dot_segment(value: &str) -> bool {
         )
     })
 }
-fn subject_key(issuer: &str, sub: &str) -> String {
+/// The role a roles claim (an array, or a space-separated string) gives, from the group settings.
+pub(crate) fn role(roles: &Value) -> &'static str {
+    let member_of = |group: String| {
+        !group.is_empty()
+            && (roles
+                .as_array()
+                .is_some_and(|v| v.iter().any(|v| v == &group))
+                || roles
+                    .as_str()
+                    .is_some_and(|v| v.split_whitespace().any(|v| v == group)))
+    };
+    if member_of(setting("OIDC_ADMIN_GROUP", "")) {
+        "admin"
+    } else if member_of(setting("OIDC_EDITOR_GROUP", "")) {
+        "editor"
+    } else {
+        "member"
+    }
+}
+pub(crate) fn subject_key(issuer: &str, sub: &str) -> String {
     hash(&format!("{issuer}\n{sub}"))
 }
 async fn read(state: &AppState, key: &str) -> Result<Option<Value>> {
@@ -136,6 +155,9 @@ async fn write(state: &AppState, key: &str, value: &Value, ttl: u64) -> Result<(
     Ok(())
 }
 pub async fn session(state: &AppState, headers: &HeaderMap) -> Result<Value> {
+    if let Some(assertion) = crate::gateway::bearer(headers) {
+        return crate::gateway::session(state, assertion).await;
+    }
     let token = cookie(headers, cookie_name(state, false))
         .filter(|v| valid_token(v))
         .ok_or_else(unauthorized)?;
@@ -168,11 +190,18 @@ pub struct Permissions {
     pub manage: bool,
 }
 pub fn permissions(session: &Value) -> Permissions {
-    grant(
+    let mut permissions = grant(
         session["user"]["role"].as_str().unwrap_or_default(),
         !setting("OIDC_EDITOR_GROUP", "").is_empty(),
         !setting("OIDC_ADMIN_GROUP", "").is_empty(),
-    )
+    );
+    // Agents through farmhand: the person's role, capped by the scope they allowed. Deleting,
+    // publishing and API tokens stay with people.
+    if session["agent"].is_object() {
+        permissions.write &= session["agent"]["write"] == true;
+        permissions.manage = false;
+    }
+    permissions
 }
 fn grant(role: &str, editor_group: bool, admin_group: bool) -> Permissions {
     // Without an editor group every member edits; without an admin group every editor manages.
@@ -477,22 +506,7 @@ async fn callback(state: &AppState, request: Request) -> Result<Response> {
         return Err(unauthorized());
     }
     let roles = &profile[setting("OIDC_ROLES_CLAIM", "groups")];
-    let member_of = |group: String| {
-        !group.is_empty()
-            && (roles
-                .as_array()
-                .is_some_and(|v| v.iter().any(|v| v == &group))
-                || roles
-                    .as_str()
-                    .is_some_and(|v| v.split_whitespace().any(|v| v == group)))
-    };
-    let role = if member_of(setting("OIDC_ADMIN_GROUP", "")) {
-        "admin"
-    } else if member_of(setting("OIDC_EDITOR_GROUP", "")) {
-        "editor"
-    } else {
-        "member"
-    };
+    let role = role(roles);
     let subject = subject_key(&setting("OIDC_ISSUER", ""), sub);
     let groups: Vec<&str> = match roles {
         Value::Array(values) => values.iter().filter_map(Value::as_str).collect(),

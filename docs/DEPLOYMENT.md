@@ -18,6 +18,7 @@ One Rust process serves the Vite frontend, APIs, and Handstamp authentication. N
 | OIDC_PLATFORM_EDITORS | Optional per-platform editor groups, e.g. `ios:team-ios,team-mobile;web:team-web`; admins are exempt |
 | OIDC_DISPLAY_NAME | Defaults to Handstamp |
 | OIDC_CA_CERT_FILE | Optional private-provider CA PEM file (a path inside the container; mount the file too) |
+| GATEWAY_ISSUER | Optional farmhand public origin: lets agents act for people through it (see [API](API.md#agents-through-farmhand)) |
 | CORS_ORIGIN | Defaults to PUBLIC_ORIGIN |
 | REDIS_URL | Redis connection URL, credentials, and database (set by Docker Compose) |
 | TRUST_PROXY | true only behind a proxy that sanitizes client-IP headers; defaults to false |

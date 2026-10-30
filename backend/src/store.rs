@@ -30,8 +30,8 @@ impl Store {
                     .get_connection_manager_with_config(
                         redis::aio::ConnectionManagerConfig::new()
                             .set_number_of_retries(1)
-                            .set_connection_timeout(std::time::Duration::from_secs(3))
-                            .set_response_timeout(std::time::Duration::from_secs(5)),
+                            .set_connection_timeout(Some(std::time::Duration::from_secs(3)))
+                            .set_response_timeout(Some(std::time::Duration::from_secs(5))),
                     )
                     .await
             })

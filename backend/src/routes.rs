@@ -13,7 +13,6 @@ use axum::{
     routing::any,
 };
 use serde_json::{Value, json};
-use sha2::{Digest, Sha256};
 
 pub fn dashboard() -> Router<AppState> {
     Router::new().route("/", any(ui)).route("/{*path}", any(ui))
@@ -488,10 +487,7 @@ async fn ui(State(state): State<AppState>, request: Request) -> Result<Response>
                     .unwrap_or(json!({}));
                 let history = state.0.store.history(&schema::key(&p, &v), 50).await?;
                 let content = schema.get("content").cloned().unwrap_or(json!({}));
-                let hash = format!(
-                    "{:x}",
-                    Sha256::digest(crate::json::stringify(&content).as_bytes())
-                );
+                let hash = crate::auth::hash(&crate::json::stringify(&content));
                 Ok(
                     Json(json!({"schema":schema,"history":history,"contentHash":hash}))
                         .into_response(),

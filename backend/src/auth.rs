@@ -30,7 +30,10 @@ pub(crate) fn random() -> String {
     URL_SAFE_NO_PAD.encode(rand::random::<[u8; 32]>())
 }
 pub(crate) fn hash(value: &str) -> String {
-    format!("{:x}", Sha256::digest(value.as_bytes()))
+    Sha256::digest(value.as_bytes())
+        .iter()
+        .map(|b| format!("{b:02x}"))
+        .collect()
 }
 fn unauthorized() -> ApiError {
     ApiError(StatusCode::UNAUTHORIZED, "Unauthorized".into())
